@@ -1,0 +1,98 @@
+{
+  "event": "messages.upsert",
+  "instance": "fucobot",
+  "data": {
+    "key": {
+      "remoteJid": "56978086719@s.whatsapp.net",
+      "remoteJidAlt": "2066030284883@lid",
+      "fromMe": false,
+      "id": "3A37663BFAA00D666C21",
+      "addressingMode": "pn"
+    },
+    "pushName": "Francisco Arancibia",
+    "status": "DELIVERY_ACK",
+    "message": {
+      "conversation": "Que sucede",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderKeyIndexes": [],
+          "recipientKeyIndexes": [],
+          "senderKeyHash": {
+            "0": 140,
+            "1": 122,
+            "2": 101,
+            "3": 178,
+            "4": 166,
+            "5": 227,
+            "6": 70,
+            "7": 187,
+            "8": 216,
+            "9": 60
+          },
+          "senderTimestamp": { "low": 1761054431, "high": 0, "unsigned": true },
+          "recipientKeyHash": {
+            "0": 2,
+            "1": 132,
+            "2": 14,
+            "3": 115,
+            "4": 228,
+            "5": 23,
+            "6": 138,
+            "7": 142,
+            "8": 52,
+            "9": 27
+          },
+          "recipientTimestamp": {
+            "low": 1760727565,
+            "high": 0,
+            "unsigned": true
+          }
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": {
+          "0": 206,
+          "1": 231,
+          "2": 90,
+          "3": 209,
+          "4": 163,
+          "5": 0,
+          "6": 25,
+          "7": 156,
+          "8": 148,
+          "9": 83,
+          "10": 245,
+          "11": 199,
+          "12": 35,
+          "13": 41,
+          "14": 234,
+          "15": 199,
+          "16": 249,
+          "17": 251,
+          "18": 211,
+          "19": 217,
+          "20": 144,
+          "21": 152,
+          "22": 41,
+          "23": 172,
+          "24": 204,
+          "25": 55,
+          "26": 241,
+          "27": 131,
+          "28": 138,
+          "29": 184,
+          "30": 99,
+          "31": 66
+        }
+      }
+    },
+    "messageType": "conversation",
+    "messageTimestamp": 1761234016,
+    "instanceId": "23e20296-00cc-4f12-be2f-d4179caa755a",
+    "source": "ios"
+  },
+  "destination": "https://c151157af32e.ngrok-free.app/webhook",
+  "date_time": "2025-10-23T17:40:16.458Z",
+  "sender": "56990834238@s.whatsapp.net",
+  "server_url": "https://evolution.adictosaltechno.com",
+  "apikey": "2BFE779A8652-4988-A311-66A4307CB8DA"
+}
