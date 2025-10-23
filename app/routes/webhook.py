@@ -14,9 +14,10 @@ async def obtener_webhook(request: Request):
 
     if msg_type == "audioMessage":
         transcripcion = ai.transcribe_ai(message)
-        clasificacion = ai.classify_message(transcripcion.text)
         print(f"INFO:     Usuario: {user}.")
         print(f"INFO:     Mensaje transcrito: {transcripcion.text}")
+        
+        clasificacion = ai.classify_message(transcripcion.text)
         print(f"INFO:     Clasificación: {clasificacion["categoria"]}")
     elif msg_type == "conversation":
         clasificacion = ai.classify_message(message)
