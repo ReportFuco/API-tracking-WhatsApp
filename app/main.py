@@ -5,7 +5,6 @@ from app.routes import (
     finanzas
 )
 
-
 app = FastAPI()
 
 # Rutas de la App

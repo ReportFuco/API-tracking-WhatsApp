@@ -15,6 +15,8 @@ class Usuario(Base):
 
 
 class Mensaje(Base):
+    __tablename__ = "mensaje"
+
     id_mensaje: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     contenido: Mapped[str] = mapped_column(String(255))
