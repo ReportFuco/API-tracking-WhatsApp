@@ -1,5 +1,5 @@
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Boolean, DateTime, ForeignKey, BigInteger, Text
 from app.db.base import Base
 from datetime import datetime
 
@@ -13,14 +13,24 @@ class Usuario(Base):
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
     fecha_registro: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
+    # Relaciones
+    mensajes: Mapped[list["Mensaje"]] = relationship(back_populates="usuario")
+    habitos: Mapped[list["Habito"]] = relationship(back_populates="usuario")
+    lecturas: Mapped[list["Lectura"]] = relationship(back_populates="usuario")
+    cuentas: Mapped[list["CuentaBancaria"]] = relationship(back_populates="usuario")
+    transacciones: Mapped[list["TransaccionFinanza"]] = relationship(back_populates="usuario")
+    entrenamientos: Mapped[list["Entrenamiento"]] = relationship(back_populates="usuario")
+
 
 class Mensaje(Base):
     __tablename__ = "mensaje"
 
-    id_mensaje: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id_mensaje: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
-    contenido: Mapped[str] = mapped_column(String(255))
-    direccion: Mapped[str] = mapped_column(String(100))
-    fecha_envio: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    contenido: Mapped[str] = mapped_column(Text)
+    direccion: Mapped[str] = mapped_column(String(50))
+    fecha_envio: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    usuario: Mapped["Usuario"] = relationship(back_populates="mensajes")
 
     

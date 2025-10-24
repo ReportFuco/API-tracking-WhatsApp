@@ -7,3 +7,9 @@ from app.models.finanzas import (
     CuentaBancaria, 
     TransaccionFinanza
 )
+from app.models.entrenamiento import (
+    Ejercicio, 
+    Entrenamiento, 
+    EntrenamientoAerobico, 
+    EntrenamientoFuerza
+)
