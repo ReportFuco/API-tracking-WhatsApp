@@ -1,0 +1,864 @@
+openapi: 3.0.3
+info:
+  title: Sistema de Gestión Personal
+  description: API para gestión de hábitos, lecturas, finanzas y entrenamientos personales
+  version: 1.0.0
+  contact:
+    name: Soporte
+    email: soporte@sistema.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Servidor de desarrollo
+  - url: https://api.sistema.com/v1
+    description: Servidor de producción
+
+paths:
+  # ===============================
+  # ENDPOINTS DE USUARIOS
+  # ===============================
+  /usuarios:
+    get:
+      summary: Obtener lista de usuarios
+      tags: [Usuarios]
+      responses:
+        '200':
+          description: Lista de usuarios obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuario'
+    post:
+      summary: Crear un nuevo usuario
+      tags: [Usuarios]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioInput'
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+
+  /usuarios/{id_usuario}:
+    get:
+      summary: Obtener un usuario específico
+      tags: [Usuarios]
+      parameters:
+        - name: id_usuario
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Usuario obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '404':
+          description: Usuario no encontrado
+    put:
+      summary: Actualizar un usuario
+      tags: [Usuarios]
+      parameters:
+        - name: id_usuario
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioInput'
+      responses:
+        '200':
+          description: Usuario actualizado exitosamente
+        '404':
+          description: Usuario no encontrado
+    delete:
+      summary: Eliminar un usuario
+      tags: [Usuarios]
+      parameters:
+        - name: id_usuario
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Usuario eliminado exitosamente
+        '404':
+          description: Usuario no encontrado
+
+  # ===============================
+  # ENDPOINTS DE MENSAJES
+  # ===============================
+  /mensajes:
+    get:
+      summary: Obtener mensajes
+      tags: [Mensajes]
+      parameters:
+        - name: id_usuario
+          in: query
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de mensajes obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Mensaje'
+    post:
+      summary: Enviar un mensaje
+      tags: [Mensajes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MensajeInput'
+      responses:
+        '201':
+          description: Mensaje enviado exitosamente
+
+  # ===============================
+  # ENDPOINTS DE HÁBITOS
+  # ===============================
+  /habitos:
+    get:
+      summary: Obtener hábitos del usuario
+      tags: [Hábitos]
+      parameters:
+        - name: id_usuario
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de hábitos obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Habito'
+    post:
+      summary: Crear un nuevo hábito
+      tags: [Hábitos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HabitoInput'
+      responses:
+        '201':
+          description: Hábito creado exitosamente
+
+  /habitos/{id_habito}/registros:
+    post:
+      summary: Registrar progreso de hábito
+      tags: [Hábitos]
+      parameters:
+        - name: id_habito
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroHabitoInput'
+      responses:
+        '201':
+          description: Registro de hábito creado exitosamente
+
+  # ===============================
+  # ENDPOINTS DE LECTURA
+  # ===============================
+  /lecturas:
+    get:
+      summary: Obtener lecturas del usuario
+      tags: [Lectura]
+      parameters:
+        - name: id_usuario
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de lecturas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Lectura'
+    post:
+      summary: Crear una nueva lectura
+      tags: [Lectura]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LecturaInput'
+      responses:
+        '201':
+          description: Lectura creada exitosamente
+
+  /lecturas/{id_lectura}/registros:
+    post:
+      summary: Registrar progreso de lectura
+      tags: [Lectura]
+      parameters:
+        - name: id_lectura
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroLecturaInput'
+      responses:
+        '201':
+          description: Registro de lectura creado exitosamente
+
+  # ===============================
+  # ENDPOINTS DE FINANZAS
+  # ===============================
+  /finanzas/transacciones:
+    get:
+      summary: Obtener transacciones del usuario
+      tags: [Finanzas]
+      parameters:
+        - name: id_usuario
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de transacciones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransaccionFinanza'
+    post:
+      summary: Crear una nueva transacción
+      tags: [Finanzas]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransaccionFinanzaInput'
+      responses:
+        '201':
+          description: Transacción creada exitosamente
+
+  /finanzas/cuentas:
+    get:
+      summary: Obtener cuentas bancarias del usuario
+      tags: [Finanzas]
+      parameters:
+        - name: id_usuario
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de cuentas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CuentaBancaria'
+
+  # ===============================
+  # ENDPOINTS DE ENTRENAMIENTOS
+  # ===============================
+  /entrenamientos:
+    get:
+      summary: Obtener entrenamientos del usuario
+      tags: [Entrenamientos]
+      parameters:
+        - name: id_usuario
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de entrenamientos obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entrenamiento'
+    post:
+      summary: Crear un nuevo entrenamiento
+      tags: [Entrenamientos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/EntrenamientoAerobicoInput'
+                - $ref: '#/components/schemas/EntrenamientoFuerzaInput'
+      responses:
+        '201':
+          description: Entrenamiento creado exitosamente
+
+components:
+  schemas:
+    # ===============================
+    # ESQUEMAS PRINCIPALES
+    # ===============================
+    Usuario:
+      type: object
+      properties:
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        nombre:
+          type: string
+          example: "Juan Pérez"
+        numero_telefono:
+          type: string
+          example: "+1234567890"
+        activo:
+          type: boolean
+          example: true
+        fecha_registro:
+          type: string
+          format: date-time
+          example: "2023-01-15T10:30:00Z"
+
+    UsuarioInput:
+      type: object
+      required:
+        - nombre
+        - numero_telefono
+      properties:
+        nombre:
+          type: string
+          example: "Juan Pérez"
+        numero_telefono:
+          type: string
+          example: "+1234567890"
+        activo:
+          type: boolean
+          example: true
+
+    Mensaje:
+      type: object
+      properties:
+        id_mensaje:
+          type: integer
+          format: int64
+          example: 1
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        contenido:
+          type: string
+          example: "Hola, este es un mensaje"
+        direccion:
+          type: string
+          enum: [entrante, saliente]
+          example: "saliente"
+        fecha_envio:
+          type: string
+          format: date-time
+          example: "2023-01-15T10:30:00Z"
+
+    MensajeInput:
+      type: object
+      required:
+        - id_usuario
+        - contenido
+        - direccion
+      properties:
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        contenido:
+          type: string
+          example: "Hola, este es un mensaje"
+        direccion:
+          type: string
+          enum: [entrante, saliente]
+          example: "saliente"
+
+    # ===============================
+    # ESQUEMAS DE HÁBITOS
+    # ===============================
+    Habito:
+      type: object
+      properties:
+        id_habito:
+          type: integer
+          format: int64
+          example: 1
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        id_categoria:
+          type: integer
+          format: int64
+          example: 1
+        nombre:
+          type: string
+          example: "Meditación matutina"
+        descripcion:
+          type: string
+          example: "Meditar 10 minutos cada mañana"
+        frecuencia:
+          type: string
+          example: "diario"
+        activo:
+          type: boolean
+          example: true
+        fecha_creacion:
+          type: string
+          format: date-time
+          example: "2023-01-15T10:30:00Z"
+
+    HabitoInput:
+      type: object
+      required:
+        - id_usuario
+        - nombre
+        - id_categoria
+        - frecuencia
+      properties:
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        id_categoria:
+          type: integer
+          format: int64
+          example: 1
+        nombre:
+          type: string
+          example: "Meditación matutina"
+        descripcion:
+          type: string
+          example: "Meditar 10 minutos cada mañana"
+        frecuencia:
+          type: string
+          example: "diario"
+        activo:
+          type: boolean
+          example: true
+
+    RegistroHabitoInput:
+      type: object
+      required:
+        - id_habito
+        - fecha
+      properties:
+        id_habito:
+          type: integer
+          format: int64
+          example: 1
+        fecha:
+          type: string
+          format: date
+          example: "2023-01-15"
+        observacion:
+          type: string
+          example: "Meditación muy productiva hoy"
+
+    # ===============================
+    # ESQUEMAS DE LECTURA
+    # ===============================
+    Lectura:
+      type: object
+      properties:
+        id_lectura:
+          type: integer
+          format: int64
+          example: 1
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        titulo_libro:
+          type: string
+          example: "El Principito"
+        autor:
+          type: string
+          example: "Antoine de Saint-Exupéry"
+        total_paginas:
+          type: integer
+          example: 96
+        fecha_inicio:
+          type: string
+          format: date
+          example: "2023-01-01"
+        fecha_fin:
+          type: string
+          format: date
+          example: "2023-01-10"
+        notas:
+          type: string
+          example: "Un libro muy inspirador"
+        terminado:
+          type: boolean
+          example: true
+
+    LecturaInput:
+      type: object
+      required:
+        - id_usuario
+        - titulo_libro
+        - total_paginas
+      properties:
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        titulo_libro:
+          type: string
+          example: "El Principito"
+        autor:
+          type: string
+          example: "Antoine de Saint-Exupéry"
+        total_paginas:
+          type: integer
+          example: 96
+        fecha_inicio:
+          type: string
+          format: date
+          example: "2023-01-01"
+        notas:
+          type: string
+          example: "Un libro muy inspirador"
+
+    RegistroLecturaInput:
+      type: object
+      required:
+        - id_lectura
+        - fecha
+        - paginas_leidas
+      properties:
+        id_lectura:
+          type: integer
+          format: int64
+          example: 1
+        fecha:
+          type: string
+          format: date
+          example: "2023-01-15"
+        paginas_leidas:
+          type: integer
+          example: 20
+        observacion:
+          type: string
+          example: "Leído en la biblioteca"
+
+    # ===============================
+    # ESQUEMAS DE FINANZAS
+    # ===============================
+    TransaccionFinanza:
+      type: object
+      properties:
+        id_transaccion:
+          type: integer
+          format: int64
+          example: 1
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        id_categoria:
+          type: integer
+          format: int64
+          example: 1
+        id_cuenta:
+          type: integer
+          format: int64
+          example: 1
+        tipo:
+          type: string
+          enum: [ingreso, gasto]
+          example: "gasto"
+        monto:
+          type: integer
+          example: 50000
+        descripcion:
+          type: string
+          example: "Compra en supermercado"
+        fecha:
+          type: string
+          format: date-time
+          example: "2023-01-15T10:30:00Z"
+
+    TransaccionFinanzaInput:
+      type: object
+      required:
+        - id_usuario
+        - id_categoria
+        - id_cuenta
+        - tipo
+        - monto
+        - descripcion
+      properties:
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        id_categoria:
+          type: integer
+          format: int64
+          example: 1
+        id_cuenta:
+          type: integer
+          format: int64
+          example: 1
+        tipo:
+          type: string
+          enum: [ingreso, gasto]
+          example: "gasto"
+        monto:
+          type: integer
+          example: 50000
+        descripcion:
+          type: string
+          example: "Compra en supermercado"
+
+    CuentaBancaria:
+      type: object
+      properties:
+        id_cuenta:
+          type: integer
+          format: int64
+          example: 1
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        id_banco:
+          type: integer
+          example: 1
+        nombre_cuenta:
+          type: string
+          example: "Cuenta Corriente Principal"
+        tipo_cuenta:
+          type: string
+          example: "corriente"
+
+    # ===============================
+    # ESQUEMAS DE ENTRENAMIENTOS
+    # ===============================
+    Entrenamiento:
+      type: object
+      properties:
+        id_entrenamiento:
+          type: integer
+          format: int64
+          example: 1
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        tipo:
+          type: string
+          enum: [aerobico, fuerza]
+          example: "aerobico"
+        subtipo:
+          type: string
+          example: "running"
+        fecha:
+          type: string
+          format: date-time
+          example: "2023-01-15T10:30:00Z"
+        observacion:
+          type: string
+          example: "Entrenamiento en parque"
+
+    EntrenamientoAerobicoInput:
+      type: object
+      required:
+        - id_usuario
+        - tipo
+        - fecha
+        - distancia_km
+        - duracion
+      properties:
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        tipo:
+          type: string
+          example: "aerobico"
+        subtipo:
+          type: string
+          example: "running"
+        fecha:
+          type: string
+          format: date-time
+          example: "2023-01-15T10:30:00Z"
+        observacion:
+          type: string
+          example: "Entrenamiento en parque"
+        distancia_km:
+          type: number
+          format: float
+          example: 5.2
+        duracion:
+          type: string
+          format: time
+          example: "00:30:00"
+        ritmo_promedio:
+          type: number
+          format: float
+          example: 5.45
+        calorias:
+          type: integer
+          example: 350
+
+    EntrenamientoFuerzaInput:
+      type: object
+      required:
+        - id_usuario
+        - tipo
+        - fecha
+        - musculo_principal
+        - ejercicios
+      properties:
+        id_usuario:
+          type: integer
+          format: int64
+          example: 1
+        tipo:
+          type: string
+          example: "fuerza"
+        subtipo:
+          type: string
+          example: "pesas"
+        fecha:
+          type: string
+          format: date-time
+          example: "2023-01-15T10:30:00Z"
+        observacion:
+          type: string
+          example: "Entrenamiento en gimnasio"
+        musculo_principal:
+          type: string
+          example: "pecho"
+        rutina:
+          type: string
+          example: "Rutina de pecho completa"
+        ejercicios:
+          type: array
+          items:
+            $ref: '#/components/schemas/EjercicioInput'
+
+    EjercicioInput:
+      type: object
+      required:
+        - nombre
+        - series
+        - repeticiones
+      properties:
+        nombre:
+          type: string
+          example: "Press de banca"
+        series:
+          type: integer
+          example: 4
+        repeticiones:
+          type: integer
+          example: 10
+        peso_kg:
+          type: number
+          format: float
+          example: 60.5
+
+  responses:
+    NotFound:
+      description: Recurso no encontrado
+    ValidationError:
+      description: Datos de entrada inválidos
+    ServerError:
+      description: Error interno del servidor
+
+  parameters:
+    IdUsuarioQuery:
+      name: id_usuario
+      in: query
+      required: true
+      schema:
+        type: integer
+        format: int64
+      description: ID del usuario
+
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+      description: ID del recurso
+
+tags:
+  - name: Usuarios
+    description: Gestión de usuarios
+  - name: Mensajes
+    description: Gestión de mensajes
+  - name: Hábitos
+    description: Gestión de hábitos y seguimiento
+  - name: Lectura
+    description: Gestión de lecturas y progreso
+  - name: Finanzas
+    description: Gestión de transacciones y cuentas bancarias
+  - name: Entrenamientos
+    description: Gestión de entrenamientos y ejercicios
