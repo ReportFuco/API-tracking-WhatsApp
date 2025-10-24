@@ -19,8 +19,9 @@ def bienvenida() -> dict[str, str | dict[str, str]]:
         "docs": f"Puedes consultar la documentación a través del siguiente link: {settings.URL_SITE}/docs",
         "Instrucciones":
             {
-                "primero": "Debes tener levantado el servicio de Evolution API para poder recibir los mensajes de WhatsApp",
-                "segundo": "Debes Iniciar tu API en Open AI, solo debes ingresar la Key dentro del .env"
+                "primero": "Debes tener desplegado el servicio de Evolution API en un servidor para interactuar WhatsApp",
+                "segundo": "Debes iniciar el proyecto (python -m app.main) con la IP visible o usando Ngrok para que Evolution API detecte la App",
+                "tercero": "Debes ingresar las KEYS importantes dentro del archivo .env"
              }
     }
 

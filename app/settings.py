@@ -10,3 +10,4 @@ URL_SITE:str = os.getenv("URL_SITE") or f"http://localhost:{PORT}"
 
 API_KEY:str = os.getenv("APIKEY_OPENAI") or ""
 
+DATABASE_URL:str = os.getenv("DATABASE_URL") or ""

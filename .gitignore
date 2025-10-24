@@ -2,4 +2,4 @@ env
 .env
 __pycache__
 .vscode
-testing/responses
+testing\responses*
