@@ -1,15 +1,15 @@
-# app/models/habito.py
 from sqlalchemy import BigInteger, String, Text, Boolean, DateTime, Date, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from app.db.base import Base
+
 
 class CategoriaHabito(Base):
     __tablename__ = "categoria_habito"
 
     id_categoria: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     nombre: Mapped[str] = mapped_column(String(100))
-    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     habitos: Mapped[list["Habito"]] = relationship(back_populates="categoria")
 
@@ -24,7 +24,7 @@ class Habito(Base):
     descripcion: Mapped[str] = mapped_column(Text)
     frecuencia: Mapped[str] = mapped_column(String(50))
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
-    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     usuario: Mapped["Usuario"] = relationship(back_populates="habitos")
     categoria: Mapped["CategoriaHabito"] = relationship(back_populates="habitos")

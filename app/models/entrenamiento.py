@@ -3,6 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from app.db.base import Base
 
+
 class Entrenamiento(Base):
     __tablename__ = "entrenamiento"
 

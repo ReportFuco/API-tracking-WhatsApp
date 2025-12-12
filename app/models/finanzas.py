@@ -45,7 +45,7 @@ class TransaccionFinanza(Base):
     tipo: Mapped[str] = mapped_column(String(50))
     monto: Mapped[int]
     descripcion: Mapped[str] = mapped_column(Text, nullable=True)
-    fecha: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    fecha: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     usuario: Mapped["Usuario"] = relationship(back_populates="transacciones")
     categoria: Mapped["CategoriaFinanza"] = relationship(back_populates="transacciones")

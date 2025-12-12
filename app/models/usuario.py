@@ -2,7 +2,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Boolean, DateTime, ForeignKey, BigInteger, Text
 from app.db.base import Base
 from datetime import datetime
-
+from app.models.habitos import Habito
+from app.models.entrenamiento import Entrenamiento
+from app.models.lecturas import Lectura
+from app.models.finanzas import CuentaBancaria, TransaccionFinanza
 
 class Usuario(Base):
     __tablename__= "usuario"
@@ -29,7 +32,7 @@ class Mensaje(Base):
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     contenido: Mapped[str] = mapped_column(Text)
     direccion: Mapped[str] = mapped_column(String(50))
-    fecha_envio: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    fecha_envio: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     usuario: Mapped["Usuario"] = relationship(back_populates="mensajes")
 
