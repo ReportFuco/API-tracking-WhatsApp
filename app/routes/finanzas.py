@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.session import get_db
+from app.db import get_db
 from sqlalchemy import select
 from app.models import Banco, Usuario, CuentaBancaria
 from typing import Any

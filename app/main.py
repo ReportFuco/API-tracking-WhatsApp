@@ -14,7 +14,7 @@ app.include_router(webhook.router)
 app.include_router(finanzas.router)
 
 
-@app.get("/", tags=["Inicio"])
+@app.get("/", tags=["Inicio"], include_in_schema=False)
 def bienvenida() -> dict[str, str | list[str]]:
     return {
         "info": "Bienvenido a la API de automatización",

@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession 
 from fastapi import APIRouter, HTTPException, Depends
-from app.db.session import get_db
+from app.db import get_db
 from sqlalchemy import select
 from app.models import Usuario
 from app.schemas import UsuarioShemaCreate
