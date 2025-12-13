@@ -40,8 +40,13 @@ async def obtener_usuario_id(id:int, db: AsyncSession = Depends(get_db))->dict[s
 
 @router.post("/crear-usuario")
 async def crear_usuario(usuario:UsuarioShemaCreate, db:AsyncSession = Depends(get_db)):
-    crear = Usuario(nombre=usuario.nombre, telefono=usuario.telefono)
-    db.add(crear)
-    await db.commit()
-    return {"info": f"Usuario {usuario.nombre} creado"}
+    query = await db.execute(select(Usuario).where(Usuario.telefono == usuario.telefono))
+    usuario_buscado = query.scalar_one_or_none()
+    if usuario_buscado:
+        raise HTTPException(status_code=409, detail="Ya existe un usuario con ese numero.")
+    else:
+        crear = Usuario(nombre=usuario.nombre, telefono=usuario.telefono)
+        db.add(crear)
+        await db.commit()
+        return {"info": f"Usuario {usuario.nombre} creado"}
 

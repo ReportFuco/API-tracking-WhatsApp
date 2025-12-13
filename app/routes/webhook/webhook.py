@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from typing import Any
 
 
-router = APIRouter(prefix="/webhook", tags=["Webhook"], include_in_schema=False)
+router = APIRouter(prefix="/webhook", include_in_schema=False)
 
 @router.post("/evolution")
 async def obtener_webhook(request: Request):
