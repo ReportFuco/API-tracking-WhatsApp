@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 
 router = APIRouter(prefix="/cuentas", tags=["Finanzas · Cuentas"])
 
-@router.get("/cuentas-bancarias/obtener-cuentas")
+@router.get("/")
 async def obtener_cuentas_bancarias(db: AsyncSession = Depends(get_db))->list[dict[str, Any]]:
 
     query = await db.execute(
@@ -34,7 +34,7 @@ async def obtener_cuentas_bancarias(db: AsyncSession = Depends(get_db))->list[di
         for c in cuentas
     ]
 
-@router.get("/cuentas-bancarias/obtener-cuentas-usuario/{id}")
+@router.get("/{id}")
 async def obtener_cuentas_usuario(id:int, db:AsyncSession = Depends(get_db))->dict[str, str | list[dict[str, Any]]]:
     query_usuario = await db.execute(select(Usuario).where(Usuario.id_usuario == id))
     usuario = query_usuario.scalar_one_or_none()
@@ -62,7 +62,7 @@ async def obtener_cuentas_usuario(id:int, db:AsyncSession = Depends(get_db))->di
 
 
 @router.post(
-    "/cuentas-bancarias/crear-cuenta",
+    "/crear-cuenta",
     summary="Crear cuenta bancaria",
     description="Crea la cuenta bancaria para realizar movimientos, ej: cuenta rut, credito etc",
 )

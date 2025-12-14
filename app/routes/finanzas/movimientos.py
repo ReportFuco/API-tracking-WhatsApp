@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 router = APIRouter(prefix="/movimientos", tags=["Finanzas · Movimientos"])
 
 @router.get(
-    "/movimientos/{id_usuario}",
+    "/{id_usuario}",
     summary="Movimientos financieros del usuario",
     description="Obtiene todos los movimientos registrados por el usuario",
 )

@@ -9,7 +9,7 @@ from typing import Any
 
 router = APIRouter(prefix="/usuario", tags=["Usuario"])
 
-@router.get("/usuarios")
+@router.get("/")
 async def obtener_usuarios(db: AsyncSession = Depends(get_db))->list[dict[str, Any]]:
     query_user = await db.execute(select(Usuario))
     usuarios = query_user.scalars().all()
@@ -23,7 +23,7 @@ async def obtener_usuarios(db: AsyncSession = Depends(get_db))->list[dict[str, A
         "fecha_registro":u.fecha_registro
     } for u in usuarios]
 
-@router.get("/usuarios/{id}")
+@router.get("/{id}")
 async def obtener_usuario_id(id:int, db: AsyncSession = Depends(get_db))->dict[str, Any]:
     query_user = await db.execute(select(Usuario).where(Usuario.id_usuario == id))
     usuario = query_user.scalar_one_or_none()

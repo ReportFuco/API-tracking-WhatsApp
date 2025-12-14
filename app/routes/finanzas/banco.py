@@ -10,7 +10,7 @@ from app.schemas import BancoSchemaCreate
 
 router = APIRouter(prefix="/banco", tags=["Finanzas · Bancos"])
 
-@router.get("/banco")
+@router.get("/")
 async def obtener_bancos(db: AsyncSession = Depends(get_db))->list[dict[str, Any]]:
     query = await db.execute(select(Banco))
     banco = query.scalars().all()
@@ -22,7 +22,7 @@ async def obtener_bancos(db: AsyncSession = Depends(get_db))->list[dict[str, Any
         } for b in banco
     ]
 
-@router.get("/Banco/{id}")
+@router.get("/{id}")
 async def obtener_banco_id(id:int, db:AsyncSession = Depends(get_db))->dict[str, Any]:
     query = await db.execute(select(Banco).where(Banco.id_banco == id))
     banco = query.scalar_one_or_none()
@@ -34,7 +34,7 @@ async def obtener_banco_id(id:int, db:AsyncSession = Depends(get_db))->dict[str,
     else:
         raise HTTPException(status_code=404, detail="Banco no encontrado.")
 
-@router.post("/banco/crear-banco")
+@router.post("/crear-banco")
 async def crear_banco(banco: BancoSchemaCreate, db: AsyncSession = Depends(get_db)):
     query = await db.execute(select(Banco).where(Banco.nombre_banco == banco.nombre_banco))
 
@@ -47,7 +47,7 @@ async def crear_banco(banco: BancoSchemaCreate, db: AsyncSession = Depends(get_d
         await db.commit()
         return {"info": f"Se ha registrado {banco.nombre_banco} con éxito."}
 
-@router.delete("/banco/eliminar-banco/{id}")
+@router.delete("/eliminar-banco/{id}")
 async def eliminar_banco(id:int, db:AsyncSession = Depends(get_db)):
     query = await db.execute(select(Banco).where(Banco.id_banco == id))
     banco = query.scalar_one_or_none()
