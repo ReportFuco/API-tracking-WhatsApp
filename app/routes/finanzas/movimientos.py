@@ -15,55 +15,54 @@ router = APIRouter(prefix="/movimientos", tags=["Finanzas · Movimientos"])
     "/{id_usuario}",
     response_model=MovimientoResponse,
     summary="Movimientos financieros del usuario",
-    description="Obtiene todos los movimientos registrados por el usuario",
 )
 async def obtener_movimientos(
-    id_usuario:int, 
-    db:AsyncSession = Depends(get_db)
-    ):
-
-    query_usuario = await db.execute(
+    id_usuario: int,
+    db: AsyncSession = Depends(get_db)
+):
+    usuario = await db.scalar(
         select(Usuario).where(Usuario.id_usuario == id_usuario)
     )
 
-    usuario = query_usuario.scalar_one_or_none()
-
-    if usuario:
-        query = await db.execute(
-            select(TransaccionFinanza)
-            .where(TransaccionFinanza.id_usuario == id_usuario)
-            .options(
-                selectinload(TransaccionFinanza.usuario),
-                selectinload(TransaccionFinanza.cuenta),
-                selectinload(TransaccionFinanza.categoria)
-            )
-        )
-
-        movimientos = query.scalars().all()
-
-        return MovimientoResponse(
-            usuario=usuario.nombre, 
-            movimientos=[
-                MovimientoDetalleResponse(
-                    id=m.id_transaccion,
-                    usuario=m.usuario.nombre,
-                    categoria=m.categoria.nombre,
-                    tipo=m.tipo,
-                    monto=m.monto,
-                    descripcion=m.descripcion,
-                    fecha=m.fecha.strftime("%d-%m-%Y")
-                 ) for m in movimientos
-            ]
-        )
-    
-    else:
+    if not usuario:
         raise HTTPException(404, detail="Usuario no encontrado")
+
+    query = await db.execute(
+        select(TransaccionFinanza)
+        .where(TransaccionFinanza.id_usuario == id_usuario)
+        .options(
+            selectinload(TransaccionFinanza.usuario),
+            selectinload(TransaccionFinanza.categoria),
+            selectinload(TransaccionFinanza.cuenta)
+            .selectinload(CuentaBancaria.banco)
+        )
+    )
+
+    movimientos = query.scalars().all()
+
+    return MovimientoResponse(
+        usuario=usuario.nombre,
+        movimientos=[
+            MovimientoDetalleResponse(
+                id=m.id_transaccion,
+                categoria=m.categoria.nombre,
+                tipo=m.tipo,
+                monto=m.monto,
+                banco=m.cuenta.banco.nombre_banco,
+                descripcion=m.descripcion,
+                fecha=m.fecha.strftime("%d-%m-%Y")
+            )
+            for m in movimientos
+        ]
+    )
+
     
 
 @router.post(
-    "/{id_usuario}/agregar-movimientos",
+    "/{id_usuario}",
     summary="Agregar movimientos del usuario",
-    description="Agrega un movimiento financiero al usuario"
+    description="Agrega un movimiento financiero al usuario",
+    response_model=MovimientoResponse
 )
 async def crear_movimiento(
     id_usuario: int,
@@ -107,6 +106,30 @@ async def crear_movimiento(
 
     db.add(movimiento)
     await db.commit()
-    await db.refresh(movimiento)
 
-    return {"message": "Movimiento creado correctamente"}
+    # 🔑 volver a consultar con relaciones
+    movimiento_db = await db.scalar(
+        select(TransaccionFinanza)
+        .where(TransaccionFinanza.id_transaccion == movimiento.id_transaccion)
+        .options(
+            selectinload(TransaccionFinanza.usuario),
+            selectinload(TransaccionFinanza.categoria),
+            selectinload(TransaccionFinanza.cuenta)
+            .selectinload(CuentaBancaria.banco)
+        )
+    )
+
+    return MovimientoResponse(
+        usuario=movimiento_db.usuario.nombre,
+        movimientos=[
+            MovimientoDetalleResponse(
+                id=movimiento_db.id_transaccion,
+                categoria=movimiento_db.categoria.nombre,
+                tipo=movimiento_db.tipo,
+                monto=movimiento_db.monto,
+                banco=movimiento_db.cuenta.banco.nombre_banco,
+                descripcion=movimiento_db.descripcion,
+                fecha=movimiento_db.fecha.strftime("%d-%m-%Y")
+            )
+        ]
+    )

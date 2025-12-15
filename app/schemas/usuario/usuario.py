@@ -14,7 +14,6 @@ class UsuarioSchemaEdit(UsuarioSchema):
 class UsuarioPatchSchema(BaseModel):
     nombre: str | None = None
     telefono: str | None = None
-    activo: bool | None = None
 
 class UsuarioSchemaResponse(UsuarioSchema):
     id_usuario: int
