@@ -14,6 +14,18 @@ class MovimientoCreate(MovimientoBase):
     pass
 
 
+class MovimientoUpdate(BaseModel):
+    id_categoria: int | None = None
+    id_cuenta: int | None = None
+    tipo: Literal["Ingreso", "Gasto"] | None = None
+    monto: int | None = None
+    descripcion: str | None = None
+    
+    model_config = {
+        "extra": "forbid"
+    }
+
+
 class MovimientoDetalleResponse(BaseModel):
     id:int
     categoria: str

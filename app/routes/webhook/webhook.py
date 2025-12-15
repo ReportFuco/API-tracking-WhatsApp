@@ -11,7 +11,7 @@ async def obtener_webhook(request: Request):
     body:dict[str, Any] = await request.json()
     
     user, msg_type, message = pm.prosesing_requests(body)
-
+    print(body)
     if msg_type == "audioMessage":
         transcripcion = ai.transcribe_ai(message)
         print(f"INFO:     Usuario: {user}.")

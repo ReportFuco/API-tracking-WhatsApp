@@ -64,13 +64,38 @@ async def crear_banco(banco: BancoSchemaCreate, db: AsyncSession = Depends(get_d
             nombre=registro.nombre_banco, 
             id=registro.id_banco
         )
+    
+
+@router.patch(
+    "/actualizar-banco/{id}",
+    response_model=BancoResponse,
+    summary="Actualizar Banco",
+    description="Endpoint encargado de actualizar el nombre de un Banco según su ID"
+)
+async def actualizar_banco(id: int, banco: BancoSchemaCreate, db: AsyncSession = Depends(get_db)):
+    query = await db.execute(select(Banco).where(Banco.id_banco == id))
+    banco_existente = query.scalar_one_or_none()
+    if not banco_existente:
+        raise HTTPException(status_code=404, detail="Banco no encontrado.")
+    
+    query = await db.execute(select(Banco).where(Banco.nombre_banco == banco.nombre_banco))
+    banco_nombre_existente = query.scalar_one_or_none()
+    if banco_nombre_existente and banco_nombre_existente.id_banco != id:
+        raise HTTPException(status_code=409, detail=f"el banco {banco.nombre_banco} ya existe.")
+
+    banco_existente.nombre_banco = banco.nombre_banco
+    await db.commit()
+    return BancoResponse(
+        id=banco_existente.id_banco,
+        nombre=banco_existente.nombre_banco
+    )
 
 
 @router.delete(
     "/eliminar-banco/{id}",
     response_model=BancoResponse,
-    summary="",
-    description=""
+    summary="Eliminar Banco",
+    description="Endpoint encargado de eliminar un Banco según su ID"
 )
 async def eliminar_banco(id:int, db:AsyncSession = Depends(get_db)):
     query = await db.execute(select(Banco).where(Banco.id_banco == id))

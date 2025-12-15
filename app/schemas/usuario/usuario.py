@@ -17,7 +17,17 @@ class UsuarioPatchSchema(BaseModel):
 
 class UsuarioSchemaResponse(UsuarioSchema):
     id_usuario: int
-    fecha_registro: str
     telefono: str
     activo: bool
     fecha_registro: str
+
+    model_config = {
+        "from_attributes": True,
+        "json_schema_extra": {
+            "id_usuario": 1,
+            "nombre": "Juan Perez",
+            "telefono": "56912345678",
+            "activo": True,
+            "fecha_registro": "01-01-2024"
+        }
+    }
