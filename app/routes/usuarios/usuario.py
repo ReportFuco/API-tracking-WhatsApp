@@ -33,13 +33,13 @@ async def obtener_usuarios(db: AsyncSession = Depends(get_db)):
 
 
 @router.get(
-    "/{id}",
+    "/{id_usuario}",
     summary="Obtener usuario por su ID",
     description="Obtiene el usuario mediante su ID",
     response_model=UsuarioSchemaResponse
 )
-async def obtener_usuario_id(id:int, db: AsyncSession = Depends(get_db)):
-    query_user = await db.execute(select(Usuario).where(Usuario.id_usuario == id))
+async def obtener_usuario_id(id_usuario:int, db: AsyncSession = Depends(get_db)):
+    query_user = await db.execute(select(Usuario).where(Usuario.id_usuario == id_usuario))
     usuario = query_user.scalar_one_or_none()
     if usuario:
         return UsuarioSchemaResponse(
@@ -54,7 +54,7 @@ async def obtener_usuario_id(id:int, db: AsyncSession = Depends(get_db)):
 
 
 @router.post(
-    "/crear-usuario",
+    "/",
     summary="Crear usuario",
     description="Crea un nuevo usuario dentro de la base de datos",
     response_model=UsuarioSchemaResponse
@@ -105,15 +105,40 @@ async def editar_usuario(data: UsuarioPatchSchema, id_usuario:int, db: AsyncSess
 
 @router.delete(
     "/{id_usuario}",
-    summary="Eliminar usuario por ID",
-    description="Eliminar al usuario mediante su ID"
+    summary="Desactivar usuario por ID",
+    description="Desactiva al usuario (soft delete)",
+    response_model=UsuarioSchemaResponse
 )
-async def eliminar_usuario(id_usuario:int, db:AsyncSession = Depends(get_db)):
-    query = await db.execute(select(Usuario).where(Usuario.id_usuario == id_usuario))
+async def eliminar_usuario(
+    id_usuario: int,
+    db: AsyncSession = Depends(get_db)
+):
+    query = await db.execute(
+        select(Usuario).where(Usuario.id_usuario == id_usuario)
+    )
     usuario = query.scalar_one_or_none()
 
-    if usuario:
-        await db.delete(usuario)
-        return {"info": "Se ha eliminado el usuario correctamente"}
-    else:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    if not usuario:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuario no encontrado"
+        )
+
+    if not usuario.activo:
+        raise HTTPException(
+            status_code=400,
+            detail="El usuario ya está desactivado"
+        )
+
+    usuario.activo = False
+
+    await db.commit()
+    await db.refresh(usuario)
+
+    return UsuarioSchemaResponse(
+        id_usuario=usuario.id_usuario,
+        nombre=usuario.nombre,
+        telefono=usuario.telefono,
+        activo=usuario.activo,
+        fecha_registro=usuario.fecha_registro.strftime("%d-%m-%Y")
+    )
