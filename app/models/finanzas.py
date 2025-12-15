@@ -30,7 +30,7 @@ class CategoriaFinanza(Base):
     __tablename__ = "categoria_finanza"
 
     id_categoria: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    nombre: Mapped[str] = mapped_column(String(100))
+    nombre: Mapped[str] = mapped_column(String(100), unique=True)
 
     transacciones: Mapped[list["TransaccionFinanza"]] = relationship(back_populates="categoria")
 

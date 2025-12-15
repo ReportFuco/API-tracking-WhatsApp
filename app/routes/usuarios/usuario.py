@@ -3,42 +3,62 @@ from fastapi import APIRouter, HTTPException, Depends
 from app.db import get_db
 from sqlalchemy import select
 from app.models import Usuario
-from app.schemas import UsuarioShemaCreate
-from typing import Any
+from app.schemas.usuario import (
+    UsuarioShemaCreate, 
+    UsuarioPatchSchema, 
+    UsuarioSchemaResponse
+)
 
 
 router = APIRouter(prefix="/usuario", tags=["Usuario"])
 
-@router.get("/")
-async def obtener_usuarios(db: AsyncSession = Depends(get_db))->list[dict[str, Any]]:
+@router.get(
+    "/",
+    summary="Obtener todos los usuarios",
+    description="Obtiene todos los usuarios de la base de datos",
+    response_model=list[UsuarioSchemaResponse]
+)
+async def obtener_usuarios(db: AsyncSession = Depends(get_db)):
     query_user = await db.execute(select(Usuario))
     usuarios = query_user.scalars().all()
 
     return [
-        {
-        "id": u.id_usuario, 
-        "nombre":u.nombre, 
-        "telefono":u.telefono, 
-        "activo":u.activo, 
-        "fecha_registro":u.fecha_registro
-    } for u in usuarios]
+        UsuarioSchemaResponse(
+            id_usuario=u.id_usuario,
+            nombre=u.nombre,
+            telefono=u.telefono,
+            activo=u.activo,
+            fecha_registro=u.fecha_registro.strftime("%d-%m-%Y")
+        ) for u in usuarios]
 
-@router.get("/{id}")
-async def obtener_usuario_id(id:int, db: AsyncSession = Depends(get_db))->dict[str, Any]:
+
+@router.get(
+    "/{id}",
+    summary="Obtener usuario por su ID",
+    description="Obtiene el usuario mediante su ID",
+    response_model=UsuarioSchemaResponse
+)
+async def obtener_usuario_id(id:int, db: AsyncSession = Depends(get_db)):
     query_user = await db.execute(select(Usuario).where(Usuario.id_usuario == id))
     usuario = query_user.scalar_one_or_none()
     if usuario:
-        return {
-        "id": usuario.id_usuario, 
-        "nombre":usuario.nombre, 
-        "telefono":usuario.telefono, 
-        "activo":usuario.activo, 
-        "fecha_registro":usuario.fecha_registro
-    }
+        return UsuarioSchemaResponse(
+            id_usuario=usuario.id_usuario,
+            nombre=usuario.nombre,
+            telefono=usuario.telefono,
+            activo=usuario.activo,
+            fecha_registro=usuario.fecha_registro.strftime("%d-%m-%Y")
+        )
     else:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-@router.post("/crear-usuario")
+
+@router.post(
+    "/crear-usuario",
+    summary="Crear usuario",
+    description="Crea un nuevo usuario dentro de la base de datos",
+    response_model=UsuarioSchemaResponse
+)
 async def crear_usuario(usuario:UsuarioShemaCreate, db:AsyncSession = Depends(get_db)):
     query = await db.execute(select(Usuario).where(Usuario.telefono == usuario.telefono))
     usuario_buscado = query.scalar_one_or_none()
@@ -48,5 +68,52 @@ async def crear_usuario(usuario:UsuarioShemaCreate, db:AsyncSession = Depends(ge
         crear = Usuario(nombre=usuario.nombre, telefono=usuario.telefono)
         db.add(crear)
         await db.commit()
-        return {"info": f"Usuario {usuario.nombre} creado"}
+        await db.refresh(crear)
+        return UsuarioSchemaResponse(
+            id_usuario=crear.id_usuario,
+            nombre=crear.nombre,
+            telefono=crear.telefono,
+            activo=crear.activo,
+            fecha_registro=crear.fecha_registro.strftime("%d-%m-%Y")
+        )
 
+
+@router.patch(
+    "/{id_usuario}",
+    summary="Editar datos Usuario",
+    description="Enpoint encargado de modificar la información del usuario",
+    response_model=UsuarioSchemaResponse
+)
+async def editar_usuario(data: UsuarioPatchSchema, id_usuario:int, db: AsyncSession = Depends(get_db)):
+    query = await db.execute(select(Usuario).where(Usuario.id_usuario == id_usuario))
+    usuario = query.scalar_one_or_none()
+    if usuario:
+        for field, value in data.model_dump(exclude_unset=True).items():
+            setattr(usuario, field, value)
+        await db.commit()
+        await db.refresh(usuario)
+        return UsuarioSchemaResponse(
+            id_usuario=usuario.id_usuario,
+            nombre=usuario.nombre,
+            telefono=usuario.telefono,
+            activo=usuario.activo,
+            fecha_registro=usuario.fecha_registro.strftime("%d-%m-%Y")
+        )
+    else:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+
+@router.delete(
+    "/{id_usuario}",
+    summary="Eliminar usuario por ID",
+    description="Eliminar al usuario mediante su ID"
+)
+async def eliminar_usuario(id_usuario:int, db:AsyncSession = Depends(get_db)):
+    query = await db.execute(select(Usuario).where(Usuario.id_usuario == id_usuario))
+    usuario = query.scalar_one_or_none()
+
+    if usuario:
+        await db.delete(usuario)
+        return {"info": "Se ha eliminado el usuario correctamente"}
+    else:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")

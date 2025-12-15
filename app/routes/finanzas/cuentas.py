@@ -4,14 +4,17 @@ from app.db import get_db
 from sqlalchemy import select
 from app.models import Banco, Usuario, CuentaBancaria
 from typing import Any
-from app.schemas import CuentaBancariaCreate
+from app.schemas.finanzas import CuentaBancariaCreate, CuentaBancariaResponse
 from sqlalchemy.orm import selectinload
 
 
 router = APIRouter(prefix="/cuentas", tags=["Finanzas · Cuentas"])
 
-@router.get("/")
-async def obtener_cuentas_bancarias(db: AsyncSession = Depends(get_db))->list[dict[str, Any]]:
+@router.get(
+    "/",
+    response_model=list[CuentaBancariaResponse]    
+)
+async def obtener_cuentas_bancarias(db: AsyncSession = Depends(get_db)):
 
     query = await db.execute(
         select(CuentaBancaria)
@@ -24,13 +27,13 @@ async def obtener_cuentas_bancarias(db: AsyncSession = Depends(get_db))->list[di
     cuentas = query.scalars().all()
 
     return [
-        {
-            "id_cuenta": c.id_cuenta,
-            "usuario": c.usuario.nombre,
-            "banco": c.banco.nombre_banco,
-            "nombre_cuenta": c.nombre_cuenta,
-            "tipo_cuenta": c.tipo_cuenta
-        }
+        CuentaBancariaResponse(
+            id=c.id_cuenta,
+            usuario=c.usuario.nombre,
+            banco=c.banco.nombre_banco,
+            nombre_cuenta=c.nombre_cuenta,
+            tipo_cuenta=c.tipo_cuenta
+        )
         for c in cuentas
     ]
 

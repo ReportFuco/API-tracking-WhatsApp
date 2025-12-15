@@ -4,37 +4,53 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from sqlalchemy import select
 from app.models import Banco
-from typing import Any
-from app.schemas import BancoSchemaCreate
+from app.schemas.finanzas import BancoSchemaCreate, BancoResponse
 
 
 router = APIRouter(prefix="/banco", tags=["Finanzas · Bancos"])
 
-@router.get("/")
-async def obtener_bancos(db: AsyncSession = Depends(get_db))->list[dict[str, Any]]:
+@router.get(
+    "/",
+    response_model=list[BancoResponse],
+    summary="Obtener todos los Bancos",
+    description="Enpoint encargado de obtener todos los Bancos dentro de la base de datos" 
+)
+async def obtener_bancos(db: AsyncSession = Depends(get_db))->list[BancoResponse]:
     query = await db.execute(select(Banco))
     banco = query.scalars().all()
 
     return [
-        {
-            "id": b.id_banco,
-            "nombre": b.nombre_banco
-        } for b in banco
+        BancoResponse(
+            id=b.id_banco, 
+            nombre=b.nombre_banco
+        ) for b in banco
     ]
 
-@router.get("/{id}")
-async def obtener_banco_id(id:int, db:AsyncSession = Depends(get_db))->dict[str, Any]:
+
+@router.get(
+    "/{id}", 
+    response_model=BancoResponse,
+    summary="Obtener Banco según su ID",
+    description="Obtiene los detalles del banco según su ID"
+    )
+async def obtener_banco_id(id:int, db:AsyncSession = Depends(get_db)):
     query = await db.execute(select(Banco).where(Banco.id_banco == id))
     banco = query.scalar_one_or_none()
     if banco:
-        return {
-            "id": banco.id_banco,
-            "nombre": banco.nombre_banco
-        }
+        return BancoResponse(
+            id=banco.id_banco, 
+            nombre=banco.nombre_banco
+        )
     else:
         raise HTTPException(status_code=404, detail="Banco no encontrado.")
 
-@router.post("/crear-banco")
+
+@router.post(
+    "/crear-banco",
+    response_model=BancoResponse,
+    summary="Crear Banco",
+    description="Enpoint encargado de generar un Banco"
+)
 async def crear_banco(banco: BancoSchemaCreate, db: AsyncSession = Depends(get_db)):
     query = await db.execute(select(Banco).where(Banco.nombre_banco == banco.nombre_banco))
 
@@ -45,15 +61,26 @@ async def crear_banco(banco: BancoSchemaCreate, db: AsyncSession = Depends(get_d
         registro = Banco(nombre_banco=banco.nombre_banco)
         db.add(registro)
         await db.commit()
-        return {"info": f"Se ha registrado {banco.nombre_banco} con éxito."}
+        return BancoResponse(
+            nombre=registro.nombre_banco, 
+            id=registro.id_banco
+        )
 
-@router.delete("/eliminar-banco/{id}")
+
+@router.delete(
+    "/eliminar-banco/{id}",
+    response_model=BancoResponse,
+    summary="",
+    description=""
+)
 async def eliminar_banco(id:int, db:AsyncSession = Depends(get_db)):
     query = await db.execute(select(Banco).where(Banco.id_banco == id))
     banco = query.scalar_one_or_none()
     if banco:
         await db.delete(banco)
-        return {"info": f"Se ha eliminado el banco {banco.nombre_banco} correctamente."}
+        return BancoResponse(
+            id=banco.id_banco,
+            nombre=banco.nombre_banco
+        )
     else:
         raise HTTPException(status_code=404, detail=f"el Banco de ID {id} no existe.")
-    
