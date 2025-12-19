@@ -185,7 +185,7 @@ async def crear_movimiento(
 
 
 @router.patch(
-    "/actualizar-movimiento/{id_usuario}/{id_movimiento}",
+    "/{id_usuario}/{id_movimiento}",
     summary="Actualizar un movimiento financiero del usuario",
     description="Actualiza parcialmente un movimiento financiero del usuario",
     response_model=MovimientoResponse

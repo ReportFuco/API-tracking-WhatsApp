@@ -37,9 +37,9 @@ async def obtener_cuentas_bancarias(db: AsyncSession = Depends(get_db)):
         for c in cuentas
     ]
 
-@router.get("/{id}")
-async def obtener_cuentas_usuario(id:int, db:AsyncSession = Depends(get_db))->dict[str, str | list[dict[str, Any]]]:
-    query_usuario = await db.execute(select(Usuario).where(Usuario.id_usuario == id))
+@router.get("/{id_usuario}")
+async def obtener_cuentas_usuario(id_usuario:int, db:AsyncSession = Depends(get_db))->dict[str, str | list[dict[str, Any]]]:
+    query_usuario = await db.execute(select(Usuario).where(Usuario.id_usuario == id_usuario))
     usuario = query_usuario.scalar_one_or_none()
 
     if usuario:
@@ -65,7 +65,7 @@ async def obtener_cuentas_usuario(id:int, db:AsyncSession = Depends(get_db))->di
 
 
 @router.post(
-    "/crear-cuenta",
+    "/",
     summary="Crear cuenta bancaria",
     description="Crea la cuenta bancaria para realizar movimientos, ej: cuenta rut, credito etc",
 )
