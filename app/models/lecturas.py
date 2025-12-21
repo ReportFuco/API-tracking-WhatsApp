@@ -4,10 +4,17 @@ from app.db.base import Base
 from datetime import date
 
 
+class Libros(Base):
+    __tablename__="libros"
+
+    id_libro: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    nombre_libro: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    
+
 class Lectura(Base):
     __tablename__ = "lectura"
 
-    id_lectura: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id_lectura: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     titulo_libro: Mapped[str] = mapped_column(String(255))
     autor: Mapped[str] = mapped_column(String(255))
@@ -24,7 +31,7 @@ class Lectura(Base):
 class RegistroLectura(Base):
     __tablename__ = "registro_lectura"
 
-    id_registro: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id_registro: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     id_lectura: Mapped[int] = mapped_column(ForeignKey("lectura.id_lectura"))
     fecha: Mapped[date]
     paginas_leidas: Mapped[int]
