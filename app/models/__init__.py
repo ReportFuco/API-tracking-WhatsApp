@@ -5,7 +5,7 @@ from app.models.finanzas import (
     Banco, 
     CategoriaFinanza, 
     CuentaBancaria, 
-    TransaccionFinanza
+    Movimiento
 )
 from app.models.entrenamiento import (
     Ejercicio, 

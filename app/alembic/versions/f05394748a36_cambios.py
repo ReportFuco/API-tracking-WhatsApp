@@ -1,8 +1,8 @@
-"""Inicial
+"""cambios
 
-Revision ID: 9b631217b406
-Revises: 78a055e5c991
-Create Date: 2025-10-24 15:55:34.915736
+Revision ID: f05394748a36
+Revises: 
+Create Date: 2025-12-21 19:28:27.113161
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '9b631217b406'
-down_revision: Union[str, Sequence[str], None] = '78a055e5c991'
+revision: str = 'f05394748a36'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -29,7 +29,8 @@ def upgrade() -> None:
     op.create_table('categoria_finanza',
     sa.Column('id_categoria', sa.BigInteger(), nullable=False),
     sa.Column('nombre', sa.String(length=100), nullable=False),
-    sa.PrimaryKeyConstraint('id_categoria')
+    sa.PrimaryKeyConstraint('id_categoria'),
+    sa.UniqueConstraint('nombre')
     )
     op.create_table('categoria_habito',
     sa.Column('id_categoria', sa.BigInteger(), nullable=False),
@@ -37,12 +38,22 @@ def upgrade() -> None:
     sa.Column('fecha_creacion', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id_categoria')
     )
+    op.create_table('libros',
+    sa.Column('id_libro', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('nombre_libro', sa.String(), nullable=False),
+    sa.Column('nombre_autor', sa.String(), nullable=False),
+    sa.Column('total_paginas', sa.String(), nullable=False),
+    sa.Column('categoria', sa.String(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.PrimaryKeyConstraint('id_libro'),
+    sa.UniqueConstraint('nombre_libro')
+    )
     op.create_table('usuario',
     sa.Column('id_usuario', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('nombre', sa.String(length=100), nullable=False),
     sa.Column('telefono', sa.String(length=12), nullable=False),
-    sa.Column('activo', sa.Boolean(), nullable=False),
-    sa.Column('fecha_registro', sa.DateTime(), nullable=False),
+    sa.Column('activo', sa.Boolean(), server_default=sa.text('true'), nullable=False),
+    sa.Column('fecha_registro', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id_usuario'),
     sa.UniqueConstraint('telefono')
     )
@@ -80,15 +91,13 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id_habito')
     )
     op.create_table('lectura',
-    sa.Column('id_lectura', sa.BigInteger(), nullable=False),
+    sa.Column('id_lectura', sa.BigInteger(), autoincrement=True, nullable=False),
     sa.Column('id_usuario', sa.Integer(), nullable=False),
-    sa.Column('titulo_libro', sa.String(length=255), nullable=False),
-    sa.Column('autor', sa.String(length=255), nullable=False),
-    sa.Column('total_paginas', sa.Integer(), nullable=False),
-    sa.Column('fecha_inicio', sa.Date(), nullable=False),
-    sa.Column('fecha_fin', sa.Date(), nullable=True),
-    sa.Column('notas', sa.Text(), nullable=True),
-    sa.Column('terminado', sa.Boolean(), nullable=False),
+    sa.Column('id_libro', sa.Integer(), nullable=False),
+    sa.Column('fecha_inicio', sa.DateTime(), nullable=False),
+    sa.Column('fecha_fin', sa.DateTime(), nullable=True),
+    sa.Column('estado', sa.Enum('terminado', 'en_proceso', 'abandonado', 'sin_comenzar', name='estadolectura'), server_default='sin_comenzar', nullable=False),
+    sa.ForeignKeyConstraint(['id_libro'], ['libros.id_libro'], ),
     sa.ForeignKeyConstraint(['id_usuario'], ['usuario.id_usuario'], ),
     sa.PrimaryKeyConstraint('id_lectura')
     )
@@ -128,11 +137,12 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id_registro')
     )
     op.create_table('registro_lectura',
-    sa.Column('id_registro', sa.BigInteger(), nullable=False),
+    sa.Column('id_registro', sa.BigInteger(), autoincrement=True, nullable=False),
     sa.Column('id_lectura', sa.BigInteger(), nullable=False),
-    sa.Column('fecha', sa.Date(), nullable=False),
-    sa.Column('paginas_leidas', sa.Integer(), nullable=False),
+    sa.Column('pagina_inicio', sa.Integer(), nullable=False),
+    sa.Column('pagina_final', sa.Integer(), nullable=False),
     sa.Column('observacion', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['id_lectura'], ['lectura.id_lectura'], ),
     sa.PrimaryKeyConstraint('id_registro')
     )
@@ -178,6 +188,7 @@ def downgrade() -> None:
     op.drop_table('entrenamiento')
     op.drop_table('cuenta_bancaria')
     op.drop_table('usuario')
+    op.drop_table('libros')
     op.drop_table('categoria_habito')
     op.drop_table('categoria_finanza')
     op.drop_table('banco')

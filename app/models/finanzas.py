@@ -1,51 +1,110 @@
-from sqlalchemy import BigInteger, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import (
+    Integer, 
+    String, 
+    Text, 
+    text, 
+    DateTime, 
+    ForeignKey,
+    Enum as SQLEnum
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from app.db.base import Base
+import enum
+
+
+class EnumTipoMovimiento(enum.Enum):
+    GASTO = "gasto"
+    INGRESO = "ingreso"
+
+
+class EnumTipoGasto(enum.Enum):
+    VARIABLE = "variable"
+    FIJO = "fijo"
+
 
 class Banco(Base):
     __tablename__ = "banco"
 
     id_banco: Mapped[int] = mapped_column(Integer, primary_key=True)
     nombre_banco: Mapped[str] = mapped_column(String(100))
-
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, 
+        server_default=text("now()"), 
+        default=datetime.now
+    )
+    
     cuentas: Mapped[list["CuentaBancaria"]] = relationship(back_populates="banco")
 
 
 class CuentaBancaria(Base):
     __tablename__ = "cuenta_bancaria"
 
-    id_cuenta: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id_cuenta: Mapped[int] = mapped_column(Integer, primary_key=True)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     id_banco: Mapped[int] = mapped_column(ForeignKey("banco.id_banco"))
     nombre_cuenta: Mapped[str] = mapped_column(String(100))
     tipo_cuenta: Mapped[str] = mapped_column(String(50))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, 
+        server_default=text("now()"), 
+        default=datetime.now
+    )
 
     banco: Mapped["Banco"] = relationship(back_populates="cuentas")
     usuario: Mapped["Usuario"] = relationship(back_populates="cuentas")
-    transacciones: Mapped[list["TransaccionFinanza"]] = relationship(back_populates="cuenta")
+    transacciones: Mapped[list["Movimiento"]] = relationship(back_populates="cuenta")
 
 
 class CategoriaFinanza(Base):
     __tablename__ = "categoria_finanza"
 
-    id_categoria: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id_categoria: Mapped[int] = mapped_column(Integer, primary_key=True)
     nombre: Mapped[str] = mapped_column(String(100), unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, 
+        server_default=text("now()"), 
+        default=datetime.now
+    )
 
-    transacciones: Mapped[list["TransaccionFinanza"]] = relationship(back_populates="categoria")
+    transacciones: Mapped[list["Movimiento"]] = relationship(back_populates="categoria")
 
 
-class TransaccionFinanza(Base):
-    __tablename__ = "transaccion_finanza"
+class Movimiento(Base):
+    __tablename__ = "movimiento"
 
-    id_transaccion: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id_transaccion: Mapped[int] = mapped_column(Integer, primary_key=True)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     id_categoria: Mapped[int] = mapped_column(ForeignKey("categoria_finanza.id_categoria"))
     id_cuenta: Mapped[int] = mapped_column(ForeignKey("cuenta_bancaria.id_cuenta"))
-    tipo: Mapped[str] = mapped_column(String(50))
-    monto: Mapped[int]
+    tipo_movimiento: Mapped[str] = mapped_column(
+        SQLEnum(
+            EnumTipoMovimiento,
+            name="tipo_movimiento",
+            create_type=True,
+            values_callable=lambda enum_cls: [
+                e.value for e in enum_cls
+            ],
+        ),
+        nullable=False
+    )
+    tipo_gasto: Mapped[str] = mapped_column(
+        SQLEnum(
+            EnumTipoGasto,
+            name="tipo_gasto",
+            create_type=True,
+            values_callable=lambda enum_cls: [
+                e.value for e in enum_cls
+            ]
+        )
+    )
+    monto: Mapped[int] = mapped_column(Integer, nullable=False)
     descripcion: Mapped[str] = mapped_column(Text, nullable=True)
-    fecha: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, 
+        default=datetime.now(), 
+        server_default=text("now()")
+    )
 
     usuario: Mapped["Usuario"] = relationship(back_populates="transacciones")
     categoria: Mapped["CategoriaFinanza"] = relationship(back_populates="transacciones")
