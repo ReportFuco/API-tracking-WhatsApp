@@ -82,9 +82,7 @@ class Movimiento(Base):
             EnumTipoMovimiento,
             name="tipo_movimiento",
             create_type=True,
-            values_callable=lambda enum_cls: [
-                e.value for e in enum_cls
-            ],
+            values_callable=lambda enum_cls: [e.value for e in enum_cls]
         ),
         nullable=False
     )
@@ -93,9 +91,7 @@ class Movimiento(Base):
             EnumTipoGasto,
             name="tipo_gasto",
             create_type=True,
-            values_callable=lambda enum_cls: [
-                e.value for e in enum_cls
-            ]
+            values_callable=lambda enum_cls: [e.value for e in enum_cls]
         )
     )
     monto: Mapped[int] = mapped_column(Integer, nullable=False)

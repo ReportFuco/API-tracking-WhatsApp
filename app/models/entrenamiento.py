@@ -19,6 +19,7 @@ class EnumTipoEntrenamiento(enum.Enum):
     FUERZA = "fuerza"
     CARDIO = "cardio"
 
+
 class EnumMusculo(enum.Enum):
     pass
 
