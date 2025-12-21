@@ -2,7 +2,7 @@ from app.schemas.finanzas import (
     MovimientoResponse, MovimientoDetalleResponse, MovimientoCreate, MovimientoUpdate
 )
 from fastapi import APIRouter, Depends, HTTPException
-from app.models import Usuario, TransaccionFinanza, CategoriaFinanza, CuentaBancaria
+from app.models import Usuario, Movimiento, CategoriaFinanza, CuentaBancaria
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from sqlalchemy import select
@@ -28,12 +28,12 @@ async def obtener_movimientos(
         raise HTTPException(404, detail="Usuario no encontrado")
 
     query = await db.execute(
-        select(TransaccionFinanza)
-        .where(TransaccionFinanza.id_usuario == id_usuario)
+        select(Movimiento)
+        .where(Movimiento.id_usuario == id_usuario)
         .options(
-            selectinload(TransaccionFinanza.usuario),
-            selectinload(TransaccionFinanza.categoria),
-            selectinload(TransaccionFinanza.cuenta)
+            selectinload(Movimiento.usuario),
+            selectinload(Movimiento.categoria),
+            selectinload(Movimiento.cuenta)
             .selectinload(CuentaBancaria.banco)
         )
     )
@@ -75,15 +75,15 @@ async def obtener_detalle_movimiento(
         raise HTTPException(404, detail="Usuario no encontrado")
 
     movimiento = await db.scalar(
-        select(TransaccionFinanza)
+        select(Movimiento)
         .where(
-            TransaccionFinanza.id_usuario == id_usuario,
-            TransaccionFinanza.id_transaccion == id_movimiento
+            Movimiento.id_usuario == id_usuario,
+            Movimiento.id_transaccion == id_movimiento
         )
         .options(
-            selectinload(TransaccionFinanza.usuario),
-            selectinload(TransaccionFinanza.categoria),
-            selectinload(TransaccionFinanza.cuenta)
+            selectinload(Movimiento.usuario),
+            selectinload(Movimiento.categoria),
+            selectinload(Movimiento.cuenta)
             .selectinload(CuentaBancaria.banco)
         )
     )
@@ -144,7 +144,7 @@ async def crear_movimiento(
     if not categoria:
         raise HTTPException(404, detail="Categoría no encontrada")
 
-    movimiento = TransaccionFinanza(
+    movimiento = Movimiento(
         id_usuario=id_usuario,
         id_categoria=dato.id_categoria,
         id_cuenta=dato.id_cuenta,
@@ -158,12 +158,12 @@ async def crear_movimiento(
 
     # 🔑 volver a consultar con relaciones
     movimiento_db = await db.scalar(
-        select(TransaccionFinanza)
-        .where(TransaccionFinanza.id_transaccion == movimiento.id_transaccion)
+        select(Movimiento)
+        .where(Movimiento.id_transaccion == movimiento.id_transaccion)
         .options(
-            selectinload(TransaccionFinanza.usuario),
-            selectinload(TransaccionFinanza.categoria),
-            selectinload(TransaccionFinanza.cuenta)
+            selectinload(Movimiento.usuario),
+            selectinload(Movimiento.categoria),
+            selectinload(Movimiento.cuenta)
             .selectinload(CuentaBancaria.banco)
         )
     )
@@ -198,16 +198,16 @@ async def actualizar_movimiento(
 ):
 
     movimiento = await db.scalar(
-        select(TransaccionFinanza)
+        select(Movimiento)
         .options(
-            selectinload(TransaccionFinanza.usuario),
-            selectinload(TransaccionFinanza.categoria),
-            selectinload(TransaccionFinanza.cuenta)
+            selectinload(Movimiento.usuario),
+            selectinload(Movimiento.categoria),
+            selectinload(Movimiento.cuenta)
                 .selectinload(CuentaBancaria.banco)
         )
         .where(
-            TransaccionFinanza.id_transaccion == id_movimiento,
-            TransaccionFinanza.id_usuario == id_usuario
+            Movimiento.id_transaccion == id_movimiento,
+            Movimiento.id_usuario == id_usuario
         )
     )
     if not movimiento:
