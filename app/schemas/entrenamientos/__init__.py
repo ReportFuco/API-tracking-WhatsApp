@@ -1,0 +1,1 @@
+from .gimnasio import GimnasioResponse, GimnasioCreate

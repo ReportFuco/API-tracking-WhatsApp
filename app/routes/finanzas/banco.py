@@ -45,7 +45,7 @@ async def obtener_banco_id(id:int, db:AsyncSession = Depends(get_db)):
 
 
 @router.post(
-    "/crear-banco",
+    "/",
     response_model=BancoResponse,
     summary="Crear Banco",
     description="Enpoint encargado de generar un Banco"
@@ -67,7 +67,7 @@ async def crear_banco(banco: BancoSchemaCreate, db: AsyncSession = Depends(get_d
     
 
 @router.patch(
-    "/actualizar-banco/{id}",
+    "/{id}",
     response_model=BancoResponse,
     summary="Actualizar Banco",
     description="Endpoint encargado de actualizar el nombre de un Banco según su ID"
@@ -92,7 +92,7 @@ async def actualizar_banco(id: int, banco: BancoSchemaCreate, db: AsyncSession =
 
 
 @router.delete(
-    "/eliminar-banco/{id}",
+    "/{id}",
     response_model=BancoResponse,
     summary="Eliminar Banco",
     description="Endpoint encargado de eliminar un Banco según su ID"

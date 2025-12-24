@@ -1,8 +1,8 @@
-"""cambios
+"""mensaje migracion
 
-Revision ID: f05394748a36
+Revision ID: e21f2c7e88c1
 Revises: 
-Create Date: 2025-12-21 19:28:27.113161
+Create Date: 2025-12-22 23:43:01.803898
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f05394748a36'
+revision: str = 'e21f2c7e88c1'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,19 +24,39 @@ def upgrade() -> None:
     op.create_table('banco',
     sa.Column('id_banco', sa.Integer(), nullable=False),
     sa.Column('nombre_banco', sa.String(length=100), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id_banco')
     )
     op.create_table('categoria_finanza',
-    sa.Column('id_categoria', sa.BigInteger(), nullable=False),
+    sa.Column('id_categoria', sa.Integer(), nullable=False),
     sa.Column('nombre', sa.String(length=100), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id_categoria'),
     sa.UniqueConstraint('nombre')
     )
     op.create_table('categoria_habito',
-    sa.Column('id_categoria', sa.BigInteger(), nullable=False),
+    sa.Column('id_categoria', sa.Integer(), nullable=False),
     sa.Column('nombre', sa.String(length=100), nullable=False),
-    sa.Column('fecha_creacion', sa.DateTime(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id_categoria')
+    )
+    op.create_table('ejercicios',
+    sa.Column('id_ejercicio', sa.Integer(), nullable=False),
+    sa.Column('nombre', sa.String(length=100), nullable=False),
+    sa.Column('tipo', sa.Enum('bicep', 'tricep', 'pecho', 'hombro', 'espalda', 'cuadricep', name='musculos'), nullable=False),
+    sa.Column('url_video', sa.String(), nullable=True),
+    sa.PrimaryKeyConstraint('id_ejercicio')
+    )
+    op.create_table('gimnasio',
+    sa.Column('id_gimnasio', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('nombre_gimnasio', sa.String(), nullable=False),
+    sa.Column('nombre_cadena', sa.String(), nullable=True),
+    sa.Column('direccion', sa.String(), nullable=True),
+    sa.Column('comuna', sa.String(), nullable=True),
+    sa.Column('latitud', sa.Float(), nullable=False),
+    sa.Column('longitud', sa.Float(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.PrimaryKeyConstraint('id_gimnasio')
     )
     op.create_table('libros',
     sa.Column('id_libro', sa.Integer(), autoincrement=True, nullable=False),
@@ -44,7 +64,7 @@ def upgrade() -> None:
     sa.Column('nombre_autor', sa.String(), nullable=False),
     sa.Column('total_paginas', sa.String(), nullable=False),
     sa.Column('categoria', sa.String(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id_libro'),
     sa.UniqueConstraint('nombre_libro')
     )
@@ -53,39 +73,39 @@ def upgrade() -> None:
     sa.Column('nombre', sa.String(length=100), nullable=False),
     sa.Column('telefono', sa.String(length=12), nullable=False),
     sa.Column('activo', sa.Boolean(), server_default=sa.text('true'), nullable=False),
-    sa.Column('fecha_registro', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id_usuario'),
     sa.UniqueConstraint('telefono')
     )
     op.create_table('cuenta_bancaria',
-    sa.Column('id_cuenta', sa.BigInteger(), nullable=False),
+    sa.Column('id_cuenta', sa.Integer(), nullable=False),
     sa.Column('id_usuario', sa.Integer(), nullable=False),
     sa.Column('id_banco', sa.Integer(), nullable=False),
     sa.Column('nombre_cuenta', sa.String(length=100), nullable=False),
     sa.Column('tipo_cuenta', sa.String(length=50), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['id_banco'], ['banco.id_banco'], ),
     sa.ForeignKeyConstraint(['id_usuario'], ['usuario.id_usuario'], ),
     sa.PrimaryKeyConstraint('id_cuenta')
     )
     op.create_table('entrenamiento',
-    sa.Column('id_entrenamiento', sa.BigInteger(), nullable=False),
+    sa.Column('id_entrenamiento', sa.Integer(), nullable=False),
     sa.Column('id_usuario', sa.Integer(), nullable=False),
-    sa.Column('tipo', sa.String(length=50), nullable=False),
-    sa.Column('subtipo', sa.String(length=50), nullable=False),
-    sa.Column('fecha', sa.DateTime(), nullable=False),
+    sa.Column('tipo_entrenamiento', sa.Enum('fuerza', 'cardio', name='tipo_entrenamiento'), nullable=False),
     sa.Column('observacion', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['id_usuario'], ['usuario.id_usuario'], ),
     sa.PrimaryKeyConstraint('id_entrenamiento')
     )
     op.create_table('habito',
-    sa.Column('id_habito', sa.BigInteger(), nullable=False),
+    sa.Column('id_habito', sa.Integer(), nullable=False),
     sa.Column('id_usuario', sa.Integer(), nullable=False),
-    sa.Column('id_categoria', sa.BigInteger(), nullable=False),
+    sa.Column('id_categoria', sa.Integer(), nullable=False),
     sa.Column('nombre', sa.String(length=100), nullable=False),
     sa.Column('descripcion', sa.Text(), nullable=False),
     sa.Column('frecuencia', sa.String(length=50), nullable=False),
     sa.Column('activo', sa.Boolean(), nullable=False),
-    sa.Column('fecha_creacion', sa.DateTime(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['id_categoria'], ['categoria_habito.id_categoria'], ),
     sa.ForeignKeyConstraint(['id_usuario'], ['usuario.id_usuario'], ),
     sa.PrimaryKeyConstraint('id_habito')
@@ -94,9 +114,9 @@ def upgrade() -> None:
     sa.Column('id_lectura', sa.BigInteger(), autoincrement=True, nullable=False),
     sa.Column('id_usuario', sa.Integer(), nullable=False),
     sa.Column('id_libro', sa.Integer(), nullable=False),
-    sa.Column('fecha_inicio', sa.DateTime(), nullable=False),
+    sa.Column('fecha_inicio', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('fecha_fin', sa.DateTime(), nullable=True),
-    sa.Column('estado', sa.Enum('terminado', 'en_proceso', 'abandonado', 'sin_comenzar', name='estadolectura'), server_default='sin_comenzar', nullable=False),
+    sa.Column('estado', sa.Enum('terminado', 'en_proceso', 'abandonado', 'sin_comenzar', name='estado_lectura'), server_default='sin_comenzar', nullable=False),
     sa.ForeignKeyConstraint(['id_libro'], ['libros.id_libro'], ),
     sa.ForeignKeyConstraint(['id_usuario'], ['usuario.id_usuario'], ),
     sa.PrimaryKeyConstraint('id_lectura')
@@ -106,33 +126,50 @@ def upgrade() -> None:
     sa.Column('id_usuario', sa.Integer(), nullable=False),
     sa.Column('contenido', sa.Text(), nullable=False),
     sa.Column('direccion', sa.String(length=50), nullable=False),
-    sa.Column('fecha_envio', sa.DateTime(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['id_usuario'], ['usuario.id_usuario'], ),
     sa.PrimaryKeyConstraint('id_mensaje')
     )
     op.create_table('entrenamiento_aerobico',
-    sa.Column('id_aerobico', sa.BigInteger(), nullable=False),
-    sa.Column('id_entrenamiento', sa.BigInteger(), nullable=False),
-    sa.Column('distancia_km', sa.DECIMAL(precision=5, scale=2), nullable=False),
-    sa.Column('duracion', sa.Time(), nullable=False),
-    sa.Column('ritmo_promedio', sa.DECIMAL(precision=5, scale=2), nullable=False),
-    sa.Column('calorias', sa.Integer(), nullable=False),
+    sa.Column('id_aerobico', sa.Integer(), nullable=False),
+    sa.Column('id_entrenamiento', sa.Integer(), nullable=False),
+    sa.Column('tipo_aerobico', sa.Enum('bicicleta', 'correr', 'natacion', name='tipo aerobico'), nullable=False),
+    sa.Column('distancia_km', sa.Float(), nullable=False),
+    sa.Column('duracion_segundos', sa.Integer(), nullable=False),
+    sa.Column('calorias', sa.Float(), nullable=False),
     sa.ForeignKeyConstraint(['id_entrenamiento'], ['entrenamiento.id_entrenamiento'], ),
-    sa.PrimaryKeyConstraint('id_aerobico')
+    sa.PrimaryKeyConstraint('id_aerobico'),
+    sa.UniqueConstraint('id_entrenamiento')
     )
     op.create_table('entrenamiento_fuerza',
-    sa.Column('id_fuerza', sa.BigInteger(), nullable=False),
-    sa.Column('id_entrenamiento', sa.BigInteger(), nullable=False),
-    sa.Column('musculo_principal', sa.String(length=100), nullable=False),
-    sa.Column('rutina', sa.Text(), nullable=False),
+    sa.Column('id_entrenamiento_fuerza', sa.Integer(), nullable=False),
+    sa.Column('id_entrenamiento', sa.Integer(), nullable=False),
+    sa.Column('id_gimnasio', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['id_entrenamiento'], ['entrenamiento.id_entrenamiento'], ),
-    sa.PrimaryKeyConstraint('id_fuerza')
+    sa.ForeignKeyConstraint(['id_gimnasio'], ['gimnasio.id_gimnasio'], ),
+    sa.PrimaryKeyConstraint('id_entrenamiento_fuerza'),
+    sa.UniqueConstraint('id_entrenamiento')
+    )
+    op.create_table('movimiento',
+    sa.Column('id_transaccion', sa.Integer(), nullable=False),
+    sa.Column('id_usuario', sa.Integer(), nullable=False),
+    sa.Column('id_categoria', sa.Integer(), nullable=False),
+    sa.Column('id_cuenta', sa.Integer(), nullable=False),
+    sa.Column('tipo_movimiento', sa.Enum('gasto', 'ingreso', name='tipo_movimiento'), nullable=False),
+    sa.Column('tipo_gasto', sa.Enum('variable', 'fijo', name='tipo_gasto'), nullable=False),
+    sa.Column('monto', sa.Integer(), nullable=False),
+    sa.Column('descripcion', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['id_categoria'], ['categoria_finanza.id_categoria'], ),
+    sa.ForeignKeyConstraint(['id_cuenta'], ['cuenta_bancaria.id_cuenta'], ),
+    sa.ForeignKeyConstraint(['id_usuario'], ['usuario.id_usuario'], ),
+    sa.PrimaryKeyConstraint('id_transaccion')
     )
     op.create_table('registro_habito',
-    sa.Column('id_registro', sa.BigInteger(), nullable=False),
-    sa.Column('id_habito', sa.BigInteger(), nullable=False),
-    sa.Column('fecha', sa.Date(), nullable=False),
+    sa.Column('id_registro', sa.Integer(), nullable=False),
+    sa.Column('id_habito', sa.Integer(), nullable=False),
     sa.Column('observacion', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['id_habito'], ['habito.id_habito'], ),
     sa.PrimaryKeyConstraint('id_registro')
     )
@@ -142,33 +179,20 @@ def upgrade() -> None:
     sa.Column('pagina_inicio', sa.Integer(), nullable=False),
     sa.Column('pagina_final', sa.Integer(), nullable=False),
     sa.Column('observacion', sa.Text(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['id_lectura'], ['lectura.id_lectura'], ),
     sa.PrimaryKeyConstraint('id_registro')
     )
-    op.create_table('transaccion_finanza',
-    sa.Column('id_transaccion', sa.BigInteger(), nullable=False),
-    sa.Column('id_usuario', sa.Integer(), nullable=False),
-    sa.Column('id_categoria', sa.BigInteger(), nullable=False),
-    sa.Column('id_cuenta', sa.BigInteger(), nullable=False),
-    sa.Column('tipo', sa.String(length=50), nullable=False),
-    sa.Column('monto', sa.Integer(), nullable=False),
-    sa.Column('descripcion', sa.Text(), nullable=True),
-    sa.Column('fecha', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['id_categoria'], ['categoria_finanza.id_categoria'], ),
-    sa.ForeignKeyConstraint(['id_cuenta'], ['cuenta_bancaria.id_cuenta'], ),
-    sa.ForeignKeyConstraint(['id_usuario'], ['usuario.id_usuario'], ),
-    sa.PrimaryKeyConstraint('id_transaccion')
-    )
-    op.create_table('ejercicio',
-    sa.Column('id_ejercicio', sa.BigInteger(), nullable=False),
-    sa.Column('id_fuerza', sa.BigInteger(), nullable=False),
-    sa.Column('nombre', sa.String(length=100), nullable=False),
-    sa.Column('series', sa.Integer(), nullable=False),
+    op.create_table('serie_fuerza',
+    sa.Column('id_fuerza_detalle', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('id_entrenamiento_fuerza', sa.Integer(), nullable=False),
+    sa.Column('id_ejercicio', sa.Integer(), nullable=False),
+    sa.Column('es_calentamiento', sa.Boolean(), nullable=False),
+    sa.Column('cantidad_peso', sa.Float(), nullable=False),
     sa.Column('repeticiones', sa.Integer(), nullable=False),
-    sa.Column('peso_kg', sa.DECIMAL(precision=5, scale=2), nullable=False),
-    sa.ForeignKeyConstraint(['id_fuerza'], ['entrenamiento_fuerza.id_fuerza'], ),
-    sa.PrimaryKeyConstraint('id_ejercicio')
+    sa.ForeignKeyConstraint(['id_ejercicio'], ['ejercicios.id_ejercicio'], ),
+    sa.ForeignKeyConstraint(['id_entrenamiento_fuerza'], ['entrenamiento_fuerza.id_entrenamiento_fuerza'], ),
+    sa.PrimaryKeyConstraint('id_fuerza_detalle')
     )
     # ### end Alembic commands ###
 
@@ -176,10 +200,10 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_table('ejercicio')
-    op.drop_table('transaccion_finanza')
+    op.drop_table('serie_fuerza')
     op.drop_table('registro_lectura')
     op.drop_table('registro_habito')
+    op.drop_table('movimiento')
     op.drop_table('entrenamiento_fuerza')
     op.drop_table('entrenamiento_aerobico')
     op.drop_table('mensaje')
@@ -189,6 +213,8 @@ def downgrade() -> None:
     op.drop_table('cuenta_bancaria')
     op.drop_table('usuario')
     op.drop_table('libros')
+    op.drop_table('gimnasio')
+    op.drop_table('ejercicios')
     op.drop_table('categoria_habito')
     op.drop_table('categoria_finanza')
     op.drop_table('banco')

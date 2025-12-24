@@ -8,8 +8,10 @@ from app.models.finanzas import (
     Movimiento
 )
 from app.models.entrenamiento import (
-    Ejercicio, 
+    Ejercicios, 
     Entrenamiento, 
     EntrenamientoAerobico, 
-    EntrenamientoFuerza
+    EntrenamientoFuerza,
+    Gimnasio,
+    SerieFuerza
 )
