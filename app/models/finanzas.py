@@ -26,7 +26,7 @@ class EnumTipoGasto(enum.Enum):
 class Banco(Base):
     __tablename__ = "banco"
 
-    id_banco: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id_banco: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     nombre_banco: Mapped[str] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 
@@ -40,7 +40,7 @@ class Banco(Base):
 class CuentaBancaria(Base):
     __tablename__ = "cuenta_bancaria"
 
-    id_cuenta: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id_cuenta: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     id_banco: Mapped[int] = mapped_column(ForeignKey("banco.id_banco"))
     nombre_cuenta: Mapped[str] = mapped_column(String(100))
@@ -59,7 +59,7 @@ class CuentaBancaria(Base):
 class CategoriaFinanza(Base):
     __tablename__ = "categoria_finanza"
 
-    id_categoria: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id_categoria: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     nombre: Mapped[str] = mapped_column(String(100), unique=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 
@@ -73,7 +73,7 @@ class CategoriaFinanza(Base):
 class Movimiento(Base):
     __tablename__ = "movimiento"
 
-    id_transaccion: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id_transaccion: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     id_categoria: Mapped[int] = mapped_column(ForeignKey("categoria_finanza.id_categoria"))
     id_cuenta: Mapped[int] = mapped_column(ForeignKey("cuenta_bancaria.id_cuenta"))

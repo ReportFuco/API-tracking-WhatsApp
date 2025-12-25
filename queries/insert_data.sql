@@ -1,22 +1,27 @@
 
 -- Reiniciar los Index para no duplicar la información
 
-truncate table usuario restart identity cascade;
+truncate table 
+    usuario,
+    mensaje,
+    gimnasio,
+    entrenamiento,
+    entrenamiento_aerobico,
+    entrenamiento_fuerza,
+    serie_fuerza,
+    ejercicios,
+    banco,
+    cuenta_bancaria,
+    categoria_finanza,
+    movimiento,
+    categoria_habito,
+    habito,
+    registro_habito,
+    libros,
+    lectura,
+    registro_lectura
+restart identity cascade;
 
-
-truncate table ejercicios restart identity cascade;
-
-
-truncate table entrenamiento restart identity cascade;
-
-
-truncate table entrenamiento_fuerza restart identity cascade;
-
-
-truncate table gimnasio restart identity cascade;
-
-
-truncate table serie_fuerza restart identity cascade;
 
 -- ingresar Usuarios para las pruebas
 
@@ -46,7 +51,7 @@ values ('Press banca con mancuerna', 'pecho', null),
        ('Curl de Biceps Araña', 'bicep', null),
        ('Curl de Biceps Araña con barra', 'bicep', null);
 
-
+-- ingresar Gimnasios
 insert into gimnasio (nombre_gimnasio, nombre_cadena, direccion, comuna, latitud, longitud)
 values ('SmartFit Maipú Central', 'SmartFit', 'Av. Pajaritos 2689, local 14', 'Maipú', -33.502612790405934, -70.7564164067453),
        ('SmartFit Monte Tabor', 'SmartFit', 'Av. Los Pajaritos 4500, local 14', 'Maipú', -33.480828702723116, -70.74637977826353),

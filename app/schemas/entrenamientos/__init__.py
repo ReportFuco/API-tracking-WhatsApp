@@ -1,1 +1,1 @@
-from .gimnasio import GimnasioResponse, GimnasioCreate, GimnasioDetailResponse
+from .gimnasio import GimnasioResponse, GimnasioCreate, GimnasioDetailResponse, GimnasioEdit

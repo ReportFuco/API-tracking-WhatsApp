@@ -39,12 +39,13 @@ class Gimnasio(Base):
     __tablename__= "gimnasio"
 
     id_gimnasio: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    nombre_gimnasio: Mapped[str] = mapped_column(String, nullable=False)
+    nombre_gimnasio: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     nombre_cadena: Mapped[str] = mapped_column(String, nullable=True)
-    direccion: Mapped[str] = mapped_column(String, nullable=True)
+    direccion: Mapped[str] = mapped_column(String, nullable=True, unique=True)
     comuna: Mapped[str] = mapped_column(String, nullable=True)
     latitud: Mapped[float] = mapped_column(Float, nullable=False)
     longitud: Mapped[float] = mapped_column(Float, nullable=False)
+    activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("true"))
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=text("now()"), default=datetime.now)
 
     entrenamientos_fuerza = relationship(

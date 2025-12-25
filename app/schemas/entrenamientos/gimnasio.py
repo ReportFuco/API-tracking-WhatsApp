@@ -26,6 +26,29 @@ class GimnasioCreate(BaseModel):
     }
 
 
+class GimnasioEdit(BaseModel):
+    nombre_gimnasio: str | None
+    nombre_cadena: str | None
+    direccion: str | None
+    comuna: str | None
+    latitud: float | None
+    longitud:float | None
+
+    model_config = {
+        "from_attributes": True,
+        "title": "Editar Gimnasio",
+        "json_schema_extra": {
+            "example": {
+                "nombre_gimnasio": "Smart Fit Oeste",
+                "nombre_cadena": "Smart Fit",
+                "direccion": "Av. Siempre Viva 123",
+                "comuna": "Ñuñoa",
+                "latitud": -33.456,
+                "longitud": -70.648
+            }
+        }
+    }
+
 
 class GimnasioResponse(BaseModel):
     id_gimnasio: int
@@ -39,7 +62,7 @@ class GimnasioResponse(BaseModel):
 
     model_config = {
         'from_attributes': True,
-        'title':"Gimnasio",
+        'title':"Respuesta Gimnasio",
         "json_schema_extra": {
             "example": {
                 "id_gimnasio": 1,
@@ -55,6 +78,6 @@ class GimnasioResponse(BaseModel):
 
 
 class GimnasioDetailResponse(BaseModel):
-    mensaje: str
+    info: str
     detalle: GimnasioResponse
     
