@@ -27,12 +27,12 @@ class GimnasioCreate(BaseModel):
 
 
 class GimnasioEdit(BaseModel):
-    nombre_gimnasio: str | None
-    nombre_cadena: str | None
-    direccion: str | None
-    comuna: str | None
-    latitud: float | None
-    longitud:float | None
+    nombre_gimnasio: str | None = None
+    nombre_cadena: str | None = None
+    direccion: str | None = None
+    comuna: str | None = None
+    latitud: float | None = None
+    longitud:float | None = None
 
     model_config = {
         "from_attributes": True,
@@ -58,6 +58,7 @@ class GimnasioResponse(BaseModel):
     comuna: str | None
     latitud: float
     longitud:float
+    activo: bool
     created_at: datetime
 
     model_config = {
@@ -71,6 +72,7 @@ class GimnasioResponse(BaseModel):
                 "comuna": "Ñuñoa",
                 "latitud": -33.456,
                 "longitud": -70.648,
+                "activo": True,
                 "created_at": "2025-12-23T09:17:44.901232"
             }
         }

@@ -1,0 +1,1 @@
+SELECT g.nombre_gimnasio, g.activo FROM gimnasio g where g.activo = False;

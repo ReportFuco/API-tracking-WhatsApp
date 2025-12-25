@@ -57,8 +57,9 @@ values ('SmartFit Maipú Central', 'SmartFit', 'Av. Pajaritos 2689, local 14', '
        ('SmartFit Monte Tabor', 'SmartFit', 'Av. Los Pajaritos 4500, local 14', 'Maipú', -33.480828702723116, -70.74637977826353),
        ('SmartFit Pajaritos', 'SmartFit', 'Avenida Teniente Cruz N°0015', 'Pudahuel', -33.469279741065556, -70.73597770695618),
        ('SmartFit Maipú City Point', 'SmartFit', 'Av. Los Pajaritos 1948', 'Maipú', -33.50946244351643, -70.75818382919813),
-       ('SmartFit Maipú Oeste', 'SmartFit', 'Av. Américo Vespucio 2500', 'Cerrillos', -33.516320413640734, -70.70923236091664);
-
+       ('SmartFit Oeste', 'SmartFit', 'Av. Américo Vespucio 2500', 'Cerrillos', -33.516320413640734, -70.70923236091664),
+       ('SmartFit espacio M', 'SmartFit', 'Compañia de Jesús 1214 local 218', 'Santiago', -33.43895887354157, -70.65419773246775),
+       ('SmartFit Catedral', 'SmartFit', 'Catedral 1850, Santiago', 'Santiago', -33.438157268,-70.6630968153);
 
 insert into entrenamiento (id_usuario, tipo_entrenamiento)
 values (1, 'fuerza');

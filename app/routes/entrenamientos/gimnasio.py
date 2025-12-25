@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_, func
 from app.db.session import get_db
 from app.models.entrenamiento import Gimnasio
 from app.schemas.entrenamientos import (
@@ -11,19 +11,40 @@ from app.schemas.entrenamientos import (
 )
 
 
-router = APIRouter(prefix="/gimnasio", tags=["entrenamientos · Gimnasio"])
+router = APIRouter(prefix="/gimnasio", tags=["Entrenamientos · Gimnasio"])
+
 
 @router.get(
     path="/", 
     response_model=list[GimnasioResponse],
     summary="Obtener todos los Gimnasios",
-    description="Obtiene todos los gimnasios registrados, entrega los nombres, direcciones, coordenadas entre otros",
+    description="Obtiene todos los gimnasios activos, con búsqueda opcional",
     status_code=200
 )
-async def obtener_gimnasios(db:AsyncSession = Depends(get_db)):
-    query = await db.execute(select(Gimnasio))
-    gimnasio = query.scalars().all()
-    return gimnasio
+async def obtener_gimnasios(
+    q: str | None = Query(
+        default=None,
+        description="Texto a buscar en nombre del gimnasio o comuna",
+        min_length=1
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(Gimnasio).where(Gimnasio.activo.is_(True))
+
+    if q:
+        stmt = stmt.where(
+            or_(
+                func.unaccent(Gimnasio.nombre_gimnasio)
+                .ilike(func.unaccent(f"%{q}%")),
+                func.unaccent(Gimnasio.comuna)
+                .ilike(func.unaccent(f"%{q}%"))
+            )
+        )
+
+    result = await db.execute(stmt)
+    gimnasios = result.scalars().all()
+
+    return gimnasios
 
 
 @router.get(
@@ -130,4 +151,32 @@ async def eliminar_gimnasio(
     id_gimnasio: int, 
     db:AsyncSession = Depends(get_db)
 ):
-    pass
+    query = await db.execute(
+        select(Gimnasio)
+        .where(
+            Gimnasio.id_gimnasio == id_gimnasio,
+            Gimnasio.activo.is_(True)
+        )
+    )
+
+    gimnasio = query.scalar_one_or_none()
+
+    if not gimnasio:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Gimnasio {id_gimnasio} no existe o ya se encuentra desactivado."
+        )
+    
+    try:
+        gimnasio.activo = False
+        await db.flush()
+        await db.commit()
+        await db.refresh(gimnasio)
+    except Exception:
+        await db.rollback()
+        raise
+
+    return GimnasioDetailResponse(
+        info=f"Se ha desactivado {gimnasio.nombre_gimnasio} correctamente.",
+        detalle=GimnasioResponse.model_validate(gimnasio)
+    )
