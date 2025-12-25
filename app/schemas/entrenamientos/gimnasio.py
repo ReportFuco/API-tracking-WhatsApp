@@ -26,6 +26,7 @@ class GimnasioCreate(BaseModel):
     }
 
 
+
 class GimnasioResponse(BaseModel):
     id_gimnasio: int
     nombre_gimnasio: str
@@ -51,3 +52,9 @@ class GimnasioResponse(BaseModel):
             }
         }
     }
+
+
+class GimnasioDetailResponse(BaseModel):
+    mensaje: str
+    detalle: GimnasioResponse
+    

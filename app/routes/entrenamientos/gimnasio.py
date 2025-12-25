@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.db.session import get_db
 from app.models.entrenamiento import Gimnasio
-from app.schemas.entrenamientos import GimnasioResponse, GimnasioCreate
+from app.schemas.entrenamientos import GimnasioResponse, GimnasioCreate, GimnasioDetailResponse
 
 
 router = APIRouter(prefix="/gimnasio", tags=["entrenamientos · Gimnasio"])
@@ -46,7 +46,7 @@ async def obtener_gimnasio_id(id_gimnasio:int, db:AsyncSession = Depends(get_db)
 
 @router.post(
     path="/",
-    response_model=GimnasioResponse,
+    response_model=GimnasioDetailResponse,
     summary="Crear Gimnasio",
     description="Agrega un gimnasio a la base de datos",
     status_code=201
@@ -58,4 +58,8 @@ async def crear_gimnasio(
     gimnasio = Gimnasio(**data.model_dump())
     db.add(gimnasio)
     await db.commit()
-    return gimnasio
+    await db.refresh(gimnasio)
+    return GimnasioDetailResponse(
+        mensaje=f"Gimnasio {gimnasio.nombre_gimnasio} creado.",
+        detalle=GimnasioResponse.model_validate(gimnasio)
+    )
