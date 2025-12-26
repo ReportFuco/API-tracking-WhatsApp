@@ -31,3 +31,21 @@ class EntrenoFuerzaResponse(BaseModel):
             }
         }
     }
+
+
+class EntrenoFuerzaCreate(BaseModel):
+    observacion:str | None = None
+    id_gimnasio: int
+
+    model_config={
+        "title":"Crear entreno de Fuerza"
+    }
+
+class EntrenoFuerzaDetailResponse(BaseModel):
+    info: str
+    detalle: EntrenoFuerzaResponse
+
+    model_config = {
+        "from_attributes":True
+    }
+    

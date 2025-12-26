@@ -85,7 +85,6 @@ class GimnasioDetailResponse(BaseModel):
     
 
 class GimnasioSimpleResponse(BaseModel):
-    id_gimnasio: int
     nombre_gimnasio: str
     comuna: str
     latitud: float

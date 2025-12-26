@@ -121,6 +121,7 @@ class EntrenamientoFuerza(Base):
     )
     inicio_at: Mapped[datetime] = mapped_column(DateTime, server_default=text("now()"), default=datetime.now)
     fin_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True) 
+    
     gimnasio = relationship("Gimnasio", back_populates="entrenamientos_fuerza")
     entrenamiento = relationship("Entrenamiento", back_populates="fuerza")
     series = relationship(

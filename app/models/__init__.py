@@ -16,5 +16,6 @@ from app.models.entrenamiento import (
     SerieFuerza,
     EnumMusculo,
     EnumTipoAerobico,
-    EnumTipoEntrenamiento
+    EnumTipoEntrenamiento,
+    EnumEstadoEntrenamiento
 )
