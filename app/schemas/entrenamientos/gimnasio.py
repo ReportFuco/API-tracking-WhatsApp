@@ -88,7 +88,9 @@ class GimnasioSimpleResponse(BaseModel):
     id_gimnasio: int
     nombre_gimnasio: str
     comuna: str
+    latitud: float
+    longitud: float
 
     model_config = {
-        "from_attributes": True
+        "from_attributes": True,
     }

@@ -3,27 +3,28 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from app.schemas.entrenamientos import EntrenoFuerzaResponse
 from app.models import (
     EntrenamientoFuerza, 
-    Entrenamiento
+    Entrenamiento,
+    Usuario
 )
 
 
 router = APIRouter(prefix="/fuerza", tags=["Entrenamientos · Fuerza"])
 
-from app.models import Usuario
 
 @router.get(
     "/{id_usuario}",
     summary="Obtener entrenamientos de fuerza del Usuario",
     description="Obtiene las sesiones de fuerza realizadas por el usuario",
+    response_model=list[EntrenoFuerzaResponse],
     status_code=200
 )
 async def obtener_entrenamientos_usuario(
     id_usuario: int,
     db: AsyncSession = Depends(get_db)
 ):
-    # 1️⃣ Validar usuario
     user_query = await db.execute(
         select(Usuario.id_usuario)
         .where(Usuario.id_usuario == id_usuario)
