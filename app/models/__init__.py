@@ -13,5 +13,8 @@ from app.models.entrenamiento import (
     EntrenamientoAerobico, 
     EntrenamientoFuerza,
     Gimnasio,
-    SerieFuerza
+    SerieFuerza,
+    EnumMusculo,
+    EnumTipoAerobico,
+    EnumTipoEntrenamiento
 )

@@ -1,8 +1,8 @@
 """mensaje migracion
 
-Revision ID: 58e6eea74acc
+Revision ID: 2c895ef21daf
 Revises: 
-Create Date: 2025-12-25 13:21:57.027047
+Create Date: 2025-12-26 00:37:22.577136
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '58e6eea74acc'
+revision: str = '2c895ef21daf'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -148,6 +148,9 @@ def upgrade() -> None:
     sa.Column('id_entrenamiento_fuerza', sa.Integer(), nullable=False),
     sa.Column('id_entrenamiento', sa.Integer(), nullable=False),
     sa.Column('id_gimnasio', sa.Integer(), nullable=False),
+    sa.Column('estado', sa.Enum('activo', 'cerrado', name='estado_entrenamiento_fuerza'), server_default='activo', nullable=False),
+    sa.Column('inicio_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('fin_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['id_entrenamiento'], ['entrenamiento.id_entrenamiento'], ),
     sa.ForeignKeyConstraint(['id_gimnasio'], ['gimnasio.id_gimnasio'], ),
     sa.PrimaryKeyConstraint('id_entrenamiento_fuerza'),

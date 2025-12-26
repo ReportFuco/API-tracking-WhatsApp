@@ -1,1 +1,8 @@
-SELECT g.nombre_gimnasio, g.activo FROM gimnasio g where g.activo = False;
+
+
+UPDATE entrenamiento_fuerza
+SET estado = 'cerrado'
+WHERE id_entrenamiento_fuerza = 1;
+
+
+select * from entrenamiento_fuerza;

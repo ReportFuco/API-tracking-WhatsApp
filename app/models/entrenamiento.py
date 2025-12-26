@@ -15,6 +15,11 @@ from app.db.base import Base
 import enum
 
 
+class EnumEstadoEntrenamiento(enum.Enum):
+    ACTIVO = "activo"
+    CERRADO = "cerrado"
+
+
 class EnumTipoEntrenamiento(enum.Enum):
     FUERZA = "fuerza"
     CARDIO = "cardio"
@@ -105,7 +110,17 @@ class EntrenamientoFuerza(Base):
     id_entrenamiento_fuerza: Mapped[int] = mapped_column(Integer, primary_key=True)
     id_entrenamiento: Mapped[int] = mapped_column(ForeignKey("entrenamiento.id_entrenamiento"), unique=True)
     id_gimnasio: Mapped[int] = mapped_column(ForeignKey("gimnasio.id_gimnasio"))
-
+    estado: Mapped[EnumEstadoEntrenamiento] = mapped_column(
+        SQLEnum(
+            EnumEstadoEntrenamiento,
+            name="estado_entrenamiento_fuerza",
+            values_callable=lambda x: [e.value for e in x]
+        ),
+        server_default="activo",
+        default=EnumEstadoEntrenamiento.ACTIVO,
+    )
+    inicio_at: Mapped[datetime] = mapped_column(DateTime, server_default=text("now()"), default=datetime.now)
+    fin_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True) 
     gimnasio = relationship("Gimnasio", back_populates="entrenamientos_fuerza")
     entrenamiento = relationship("Entrenamiento", back_populates="fuerza")
     series = relationship(

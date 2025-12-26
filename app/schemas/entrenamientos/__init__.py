@@ -1,1 +1,2 @@
 from .gimnasio import GimnasioResponse, GimnasioCreate, GimnasioDetailResponse, GimnasioEdit
+from .fuerza import EntrenamientoFuerzaResponseDetail, EntrenamientoFuerzaResponse

@@ -83,3 +83,12 @@ class GimnasioDetailResponse(BaseModel):
     info: str
     detalle: GimnasioResponse
     
+
+class GimnasioSimpleResponse(BaseModel):
+    id_gimnasio: int
+    nombre_gimnasio: str
+    comuna: str
+
+    model_config = {
+        "from_attributes": True
+    }
