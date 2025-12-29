@@ -1,8 +1,8 @@
 """mensaje migracion
 
-Revision ID: 2c895ef21daf
+Revision ID: 8f575c97b47d
 Revises: 
-Create Date: 2025-12-26 00:37:22.577136
+Create Date: 2025-12-28 23:35:28.070185
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '2c895ef21daf'
+revision: str = '8f575c97b47d'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -85,7 +85,7 @@ def upgrade() -> None:
     sa.Column('id_usuario', sa.Integer(), nullable=False),
     sa.Column('id_banco', sa.Integer(), nullable=False),
     sa.Column('nombre_cuenta', sa.String(length=100), nullable=False),
-    sa.Column('tipo_cuenta', sa.String(length=50), nullable=False),
+    sa.Column('tipo_cuenta', sa.Enum('Cuenta Corriente', 'Cuenta vista', 'Cuenta ahorro', name='cuentas_bancarias'), server_default='Cuenta vista', nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['id_banco'], ['banco.id_banco'], ),
     sa.ForeignKeyConstraint(['id_usuario'], ['usuario.id_usuario'], ),

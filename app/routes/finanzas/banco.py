@@ -44,7 +44,7 @@ async def obtener_banco_id(id_banco:int, db:AsyncSession = Depends(get_db)):
 
 @router.post(
     "/",
-    response_model=BancoResponse,
+    response_model=BancoDetailResponse,
     summary="Crear Banco",
     description="Enpoint encargado de generar un Banco",
     status_code=201

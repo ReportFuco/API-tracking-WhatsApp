@@ -13,6 +13,6 @@
 -- join entrenamiento_fuerza ef ON ef.id_entrenamiento = e.id_entrenamiento
 -- where u.id_usuario=1;
 
-select * from ejercicios;
+-- select * from ejercicios;
 
 CREATE EXTENSION IF NOT EXISTS unaccent;

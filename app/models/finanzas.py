@@ -13,6 +13,19 @@ from app.db.base import Base
 import enum
 
 
+class EnumCuentas(enum.Enum):
+    CUENTA_CORRIENTE = "Cuenta Corriente"
+    CUENTA_VISTA = "Cuenta vista"
+    CUENTA_AHORRO = "Cuenta ahorro"
+
+
+class EnumTarjeta(enum.Enum):
+    DEBITO = "Débito"
+    CREDITO = "Crédito"
+    PREPAGO = "Prepago"
+    VIRTUALES = "Virtuales"
+
+
 class EnumTipoMovimiento(enum.Enum):
     GASTO = "gasto"
     INGRESO = "ingreso"
@@ -44,7 +57,17 @@ class CuentaBancaria(Base):
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     id_banco: Mapped[int] = mapped_column(ForeignKey("banco.id_banco"))
     nombre_cuenta: Mapped[str] = mapped_column(String(100))
-    tipo_cuenta: Mapped[str] = mapped_column(String(50))
+
+    tipo_cuenta: Mapped[EnumCuentas] = mapped_column(
+        SQLEnum(
+            EnumCuentas,
+            name="cuentas_bancarias",
+            create_type=True,
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        ), 
+        server_default=EnumCuentas.CUENTA_VISTA.value,
+        default=EnumCuentas.CUENTA_VISTA
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 
         server_default=text("now()"), 
