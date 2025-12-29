@@ -1,1 +1,0 @@
-from app.crud.usuario.usuario import obtener_usuario_por_numero

@@ -4,7 +4,7 @@ from app.db import get_db
 from sqlalchemy import select
 from app.models import Usuario
 from app.schemas.usuario import (
-    UsuarioShemaCreate, 
+    UsuarioSchemaCreate, 
     UsuarioPatchSchema, 
     UsuarioSchemaResponse
 )
@@ -22,14 +22,7 @@ async def obtener_usuarios(db: AsyncSession = Depends(get_db)):
     query_user = await db.execute(select(Usuario))
     usuarios = query_user.scalars().all()
 
-    return [
-        UsuarioSchemaResponse(
-            id_usuario=u.id_usuario,
-            nombre=u.nombre,
-            telefono=u.telefono,
-            activo=u.activo,
-            fecha_registro=u.fecha_registro.strftime("%d-%m-%Y")
-        ) for u in usuarios]
+    return usuarios
 
 
 @router.get(
@@ -42,13 +35,7 @@ async def obtener_usuario_id(id_usuario:int, db: AsyncSession = Depends(get_db))
     query_user = await db.execute(select(Usuario).where(Usuario.id_usuario == id_usuario))
     usuario = query_user.scalar_one_or_none()
     if usuario:
-        return UsuarioSchemaResponse(
-            id_usuario=usuario.id_usuario,
-            nombre=usuario.nombre,
-            telefono=usuario.telefono,
-            activo=usuario.activo,
-            fecha_registro=usuario.fecha_registro.strftime("%d-%m-%Y")
-        )
+        return usuario
     else:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
@@ -57,9 +44,10 @@ async def obtener_usuario_id(id_usuario:int, db: AsyncSession = Depends(get_db))
     "/",
     summary="Crear usuario",
     description="Crea un nuevo usuario dentro de la base de datos",
-    response_model=UsuarioSchemaResponse
+    response_model=UsuarioSchemaResponse,
+    status_code=201,
 )
-async def crear_usuario(usuario:UsuarioShemaCreate, db:AsyncSession = Depends(get_db)):
+async def crear_usuario(usuario:UsuarioSchemaCreate, db:AsyncSession = Depends(get_db)):
     query = await db.execute(select(Usuario).where(Usuario.telefono == usuario.telefono))
     usuario_buscado = query.scalar_one_or_none()
     if usuario_buscado:
@@ -74,7 +62,7 @@ async def crear_usuario(usuario:UsuarioShemaCreate, db:AsyncSession = Depends(ge
             nombre=crear.nombre,
             telefono=crear.telefono,
             activo=crear.activo,
-            fecha_registro=crear.fecha_registro.strftime("%d-%m-%Y")
+            created_at=crear.created_at
         )
 
 
@@ -92,13 +80,7 @@ async def editar_usuario(data: UsuarioPatchSchema, id_usuario:int, db: AsyncSess
             setattr(usuario, field, value)
         await db.commit()
         await db.refresh(usuario)
-        return UsuarioSchemaResponse(
-            id_usuario=usuario.id_usuario,
-            nombre=usuario.nombre,
-            telefono=usuario.telefono,
-            activo=usuario.activo,
-            fecha_registro=usuario.fecha_registro.strftime("%d-%m-%Y")
-        )
+        return usuario
     else:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
@@ -135,10 +117,4 @@ async def eliminar_usuario(
     await db.commit()
     await db.refresh(usuario)
 
-    return UsuarioSchemaResponse(
-        id_usuario=usuario.id_usuario,
-        nombre=usuario.nombre,
-        telefono=usuario.telefono,
-        activo=usuario.activo,
-        fecha_registro=usuario.fecha_registro.strftime("%d-%m-%Y")
-    )
+    return usuario

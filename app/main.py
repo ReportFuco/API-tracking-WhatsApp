@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app import settings
-from app.routes.webhook import router as webhook_router
+# from app.routes.webhook import router as webhook_router
 from app.routes.finanzas import router as router_finanzas
 from app.routes.usuarios import router as usuario_router
 from app.routes.entrenamientos import router as entrenamientos_router
@@ -10,7 +10,7 @@ app = FastAPI()
 
 # Rutas de la App
 app.include_router(usuario_router)
-app.include_router(webhook_router)
+# app.include_router(webhook_router)
 app.include_router(router_finanzas)
 app.include_router(entrenamientos_router)
 

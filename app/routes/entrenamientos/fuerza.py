@@ -7,7 +7,8 @@ from datetime import datetime
 from app.schemas.entrenamientos import (
     EntrenoFuerzaResponse, 
     EntrenoFuerzaCreate, 
-    EntrenoFuerzaDetailResponse
+    EntrenoFuerzaDetailResponse,
+    EntrenoFuerzaSerieResponse
 )
 from app.models import (
     EntrenamientoFuerza, 
@@ -62,6 +63,7 @@ async def obtener_entrenamientos_usuario(
 @router.get(
     path="/{id_usuario}/activo",
     summary="Ver entrenamiento activo",
+    response_model=EntrenoFuerzaSerieResponse,
     description="Devuelve el Entrenamiento activo, mostrando las series realizadas e información relevante",
     status_code=200
 )
@@ -105,12 +107,47 @@ async def ver_procesos_activos(id_usuario:int, db:AsyncSession = Depends(get_db)
 
     return entreno_activo
 
+@router.get(
+        path="/{id_entrenamiento_fuerza}/detalle",
+        summary="Obtener detalle del entrenamiento de Fuerza",
+        response_model=EntrenoFuerzaSerieResponse,
+        description="Se obtiene el detalle del entrenamiento en especifico, retornando los detalles generales como series, lugar de entreno entre otros",
+        status_code=200
+)
+async def obtener_detalle_entreno_fuerza(
+    id_entrenamiento_fuerza:int,
+    db: AsyncSession = Depends(get_db)
+):
+    query_entreno_fuerza = (
+        await db.execute(
+            select(EntrenamientoFuerza)
+            .join(Entrenamiento)
+            .where(
+                EntrenamientoFuerza.id_entrenamiento_fuerza == id_entrenamiento_fuerza
+            )
+            .options(
+                selectinload(EntrenamientoFuerza.gimnasio),
+                selectinload(EntrenamientoFuerza.series)
+                    .selectinload(SerieFuerza.ejercicio)
+            )
+        )
+    ).scalar_one_or_none()
+
+    if not query_entreno_fuerza:
+        raise HTTPException(
+            status_code=404,
+            detail="Entrenamiento no encontrado"
+        )
+
+    return query_entreno_fuerza
+
+
 
 @router.post(
     path="/{id_usuario}",
     response_model=EntrenoFuerzaDetailResponse,
-    summary="Crear entrenamiento de Fuerza",
-    description="Crea y activa una sesión de entrenamiento para poder ingresar las series de entrenamientos",
+    summary="Iniciar entrenamiento de Fuerza",
+    description="Inicia una sesión de entrenamiento para poder ingresar las series de entrenamientos",
     status_code=201
 )
 async def activar_entrenamiento(
@@ -166,6 +203,17 @@ async def activar_entrenamiento(
     db.add(entreno_fuerza)
     await db.commit()
     await db.refresh(entreno_fuerza)
+
+    entreno_fuerza = (
+        await db.execute(
+            select(EntrenamientoFuerza)
+            .where(
+                EntrenamientoFuerza.id_entrenamiento_fuerza
+                == entreno_fuerza.id_entrenamiento_fuerza
+            )
+            .options(selectinload(EntrenamientoFuerza.gimnasio))
+        )
+    ).scalar_one()
 
     return EntrenoFuerzaDetailResponse(
         info=f"Entreno {entreno_fuerza.id_entrenamiento_fuerza} iniciado.",
@@ -225,3 +273,5 @@ async def finalizar_sesion_fuerza(
         info=f"Entrenamiento de Fuerza del usuario {id_usuario} ha sido cerrado correctamente.",
         detalle=EntrenoFuerzaResponse.model_validate(entreno_activo)
     )
+
+

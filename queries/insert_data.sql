@@ -78,3 +78,6 @@ values (1, 1, 'false', 30, 10),
        (1, 3, 'false', 24, 10),
        (1, 3, 'false', 24, 10),
        (1, 3, 'false', 20, 8);
+
+
+CREATE EXTENSION IF NOT EXISTS unaccent;

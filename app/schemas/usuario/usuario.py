@@ -1,11 +1,12 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class UsuarioSchema(BaseModel):
     nombre:str
     telefono:str
 
-class UsuarioShemaCreate(UsuarioSchema):
+class UsuarioSchemaCreate(UsuarioSchema):
     pass
 
 class UsuarioSchemaEdit(UsuarioSchema):
@@ -19,7 +20,7 @@ class UsuarioSchemaResponse(UsuarioSchema):
     id_usuario: int
     telefono: str
     activo: bool
-    fecha_registro: str
+    created_at: datetime
 
     model_config = {
         "from_attributes": True,
@@ -30,4 +31,8 @@ class UsuarioSchemaResponse(UsuarioSchema):
             "activo": True,
             "fecha_registro": "01-01-2024"
         }
+    }
+
+    model_config = {
+        "title":"Respuesta Usuarios"
     }

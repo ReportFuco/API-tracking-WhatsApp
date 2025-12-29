@@ -1,36 +1,42 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, model_validator
 from datetime import datetime
 from .gimnasio import GimnasioSimpleResponse
+from .series import SerieFuerzaResponse
 
 
 class EntrenoFuerzaResponse(BaseModel):
     id_entrenamiento:int
-    id_entrenamiento_fuerza:int
-    estado:str
-    inicio_at:datetime
+    id_entrenamiento_fuerza: int
+    estado: str
+    inicio_at: datetime
     fin_at: datetime | None
-    gimnasio: GimnasioSimpleResponse
 
-    model_config = {
-        "title":"Respuesta entrenamiento de Fuerza",
-        "from_attributes":True,
-        "json_schema_extra":{
-            "example":{
-                "id_entrenamiento": 1,
-                "id_entrenamiento_fuerza": 1,
-                "estado": "cerrado",
-                "inicio_at": "2025-12-26T00:37:42.181465",
-                "fin_at": "2025-12-26T00:37:42.181465",
-                "gimnasio": {
-                    "id_gimnasio": 1,
-                    "nombre_gimnasio": "SmartFit Maipú Central",
-                    "comuna": "Maipú",
-                    "latitud": -33.502612790405934,
-                    "longitud": -70.7564164067453
-                }
-            }
-        }
-    }
+    nombre_gimnasio: str | None = None
+    nombre_cadena: str | None = None
+    comuna: str | None = None
+    direccion: str | None = None
+    latitud: float | None = None
+    longitud: float | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def flatten_gimnasio(cls, data):
+        if hasattr(data, "gimnasio") and data.gimnasio:
+            data = data.__dict__.copy()
+            gym = data.pop("gimnasio")
+
+            data.update({
+                "nombre_gimnasio": gym.nombre_gimnasio,
+                "nombre_cadena": gym.nombre_cadena,
+                "comuna": gym.comuna,
+                "direccion": gym.direccion,
+                "latitud": gym.latitud,
+                "longitud": gym.longitud,
+            })
+
+        return data
 
 
 class EntrenoFuerzaCreate(BaseModel):
@@ -41,9 +47,46 @@ class EntrenoFuerzaCreate(BaseModel):
         "title":"Crear entreno de Fuerza"
     }
 
+
+class EntrenoFuerzaSerieResponse(BaseModel):
+    id_entrenamiento_fuerza: int
+    estado: str
+    inicio_at: datetime
+    fin_at: datetime | None
+
+    nombre_gimnasio: str | None = None
+    nombre_cadena: str | None = None
+    comuna: str | None = None
+    direccion: str | None = None
+    latitud: float | None = None
+    longitud: float | None = None
+
+    series: list[SerieFuerzaResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def flatten_gimnasio(cls, data):
+        if hasattr(data, "gimnasio") and data.gimnasio:
+            data = data.__dict__.copy()
+            gym = data.pop("gimnasio")
+
+            data.update({
+                "nombre_gimnasio": gym.nombre_gimnasio,
+                "nombre_cadena": gym.nombre_cadena,
+                "comuna": gym.comuna,
+                "direccion": gym.direccion,
+                "latitud": gym.latitud,
+                "longitud": gym.longitud,
+            })
+
+        return data
+
+
 class EntrenoFuerzaDetailResponse(BaseModel):
     info: str
-    detalle: EntrenoFuerzaResponse
+    detalle: EntrenoFuerzaSerieResponse
 
     model_config = {
         "from_attributes":True
