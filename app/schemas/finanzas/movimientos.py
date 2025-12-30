@@ -1,6 +1,20 @@
 from pydantic import BaseModel
 from typing import Literal
+from app.models.finanzas import EnumTipoMovimiento, EnumTipoGasto
+from datetime import datetime
 
+
+class MovimientoSimpleResponse(BaseModel):
+    id_transaccion:int
+    tipo_movimiento:EnumTipoMovimiento
+    tipo_gasto: EnumTipoGasto
+    monto:int
+    descripcion: str
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
 
 class MovimientoBase(BaseModel):
     id_categoria: int
@@ -8,6 +22,8 @@ class MovimientoBase(BaseModel):
     tipo: Literal["Ingreso", "Gasto"]
     monto: int
     descripcion: str | None = None
+
+    
 
 
 class MovimientoCreate(MovimientoBase):

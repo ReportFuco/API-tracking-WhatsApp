@@ -1,10 +1,28 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from datetime import datetime
+from typing import Type, Any
 
 
 class BancoCreate(BaseModel):
     nombre_banco:str
 
+    @model_validator(mode="before")
+    @classmethod
+    def validar_ingreso(cls: Type["BancoCreate"], data:Any):
+        if isinstance(data, dict):
+            banco:str = data.get("nombre_banco", "")
+            data["nombre_banco"] = (banco.strip().title())
+
+        return data
+    
+    model_config = {
+        "title": "Crear Banco",
+        "json_schema_extra":{
+            "example":{
+                "nombre_banco": "Santander"
+            }
+        }
+    }
 
 class BancoResponse(BaseModel):
     id_banco:int
@@ -28,5 +46,15 @@ class BancoDetailResponse(BaseModel):
     detalle: BancoResponse
 
     model_config = {
-        "title":"Detalle Respuesta Banco"
+        "title":"Detalle Respuesta Banco",
+        "json_schema_extra":{
+            "example": {
+                "info": "Informacion del registro.",
+                "detalle": {
+                    "id_banco":1,
+                    "nombre_banco":"Falabella",
+                    "created_at": "2025-12-29T21:35:40.965433"
+                }
+            }
+        }
     }

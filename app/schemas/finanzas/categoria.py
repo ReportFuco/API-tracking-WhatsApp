@@ -1,15 +1,21 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
-class CategoriaBase(BaseModel):
+class CategoriaResponse(BaseModel):
+    id_categoria:int
+    nombre:str
+    created_at:datetime
+
+
+class CategoriaCreate(BaseModel):
     nombre:str
 
 
-class CategoriaResponse(CategoriaBase):
-    id:int
-
-class CategoriaRequest(CategoriaBase):
-    pass
-
 class CategoriaPatch(BaseModel):
     nombre: str | None = None
+
+
+class CategoriaDetailResponse(BaseModel):
+    info: str
+    detalle: CategoriaResponse

@@ -21,7 +21,7 @@ class Usuario(Base):
 
     id_usuario: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nombre: Mapped[str] = mapped_column(String(100))
-    telefono: Mapped[str] = mapped_column(String(12), unique=True)
+    telefono: Mapped[str] = mapped_column(String(11), unique=True)
     activo: Mapped[bool] = mapped_column(Boolean, server_default=text("true"), default=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 

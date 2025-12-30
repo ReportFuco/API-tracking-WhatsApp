@@ -4,10 +4,10 @@ from app.db import get_db
 from sqlalchemy import select
 from app.models import Banco, Usuario, CuentaBancaria
 from app.schemas.finanzas import (
-    CuentaBancariaCreate, 
-    CuentaBancariaResponse, 
-    CuentabancariaDetailResponse,
-    UsuarioCuentaResponse
+    CuentasResponse,
+    CuentaCreate,
+    CuentaDetailResponse,
+    CuentasMovimientosResponse
 )
 from sqlalchemy.orm import selectinload
 
@@ -16,8 +16,10 @@ router = APIRouter(prefix="/cuentas", tags=["Finanzas · Cuentas"])
 
 @router.get(
     "/",
-    # response_model=list[CuentaBancariaResponse],
-    status_code=200 
+    response_model=list[CuentasResponse],
+    summary="Obtener cuentas bancarias del usuario",
+    description="Obtiene todas las cuentas existentes dentro de la base de datos.",
+    status_code=200
 )
 async def obtener_cuentas_bancarias(db: AsyncSession = Depends(get_db)):
 
@@ -34,9 +36,12 @@ async def obtener_cuentas_bancarias(db: AsyncSession = Depends(get_db)):
 
     return cuentas
 
+
 @router.get(
     path="/{id_usuario}",
-    response_model=UsuarioCuentaResponse,
+    response_model=CuentasResponse,
+    summary="Obtener Cuentas del usuario por ID",
+    description="Muestra todas las cuentas del usuario por su ID",
     status_code=200
 )
 async def obtener_cuentas_usuario(
@@ -63,19 +68,17 @@ async def obtener_cuentas_usuario(
 
 
 @router.post(
-    "/{id_usuario}",
+    path="/{id_usuario}",
     summary="Crear cuenta bancaria",
     description="Crea la cuenta bancaria para realizar movimientos, ej: cuenta rut, credito etc",
     status_code=201,
-    response_model=CuentabancariaDetailResponse
+    response_model=CuentaDetailResponse
 )
 async def crear_cuenta_bancaria(
     id_usuario:int,
-    data: CuentaBancariaCreate,
+    data: CuentaCreate,
     db: AsyncSession = Depends(get_db)
 ):
-    
-    # Verificar existencia del usuario
     usuario = (
         await db.execute(
             select(Usuario)
@@ -89,7 +92,6 @@ async def crear_cuenta_bancaria(
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado.")
 
-    # Verificar existencia del banco
     banco = (
         await db.execute(
             select(Banco).where(Banco.id_banco == data.id_banco)
@@ -111,7 +113,51 @@ async def crear_cuenta_bancaria(
     await db.commit()
     await db.refresh(nueva_cuenta)
 
-    return CuentabancariaDetailResponse(
-        info=f"Cuenta de {usuario.nombre} fue creada con éxito.",
-        detalle=CuentaBancariaResponse.model_validate(nueva_cuenta)
+    cuenta = (
+        await db.execute(
+            select(CuentaBancaria)
+            .options(
+                selectinload(CuentaBancaria.usuario),
+                selectinload(CuentaBancaria.banco),
+                selectinload(CuentaBancaria.transacciones),
+            )
+            .where(CuentaBancaria.id_cuenta == nueva_cuenta.id_cuenta)
+        )
+    ).scalar_one()
+
+    return CuentaDetailResponse(
+        info=f"Cuenta {cuenta.nombre_cuenta} creada correctamente",
+        detalle=CuentasResponse.model_validate(cuenta)
     )
+
+
+@router.get(
+    path="/{id_cuenta}/movimientos",
+    summary="Obtener movimientos de la cuenta",
+    description="Obtiene todos los movimientos realizados la cuenta del usuario",
+    status_code=200,
+    response_model=CuentasMovimientosResponse
+)
+async def obtener_movimientos_cuenta(
+    id_cuenta:int,
+    db: AsyncSession = Depends(get_db)
+):
+    movimientos_cuenta = (
+        await db.execute(
+            select(CuentaBancaria)
+            .where(CuentaBancaria.id_cuenta == id_cuenta)
+            .options(
+                selectinload(CuentaBancaria.usuario),
+                selectinload(CuentaBancaria.banco),
+                selectinload(CuentaBancaria.transacciones)
+            )
+        )
+    ).scalar_one_or_none()
+
+    if not movimientos_cuenta:
+        raise HTTPException(
+            status_code=404,
+            detail="Cuenta no encontrada."
+        )
+    
+    return movimientos_cuenta

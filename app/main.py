@@ -4,10 +4,14 @@ from app import settings
 from app.routes.finanzas import router as router_finanzas
 from app.routes.usuarios import router as usuario_router
 from app.routes.entrenamientos import router as entrenamientos_router
+from app.core.logging import setup_logging
+from app.core.middleware import logging_middleware
 
+
+setup_logging()
 
 app = FastAPI()
-
+app.middleware("http")(logging_middleware)
 # Rutas de la App
 app.include_router(usuario_router)
 # app.include_router(webhook_router)
@@ -35,5 +39,6 @@ if __name__=="__main__":
         "app.main:app", 
         host="0.0.0.0", 
         port=settings.PORT, 
-        reload=True
+        reload=True,
+        access_log=False
     )

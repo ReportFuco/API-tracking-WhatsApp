@@ -123,4 +123,7 @@ async def eliminar_banco(id_banco:int, db:AsyncSession = Depends(get_db)):
             detalle=BancoResponse.model_validate(banco)
         )
     else:
-        raise HTTPException(status_code=404, detail=f"el Banco de ID {id_banco} no existe.")
+        raise HTTPException(
+            status_code=404, 
+            detail=f"el Banco de ID {id_banco} no existe."
+        )

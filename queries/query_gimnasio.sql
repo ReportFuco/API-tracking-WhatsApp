@@ -15,4 +15,11 @@
 
 -- select * from ejercicios;
 
-CREATE EXTENSION IF NOT EXISTS unaccent;
+-- CREATE EXTENSION IF NOT EXISTS unaccent;
+-- select * from movimiento;
+
+
+
+INSERT INTO movimiento (id_categoria,id_usuario, id_cuenta, tipo_movimiento, tipo_gasto, monto, descripcion) VALUES (1,1,1,'gasto', 'variable',  3000, 'nada');
+
+select * from movimiento;

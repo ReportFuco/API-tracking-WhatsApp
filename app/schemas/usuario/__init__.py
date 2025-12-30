@@ -1,1 +1,1 @@
-from .usuario import UsuarioSchemaEdit, UsuarioSchemaCreate, UsuarioPatchSchema, UsuarioSchemaResponse
+from .usuario import UsuarioPatchSchema, UsuarioResponse, UsuarioCreate, UsuarioDetailResponse
