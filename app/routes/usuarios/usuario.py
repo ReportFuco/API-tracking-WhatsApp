@@ -12,7 +12,7 @@ from app.schemas.usuario import (
 )
 
 
-router = APIRouter(prefix="/usuario", tags=["Usuario"])
+router = APIRouter(tags=["Usuario"])
 
 
 @router.get(

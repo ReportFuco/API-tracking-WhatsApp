@@ -13,20 +13,36 @@ class UsuarioCreate(UsuarioSchema):
 
     @model_validator(mode="before")
     @classmethod
-    def parsear_numero(cls: Type["UsuarioCreate"], data: Any)->Any:
+    def parsear_numero(cls: Type["UsuarioCreate"], data: Any) -> Any:
         if isinstance(data, dict):
-            telefono: str = data.get("telefono", "")
-            data["telefono"] = (
+            telefono = str(data.get("telefono", ""))
+
+            telefono = (
                 telefono
                 .replace("+", "")
                 .replace(" ", "")
                 .strip()
             )
-            if len(data["telefono"]) > 11:
-                raise ValueError("El teléfono no puede tener mas de 11 números.")
-        
-        return data
 
+            if not telefono.isdigit():
+                raise ValueError("El teléfono debe contener solo números.")
+
+            if len(telefono) > 11:
+                raise ValueError("El teléfono no puede tener más de 11 números.")
+
+            data["telefono"] = telefono
+
+        return data
+    
+    model_config = {
+        "title": "Crear usuario",
+        "json_schema_extra":{
+            "example":{
+                "nombre": "Francisco Arancibia",
+                "telefono": "56978086719"
+            }
+        }
+    }
 
 class UsuarioPatchSchema(BaseModel):
     nombre: str | None = None
