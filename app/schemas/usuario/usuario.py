@@ -27,8 +27,8 @@ class UsuarioCreate(UsuarioSchema):
             if not telefono.isdigit():
                 raise ValueError("El teléfono debe contener solo números.")
 
-            if len(telefono) > 11:
-                raise ValueError("El teléfono no puede tener más de 11 números.")
+            if len(telefono) != 11:
+                raise ValueError(f"El número ingresado es de {len(telefono)}. No puede tener más ni menos de 11 números.")
 
             data["telefono"] = telefono
 
