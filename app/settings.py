@@ -4,8 +4,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PORT:int = int(os.getenv("PORT") or 8000)
+# Detalles de la API
+TITLE_API = os.getenv("TITLE_API", "Tracking Hábitos")
+VERSION_API = os.getenv("VERSION", "0.1.0")
 
+PORT:int = int(os.getenv("PORT") or 8000)
 URL_SITE:str = os.getenv("URL_SITE") or f"http://localhost:{PORT}"
 
 # api openai
