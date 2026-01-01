@@ -7,7 +7,3 @@ from app.models import lecturas, usuario
 
 router = APIRouter(prefix="/libros", tags=["Lecturas · Libros"])
 
-
-@router.get("/obtener-lecturas/{id_usuario}")
-async def obtener_lecturas(db: AsyncSession):
-    query = db.execute(select())

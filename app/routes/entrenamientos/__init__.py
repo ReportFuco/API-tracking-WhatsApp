@@ -10,3 +10,6 @@ router = APIRouter(prefix="/entrenamientos")
 router.include_router(gimnasio_router)
 router.include_router(fuerza_router)
 router.include_router(series_fuerza_router)
+
+
+__all__ = ["router"]

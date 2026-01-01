@@ -1,10 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.responses import RedirectResponse
-from . import settings
+from app import settings
 
-from app.routes.finanzas import router as router_finanzas
-from app.routes.usuarios import router as usuario_router
-from app.routes.entrenamientos import router as entrenamientos_router
+from app.routes import router
 from app.core.logging import setup_logging
 from app.core.middleware import logging_middleware
 
@@ -18,16 +16,13 @@ app = FastAPI(
 )
 
 app.middleware("http")(logging_middleware)
-
-# Rutas de la App
-app.include_router(usuario_router)
-app.include_router(router_finanzas)
-app.include_router(entrenamientos_router)
+app.include_router(router)
 
 
 @app.get(
     path="/", 
-    include_in_schema=False
+    include_in_schema=False,
+    status_code=status.HTTP_307_TEMPORARY_REDIRECT
 )
 def bienvenida():
     return RedirectResponse("/docs")

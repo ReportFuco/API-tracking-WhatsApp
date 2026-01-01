@@ -11,3 +11,6 @@ router.include_router(banco_router)
 router.include_router(movimientos_router)
 router.include_router(cuentas_router)
 router.include_router(categoria_router)
+
+
+__all__ = ["router"]

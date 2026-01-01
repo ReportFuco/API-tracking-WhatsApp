@@ -20,3 +20,29 @@ from .entrenamiento import (
     EnumTipoEntrenamiento,
     EnumEstadoEntrenamiento
 )
+
+
+__all__ = [
+    "Ejercicios", 
+    "Entrenamiento", 
+    "EntrenamientoAerobico", 
+    "EntrenamientoFuerza",
+    "Gimnasio",
+    "SerieFuerza",
+    "EnumMusculo",
+    "EnumTipoAerobico",
+    "EnumTipoEntrenamiento",
+    "EnumEstadoEntrenamiento",
+    "EnumCuentas",
+    "Banco", 
+    "CategoriaFinanza", 
+    "CuentaBancaria", 
+    "Movimiento",
+    "Lectura",
+    "RegistroLectura",
+    "CategoriaHabito", 
+    "Habito", 
+    "RegistroHabito",
+    "Usuario", 
+    "Mensaje"
+]
