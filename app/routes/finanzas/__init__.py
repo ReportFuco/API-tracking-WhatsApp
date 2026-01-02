@@ -7,9 +7,9 @@ from .categoria import router as categoria_router
 
 router = APIRouter(prefix="/finanzas")
 
-router.include_router(banco_router)
-router.include_router(movimientos_router)
 router.include_router(cuentas_router)
+router.include_router(movimientos_router)
+router.include_router(banco_router)
 router.include_router(categoria_router)
 
 

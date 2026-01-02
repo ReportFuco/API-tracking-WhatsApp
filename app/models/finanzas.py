@@ -5,7 +5,8 @@ from sqlalchemy import (
     text, 
     DateTime, 
     ForeignKey,
-    Enum as SQLEnum
+    Enum as SQLEnum,
+    Boolean
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
@@ -57,6 +58,7 @@ class CuentaBancaria(Base):
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     id_banco: Mapped[int] = mapped_column(ForeignKey("banco.id_banco"))
     nombre_cuenta: Mapped[str] = mapped_column(String(100))
+    activo: Mapped[bool] = mapped_column(Boolean, server_default=text("true"), default=True)
 
     tipo_cuenta: Mapped[EnumCuentas] = mapped_column(
         SQLEnum(

@@ -172,7 +172,7 @@ async def eliminar_usuario_soft(
 @router.delete(
     path="/{id_usuario}/permanente",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Eliminar Usuario",
+    summary="Eliminar Usuario por ID",
     description="Eliminar el usuario de la base de datos",
 )
 async def eliminar_usuario_permanete(

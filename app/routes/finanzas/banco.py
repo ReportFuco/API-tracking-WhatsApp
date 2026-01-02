@@ -58,7 +58,7 @@ async def crear_banco(banco: BancoCreate, db: AsyncSession = Depends(get_db)):
     else:
         registro = Banco(nombre_banco=banco.nombre_banco)
         db.add(registro)
-        await db.commit()
+        await db.flush()
         await db.refresh(registro)
         return BancoDetailResponse(
             info=f"Banco {registro.nombre_banco} creado correctamente.",
@@ -98,7 +98,7 @@ async def actualizar_banco(
         raise HTTPException(status_code=409, detail=f"el banco {banco.nombre_banco} ya existe.")
 
     banco_existente.nombre_banco = banco.nombre_banco
-    await db.commit()
+    await db.flush()
     await db.refresh(banco_existente)
     return BancoDetailResponse(
         info=f"Banco {banco_existente.nombre_banco} actualizado correctamente.",
@@ -116,11 +116,13 @@ async def actualizar_banco(
 async def eliminar_banco(id_banco:int, db:AsyncSession = Depends(get_db)):
     query = await db.execute(select(Banco).where(Banco.id_banco == id_banco))
     banco = query.scalar_one_or_none()
+    
     if banco:
+        banco_copia = banco
         await db.delete(banco)
         return BancoDetailResponse(
-            info=f"Banco {banco.nombre_banco} ha sido eliminado correctamente.",
-            detalle=BancoResponse.model_validate(banco)
+            info=f"Banco {banco_copia.nombre_banco} ha sido eliminado correctamente.",
+            detalle=BancoResponse.model_validate(banco_copia)
         )
     else:
         raise HTTPException(

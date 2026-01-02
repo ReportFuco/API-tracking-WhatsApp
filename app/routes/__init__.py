@@ -7,9 +7,10 @@ from .usuarios import router as usuario_router
 
 router = APIRouter(prefix="/api")
 
-router.include_router(entrenamientos_router)
-router.include_router(finanzas_router)
-router.include_router(lecturas_router)
 router.include_router(usuario_router)
+router.include_router(finanzas_router)
+router.include_router(entrenamientos_router)
+router.include_router(lecturas_router)
+
 
 __all__ = ["router"]

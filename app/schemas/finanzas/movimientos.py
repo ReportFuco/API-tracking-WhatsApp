@@ -1,57 +1,60 @@
-from pydantic import BaseModel
-from typing import Literal
+from pydantic import BaseModel, model_validator
+from typing import Optional, Any
 from app.models.finanzas import EnumTipoMovimiento, EnumTipoGasto
 from datetime import datetime
 
 
-class MovimientoSimpleResponse(BaseModel):
+class MovimientoResponse(BaseModel):
+
     id_transaccion:int
-    tipo_movimiento:EnumTipoMovimiento
+    nombre_usuario: Optional[str] = None
+    nombre_cuenta: Optional[str] = None
+    tipo_cuenta: Optional[str] = None
+    tipo_movimiento: EnumTipoMovimiento
     tipo_gasto: EnumTipoGasto
-    monto:int
-    descripcion: str
+    monto: int
+    categoria: Optional[str] = None
     created_at: datetime
 
-    model_config = {
-        "from_attributes": True
-    }
+    @model_validator(mode='before')
+    @classmethod
+    def validate_info(cls, data: Any)->Any:
+        if not isinstance(data, dict):
+            data = data.__dict__
 
-class MovimientoBase(BaseModel):
-    id_categoria: int
-    id_cuenta: int
-    tipo: Literal["Ingreso", "Gasto"]
-    monto: int
-    descripcion: str | None = None
+        usuario = data.get("usuario")
+        categoria = data.get("categoria")
+        cuenta = data.get("cuenta")
 
+        if usuario:
+            data["nombre_usuario"] = usuario.nombre
+        if categoria:
+            data["categoria"] = categoria.nombre
+        if cuenta:
+            data["nombre_cuenta"] = cuenta.nombre_cuenta
+            data["tipo_cuenta"] = cuenta.tipo_cuenta
+            
+        return data
     
 
-
-class MovimientoCreate(MovimientoBase):
-    pass
-
-
-class MovimientoUpdate(BaseModel):
-    id_categoria: int | None = None
-    id_cuenta: int | None = None
-    tipo: Literal["Ingreso", "Gasto"] | None = None
-    monto: int | None = None
-    descripcion: str | None = None
-    
-    model_config = {
-        "extra": "forbid"
-    }
-
-
-class MovimientoDetalleResponse(BaseModel):
-    id:int
+class MovimientoSimpleResponse(BaseModel):
+    id_transaccion:int
+    tipo_movimiento: EnumTipoMovimiento
+    tipo_gasto: EnumTipoGasto
     categoria: str
-    tipo:str
     monto:int
-    banco:str
-    descripcion:str
-    fecha:str
+    created_at: datetime
 
+    @model_validator(mode='before')
+    @classmethod
+    def validate_info(cls, data: Any)->Any:
+        if not isinstance(data, dict):
+            data = data.__dict__
 
-class MovimientoResponse(BaseModel):
-    usuario: str
-    movimientos: list[MovimientoDetalleResponse]
+        categoria = data.get("categoria")
+
+        if categoria:
+            data["categoria"] = categoria.nombre
+            
+        return data
+    

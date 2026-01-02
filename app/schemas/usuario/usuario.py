@@ -1,6 +1,6 @@
 from pydantic import BaseModel, model_validator
 from datetime import datetime
-from typing import Any, Type
+from typing import Any, Type, Optional
 
 
 class UsuarioSchema(BaseModel):
@@ -45,12 +45,13 @@ class UsuarioCreate(UsuarioSchema):
     }
 
 class UsuarioPatchSchema(BaseModel):
-    nombre: str | None = None
-    telefono: str | None = None
+    nombre: Optional[str] = None
+    telefono: Optional[str] = None
 
 
-class UsuarioResponse(UsuarioSchema):
+class UsuarioResponse(BaseModel):
     id_usuario: int
+    nombre: str
     telefono: str
     created_at: datetime
 

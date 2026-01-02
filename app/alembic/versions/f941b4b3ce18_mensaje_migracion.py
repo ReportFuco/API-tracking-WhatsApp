@@ -1,8 +1,8 @@
 """mensaje migracion
 
-Revision ID: 8f575c97b47d
+Revision ID: f941b4b3ce18
 Revises: 
-Create Date: 2025-12-28 23:35:28.070185
+Create Date: 2026-01-02 16:38:05.907929
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '8f575c97b47d'
+revision: str = 'f941b4b3ce18'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -74,7 +74,7 @@ def upgrade() -> None:
     op.create_table('usuario',
     sa.Column('id_usuario', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('nombre', sa.String(length=100), nullable=False),
-    sa.Column('telefono', sa.String(length=12), nullable=False),
+    sa.Column('telefono', sa.String(length=11), nullable=False),
     sa.Column('activo', sa.Boolean(), server_default=sa.text('true'), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id_usuario'),
@@ -85,6 +85,7 @@ def upgrade() -> None:
     sa.Column('id_usuario', sa.Integer(), nullable=False),
     sa.Column('id_banco', sa.Integer(), nullable=False),
     sa.Column('nombre_cuenta', sa.String(length=100), nullable=False),
+    sa.Column('activo', sa.Boolean(), server_default=sa.text('true'), nullable=False),
     sa.Column('tipo_cuenta', sa.Enum('Cuenta Corriente', 'Cuenta vista', 'Cuenta ahorro', name='cuentas_bancarias'), server_default='Cuenta vista', nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['id_banco'], ['banco.id_banco'], ),
