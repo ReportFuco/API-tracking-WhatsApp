@@ -5,13 +5,12 @@ from typing import Any, Type, Optional
 
 class UsuarioCreate(BaseModel):
 
-    username:str = Field(..., min_length=3, max_length=20)
-    nombre: str = Field(..., min_length=1, max_length=50)
-    apellido: str = Field(..., min_length=1, max_length=50)
-    contraseña: str = Field(..., min_length=8, max_length=50)
-    
-    telefono: str 
-    correo: EmailStr
+    username:str = Field(..., min_length=3, max_length=20, examples=["Fuco"])
+    nombre: str = Field(..., min_length=1, max_length=50,examples=["Francisco Antonio", "Felipe Ignacio"])
+    apellido: str = Field(..., min_length=1, max_length=50, examples=["Arancibia Guaiquiante", "Quinteros Berrios"])
+    contraseña: str = Field(..., min_length=8, max_length=50, examples=["ChanchitoFeliz123."])
+    telefono: str = Field(..., examples=["56978086719"])
+    correo: EmailStr = Field(..., examples=["frarancibia.g@gmail.com"])
 
     @model_validator(mode="before")
     @classmethod
@@ -38,47 +37,30 @@ class UsuarioCreate(BaseModel):
     
     model_config = {
         "title": "Crear usuario",
-        "json_schema_extra":{
-            "example":{
-                "nombre": "Francisco Antonio",
-                "apellido": "Arancibia Guaiquiante",
-                "contraseña": "chanchito123.",
-                "telefono": "56978086719",
-                "correo": "frarancibia.g@gmail.com"
-            }
-        }
     }
 
 class UsuarioPatchSchema(BaseModel):
-    nombre: Optional[str] = None
-    telefono: Optional[str] = None
+    username: Optional[str] = Field(default=None, examples=["Tu nombre de usuario"])
+    nombre: Optional[str] = Field(default=None, examples=["Tu nombre"])
+    apellido: Optional[str] = Field(default=None, examples=["Tu Apellido"])
+    telefono: Optional[str] = Field(default=None, examples=["Tu teléfono"])
+    correo: Optional[str] = Field(default=None, examples=["Tu correo"])
 
 
 class UsuarioResponse(BaseModel):
-    id_usuario: int
-    username:str
-    nombre: str
-    apellido: str
-    telefono: str
-    correo: str
-    created_at: datetime
+    id_usuario: int = Field(..., examples=[1, 2, 3, 4])
+    username:str = Field(..., examples=["Fuco"])
+    nombre: str = Field(..., examples=["Francisco Antonio"])
+    apellido: str = Field(..., examples=["Arancibia Guaiquiante"])
+    telefono: str = Field(..., examples=["56978086719"])
+    correo: str = Field(..., examples=["frarancibia.g@gmail.com"])
+    created_at: datetime = Field(examples=["2025-12-29T23:43:49.887Z"])
 
     model_config = {
         "from_attributes": True,
         "title": "Respuesta Usuario",
-        "json_schema_extra": {
-            "example": {
-                "id_usuario": 1,
-                "username": "Fuco",
-                "nombre": "Francisco Antonio",
-                "apellido": "Arancibia Guaiquiante",
-                "telefono": "56978086719",
-                "correo": "frarancibia.g@gmail.com",
-                "created_at": "2025-12-29T23:43:49.887Z"
-            }
-        }
     }
 
 class UsuarioDetailResponse(BaseModel):
-    mensaje: str
+    mensaje: str =Field(examples=["Detalle del mensaje (eliminado, modificado etc)"])
     detalle: UsuarioResponse

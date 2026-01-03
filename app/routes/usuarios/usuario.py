@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, HTTPException, Depends, status
 from app.core.security import get_password_hash
 from app.db import get_db
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_
 from app.models import Usuario
 from loguru import logger
 from app.schemas.usuario import (
@@ -125,10 +125,40 @@ async def editar_usuario(
     id_usuario:int, 
     db: AsyncSession = Depends(get_db)
 ):
-    query = await db.execute(select(Usuario).where(Usuario.id_usuario == id_usuario))
-    usuario = query.scalar_one_or_none()
+    existente = (
+        await db.execute(
+            select(Usuario)
+            .where(
+                and_(
+                    Usuario.id_usuario != id_usuario,
+                    or_(
+                        Usuario.correo == data.correo,
+                        Usuario.username == data.username,
+                        Usuario.telefono == data.telefono
+                    )
+                )
+            )
+        )
+    ).scalar_one_or_none()
+
+    if existente:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="La información"
+        )
+    
+    usuario = (await db.scalar(select(Usuario).where(Usuario.id_usuario == id_usuario)))
+
+    cambios = data.model_dump(exclude_unset=True).items()
+
+    if not cambios:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No se enviaron cambios para actualizar"
+        )
+
     if usuario:
-        for field, value in data.model_dump(exclude_unset=True).items():
+        for field, value in cambios:
             setattr(usuario, field, value)
 
         await db.flush()
