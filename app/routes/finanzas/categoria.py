@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import CategoriaFinanza
 from app.db import get_db
@@ -47,7 +47,9 @@ async def obtener_categoria(
     )
     categoria = query.scalar_one_or_none()
     if not categoria:
-        raise HTTPException(404, detail="Categoría no encontrada")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Categoría no encontrada")
     
     return categoria
 
@@ -57,7 +59,7 @@ async def obtener_categoria(
     response_model=CategoriaDetailResponse,
     summary="Crear categoría",
     description="Crea categoria para utilizarla en los movimientos financieros",
-    status_code=201
+    status_code=status.HTTP_201_CREATED
 )
 async def crear_categoria(
     data: CategoriaCreate, 
@@ -103,11 +105,14 @@ async def actualizar_categoria(
     ).scalar_one_or_none()
 
     if not categoria:
-        raise HTTPException(404, detail="Categoría no encontrada")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Categoría no encontrada"
+        )
     
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(categoria, field, value)
-    await db.commit()
+
     await db.refresh(categoria)
 
     return CategoriaDetailResponse(
@@ -121,7 +126,7 @@ async def actualizar_categoria(
     response_model=CategoriaDetailResponse,
     summary="Eliminar categoría",
     description="Elimina una categoría existente",
-    status_code=200
+    status_code=status.HTTP_200_OK
 )
 async def eliminar_categoria(
     id_categoria:int,
@@ -145,4 +150,6 @@ async def eliminar_categoria(
             detalle=categoria_data
         )
     else:
-        raise HTTPException(404, detail="Categoría no encontrada")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Categoría no encontrada")

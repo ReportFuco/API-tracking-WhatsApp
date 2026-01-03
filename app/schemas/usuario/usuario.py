@@ -1,15 +1,17 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, EmailStr, Field
 from datetime import datetime
 from typing import Any, Type, Optional
 
 
-class UsuarioSchema(BaseModel):
-    nombre:str
-    telefono:str
+class UsuarioCreate(BaseModel):
 
-
-class UsuarioCreate(UsuarioSchema):
-    pass
+    username:str = Field(..., min_length=3, max_length=20)
+    nombre: str = Field(..., min_length=1, max_length=50)
+    apellido: str = Field(..., min_length=1, max_length=50)
+    contraseña: str = Field(..., min_length=8, max_length=50)
+    
+    telefono: str 
+    correo: EmailStr
 
     @model_validator(mode="before")
     @classmethod
@@ -38,8 +40,11 @@ class UsuarioCreate(UsuarioSchema):
         "title": "Crear usuario",
         "json_schema_extra":{
             "example":{
-                "nombre": "Francisco Arancibia",
-                "telefono": "56978086719"
+                "nombre": "Francisco Antonio",
+                "apellido": "Arancibia Guaiquiante",
+                "contraseña": "chanchito123.",
+                "telefono": "56978086719",
+                "correo": "frarancibia.g@gmail.com"
             }
         }
     }
@@ -51,8 +56,11 @@ class UsuarioPatchSchema(BaseModel):
 
 class UsuarioResponse(BaseModel):
     id_usuario: int
+    username:str
     nombre: str
+    apellido: str
     telefono: str
+    correo: str
     created_at: datetime
 
     model_config = {
@@ -61,8 +69,11 @@ class UsuarioResponse(BaseModel):
         "json_schema_extra": {
             "example": {
                 "id_usuario": 1,
-                "nombre": "Juan Perez",
-                "telefono": "56912345678",
+                "username": "Fuco",
+                "nombre": "Francisco Antonio",
+                "apellido": "Arancibia Guaiquiante",
+                "telefono": "56978086719",
+                "correo": "frarancibia.g@gmail.com",
                 "created_at": "2025-12-29T23:43:49.887Z"
             }
         }

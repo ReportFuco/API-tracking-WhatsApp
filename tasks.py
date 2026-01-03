@@ -1,25 +1,11 @@
-from invoke import task
-import os
+from invoke import Collection
+from scripts import *
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+namespace = Collection()
 
-@task
-def fastapi(c):
-    c.run(
-        f'start "FastAPI" cmd /k "cd /d {PROJECT_ROOT} && python -m app.main"',
-        pty=False,
-        disown=True
-    )
+namespace.add_task(fastapi)
+namespace.add_task(ngrok)
 
-@task
-def ngrok(c):
-    c.run(
-        f'start "ngrok" cmd /k "cd /d {PROJECT_ROOT} && ngrok http 8000"',
-        pty=False,
-        disown=True
-    )
-
-@task
-def run_all(c):
-    ngrok(c)
-    fastapi(c)
+# las Principales para poder desplegar en dev y resetear la base de datos
+namespace.add_task(run_all, name="dev")
+namespace.add_task(reset_db, name="reset-db")

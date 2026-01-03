@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
 
 load_dotenv()
@@ -13,7 +14,13 @@ URL_SITE = os.getenv("URL_SITE", f"http://localhost:{PORT}")
 # api openai
 API_KEY = os.getenv("APIKEY_OPENAI")
 
-DATABASE_URL:str = os.getenv("DATABASE_URL", "")
+# Datos de la base de datos
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "")
+DATABASE_USER = os.getenv("DATABASE_USER", "")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
+DATABASE_HOST = os.getenv("DATABASE_HOST")
+DATABASE_PORT = os.getenv("DATABASE_PORT")
 
 
 # Credenciales de Evolution API WhatsApp
@@ -23,6 +30,10 @@ CREDENCIALES_EVOLUTION = {
     "instance": os.getenv("EVOLUTION_INSTANCE", ""),
 }
 
+# Alembic
+ALEMBIC_VERSIONS_PATH = Path("app/alembic/versions")
+ALEMBIC_INI = "app/alembic.ini" # Donde está el archivo alembic.ini
+
 __all__ = [
     "CREDENCIALES_EVOLUTION",
     "TITLE_API", 
@@ -30,5 +41,12 @@ __all__ = [
     "PORT", 
     "URL_SITE", 
     "API_KEY", 
-    "DATABASE_URL", 
+    "DATABASE_URL",
+    "DATABASE_NAME",
+    "DATABASE_USER",
+    "DATABASE_PASSWORD",
+    "DATABASE_HOST",
+    "DATABASE_PORT",
+    "ALEMBIC_VERSIONS_PATH",
+    "ALEMBIC_INI",
 ]

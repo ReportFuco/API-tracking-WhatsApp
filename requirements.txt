@@ -6,7 +6,9 @@ certifi==2025.10.5
 click==8.3.0
 colorama==0.4.6
 distro==1.9.0
+dnspython==2.8.0
 dotenv==0.9.9
+email-validator==2.3.0
 fastapi==0.119.1
 greenlet==3.2.4
 h11==0.16.0

@@ -1,8 +1,8 @@
-"""mensaje migracion
+"""reset migraciones
 
-Revision ID: f941b4b3ce18
+Revision ID: d5b70ec1299f
 Revises: 
-Create Date: 2026-01-02 16:38:05.907929
+Create Date: 2026-01-03 13:29:14.969517
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f941b4b3ce18'
+revision: str = 'd5b70ec1299f'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -73,13 +73,19 @@ def upgrade() -> None:
     )
     op.create_table('usuario',
     sa.Column('id_usuario', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('nombre', sa.String(length=100), nullable=False),
+    sa.Column('username', sa.String(length=20), nullable=False),
+    sa.Column('nombre', sa.String(length=50), nullable=False),
+    sa.Column('contraseña', sa.String(), nullable=False),
+    sa.Column('apellido', sa.String(length=50), nullable=False),
     sa.Column('telefono', sa.String(length=11), nullable=False),
+    sa.Column('correo', sa.String(), nullable=False),
     sa.Column('activo', sa.Boolean(), server_default=sa.text('true'), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id_usuario'),
-    sa.UniqueConstraint('telefono')
+    sa.UniqueConstraint('telefono'),
+    sa.UniqueConstraint('username')
     )
+    op.create_index(op.f('ix_usuario_correo'), 'usuario', ['correo'], unique=True)
     op.create_table('cuenta_bancaria',
     sa.Column('id_cuenta', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('id_usuario', sa.Integer(), nullable=False),
@@ -218,6 +224,7 @@ def downgrade() -> None:
     op.drop_table('habito')
     op.drop_table('entrenamiento')
     op.drop_table('cuenta_bancaria')
+    op.drop_index(op.f('ix_usuario_correo'), table_name='usuario')
     op.drop_table('usuario')
     op.drop_table('libros')
     op.drop_table('gimnasio')

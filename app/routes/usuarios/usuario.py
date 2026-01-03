@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession 
 from fastapi import APIRouter, HTTPException, Depends, status
+from app.core.security import get_password_hash
 from app.db import get_db
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from app.models import Usuario
 from loguru import logger
 from app.schemas.usuario import (
@@ -77,19 +78,29 @@ async def crear_usuario(
     usuario_existente = (
         await db.execute(
             select(Usuario)
-            .where(Usuario.telefono == usuario.telefono)
+            .where(
+                or_(
+                    Usuario.telefono == usuario.telefono,
+                    Usuario.correo == usuario.correo,
+                    Usuario.nombre == usuario.nombre
+                )
+            )
         )
     ).scalar_one_or_none()
 
     if usuario_existente:
         raise HTTPException(
-            status_code=409, 
-            detail="Ya existe un usuario con ese numero."
+            status_code=status.HTTP_409_CONFLICT, 
+            detail="Ya existe un usuario con esa informaión."
         )
 
     crear = Usuario(
-        nombre=usuario.nombre, 
-        telefono=usuario.telefono
+        nombre=usuario.nombre,
+        username=usuario.username,
+        apellido=usuario.apellido,
+        contraseña=get_password_hash(usuario.contraseña),
+        telefono=usuario.telefono,
+        correo=usuario.correo
     )
     db.add(crear)
     await db.flush()

@@ -20,8 +20,12 @@ class Usuario(Base):
     __tablename__= "usuario"
 
     id_usuario: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    nombre: Mapped[str] = mapped_column(String(100))
-    telefono: Mapped[str] = mapped_column(String(11), unique=True)
+    username: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    nombre: Mapped[str] = mapped_column(String(50), nullable=False)
+    contraseña: Mapped[str] = mapped_column(String, nullable=False)
+    apellido: Mapped[str] = mapped_column(String(50), nullable=False)
+    telefono: Mapped[str] = mapped_column(String(11), unique=True, nullable=False)
+    correo: Mapped[str] = mapped_column(String, unique=True, index=True)
     activo: Mapped[bool] = mapped_column(Boolean, server_default=text("true"), default=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 
