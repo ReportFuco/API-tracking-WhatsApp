@@ -144,7 +144,7 @@ async def editar_usuario(
     if existente:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="La información"
+            detail="Correo, username o teléfono ya están en uso"
         )
     
     usuario = (await db.scalar(select(Usuario).where(Usuario.id_usuario == id_usuario)))
