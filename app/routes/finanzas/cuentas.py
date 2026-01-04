@@ -161,7 +161,8 @@ async def obtener_movimientos_cuenta(
     path="/cuentas/{id_cuenta}",
     summary="Modificar Cuenta",
     description="Modifica la cuenta del usuario",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    response_model=CuentaDetailResponse
 )
 async def editar_cuenta(
     id_cuenta:int,
@@ -217,7 +218,8 @@ async def editar_cuenta(
     path="/cuentas/{id_cuenta}",
     summary="Desactivar Cuenta",
     description="Desactiva la cuenta bancaria del usuario",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    response_model=CuentaDetailResponse
 )
 async def desactivar_cuenta(
     id_cuenta: int,

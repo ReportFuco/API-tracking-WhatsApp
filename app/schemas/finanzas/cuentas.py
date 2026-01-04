@@ -1,18 +1,18 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, Field, ConfigDict
 from datetime import datetime
 from app.models import EnumCuentas
 from typing import Type, Any, Optional
 from .movimientos import MovimientoSimpleResponse
 
 
-# Respuesta de las cuentas en general
+# Respuesta de las cuentas en general con transacciones
 class CuentasResponse(BaseModel):
-    id_cuenta: int
-    nombre_cuenta:str
-    nombre_usuario: Optional[str] = None
-    telefono_usuario: Optional[str] = None
-    tipo_cuenta: EnumCuentas
-    nombre_banco: Optional[str] = None
+    id_cuenta: int = Field(..., examples=[1])
+    nombre_cuenta:str = Field(..., min_length=5, max_length=30, examples=["Ahorro Falabella Fco"])
+    nombre_usuario: Optional[str] = Field(None, examples=["Francisco Arancibia"])
+    telefono_usuario: Optional[str] = Field(None, examples=["56978086719"])
+    tipo_cuenta: EnumCuentas = Field(...,examples=[EnumCuentas.CUENTA_AHORRO.value])
+    nombre_banco: Optional[str] = Field(..., examples=["Falabella"])
     created_at:datetime
     transacciones: int
 
@@ -38,30 +38,30 @@ class CuentasResponse(BaseModel):
 
         return data
     
-    model_config = {
-        "from_attributes":True,
-        "title": "Respuesta Cuentas",
-        "json_schema_extra":{
-            "example":{
-                "id_cuenta": 1,
-                "nombre_cuenta": "nombre de la cuenta",
-                "nombre_usuario": "Francisco Arancibia",
-                "telefono_usuario": "56978086719",
-                "tipo_cuenta": "Cuenta Corriente",
-                "nombre_banco": "Falabella",
-                "created_at": "2025-12-28T23:41:42.942668",
-                "transacciones": 3
-            }
-        }
-    }
+    model_config = ConfigDict(
+        from_attributes=True,
+        title="Respuesta Cuentas"
+    )
 
 
+# Detalle de la respuesta
+class CuentaDetailResponse(BaseModel):
 
+    info:str = Field(..., examples=["Información del usuario (creada, editada, eliminada)"])
+    detalle: CuentasResponse
+
+    model_config = ConfigDict(
+        title="Detalle respuesta cuenta",
+        from_attributes=True
+    )
+
+
+# Respuesta sin detalle de movimientos
 class CuentaSimpleResponse(BaseModel):
-    id_cuenta:int
-    nombre_cuenta: str
-    tipo_cuenta:str
-    nombre_banco: Optional[str] = None
+    id_cuenta:int = Field(..., examples=[1])
+    nombre_cuenta: str = Field(..., examples=["Cuenta Falabella corriente"])
+    tipo_cuenta:EnumCuentas = Field(..., examples=[EnumCuentas.CUENTA_AHORRO.value])
+    nombre_banco: Optional[str] = Field(None, examples=["Falabella"])
     created_at : datetime
 
     @model_validator(mode="before")
@@ -74,28 +74,34 @@ class CuentaSimpleResponse(BaseModel):
 
         if banco:
             data["nombre_banco"] = banco.nombre_banco
-            data["created_at"] = banco.created_at
 
         return data
+    
+    model_config = ConfigDict(
+        title="Respuesta simple cuenta"
+    )
 
+
+# Respuesta sin transacciones
 class CuentasUsuarioResponse(BaseModel):
-    id_usuario: int
-    nombre:str
-    telefono:str
+    id_usuario: int = Field(..., examples=[1])
+    nombre:str = Field(..., examples=["Francsico Arancibia"])
+    telefono:str = Field(..., examples=["56978086719"])
     cuentas: list[CuentaSimpleResponse] = []
     
-    model_config = {
-        "title": "Respuesta Cuentas Usuario",
-        "from_attributes": True
-    }
+    model_config = ConfigDict(
+        title="Respuesta cuentas usuario",
+        from_attributes=True
+    )
 
 
+# Con movimientos
 class CuentasMovimientosResponse(BaseModel):
-    id_cuenta: int
-    nombre_cuenta:str
-    nombre_usuario: str | None = None
-    tipo_cuenta: EnumCuentas
-    nombre_banco:str | None = None
+    id_cuenta: int = Field(..., examples=[1])
+    nombre_cuenta:str = Field(..., examples=["Cuenta de ahorro Fuco 1"])
+    nombre_usuario: Optional[str] = Field(None, examples=["Francisco Arancibia"])
+    tipo_cuenta: EnumCuentas = Field(..., examples=[EnumCuentas.CUENTA_AHORRO.value])
+    nombre_banco: Optional[str] = Field(None, examples=["Falabella"])
     created_at:datetime
     transacciones: list[MovimientoSimpleResponse] = []
 
@@ -124,27 +130,41 @@ class CuentasMovimientosResponse(BaseModel):
             data["transacciones"] = transacciones
 
         return data
+        
     
-    model_config = {
-        "from_attributes":True
-    }
+    model_config = ConfigDict(
+        title="Detalle respuesta movimientos cuentas",
+        from_attributes=True
+    )
 
+
+# ###################################
+#   SCHEMAS UTIZADOS PARA EL BODY
+# ###################################
 
 class CuentaCreate(BaseModel):
-    id_banco: int
-    nombre_cuenta: str
-    tipo_cuenta: EnumCuentas
+    
+    id_banco: int = Field(..., examples=[1])
+    nombre_cuenta: str = Field(..., examples=["Tu nombre de cuenta"])
+    tipo_cuenta: EnumCuentas = Field(..., examples=[EnumCuentas.CUENTA_AHORRO.value])
+
+    model_config = ConfigDict(
+        title="Crear cuenta"
+    )
 
 class CuentaPatch(BaseModel):
-    id_banco: Optional[int] = None
-    nombre_cuenta: Optional[str] = None
-    tipo_cuenta: Optional[EnumCuentas] = None
+    """Actualizar cuenta"""
 
-class CuentaDetailResponse(BaseModel):
-    info:str
-    detalle: CuentasResponse
-
-    model_config = {
-        "from_attributes": True
-    }
-
+    id_banco: Optional[int] = Field(
+        None, 
+        examples=[1]
+    )
+    nombre_cuenta: Optional[str] = Field(
+        None, 
+        examples=["Nuevo nombre de cuenta"]
+    )
+    
+    tipo_cuenta: Optional[EnumCuentas] = Field(
+        None, 
+        examples=[EnumCuentas.CUENTA_AHORRO.value]
+    )

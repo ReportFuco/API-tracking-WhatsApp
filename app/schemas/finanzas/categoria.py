@@ -1,21 +1,38 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
+from typing import Optional
 
 
 class CategoriaResponse(BaseModel):
-    id_categoria:int
-    nombre:str
-    created_at:datetime
+    id_categoria:int = Field(..., examples=[1])
+    nombre:str = Field(..., examples=["comida"])
+    created_at:datetime = Field(..., examples=["2026-01-03T22:11:30.105251"])
 
+    model_config = ConfigDict(
+        title="Respuesta categoría",
+        from_attributes=True
+    )
 
 class CategoriaCreate(BaseModel):
-    nombre:str
+    nombre:str = Field(..., examples=["comida"])
+
+    model_config = ConfigDict(
+        title="Crear categoría"
+    )
 
 
 class CategoriaPatch(BaseModel):
-    nombre: str | None = None
+    nombre: Optional[str] = Field(..., examples=["nueva categoría"])
 
+    model_config = ConfigDict(
+        title="Modificar categoría"
+    )
+    
 
 class CategoriaDetailResponse(BaseModel):
-    info: str
+    info: str = Field(..., examples=["detalle del usuario (POST, PATCH, DELETE)"])
     detalle: CategoriaResponse
+
+    model_config = ConfigDict(
+        title="Detalle respuesta categoría"
+    )

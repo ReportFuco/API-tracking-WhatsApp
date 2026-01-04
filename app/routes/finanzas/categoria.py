@@ -73,12 +73,14 @@ async def crear_categoria(
     categoria = query.scalar_one_or_none()
 
     if categoria:
-        raise HTTPException(409, detail="Categoría ya existe")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, 
+            detail="Categoría ya existe"
+        )
 
     ingreso_categoria = CategoriaFinanza(nombre=data.nombre)
     db.add(ingreso_categoria)
-    await db.commit()
-    await db.refresh(ingreso_categoria)
+    await db.flush()
 
     return CategoriaDetailResponse(
         info=f"Categoría {ingreso_categoria.nombre} creado correctamente.",
