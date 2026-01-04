@@ -1,5 +1,5 @@
 from app.schemas.finanzas import (
-    MovimientoResponse,
+    # MovimientoUsuarioResponse,
     MovimientoCreate
 )
 from fastapi import APIRouter, Depends, HTTPException,status
@@ -15,7 +15,7 @@ router = APIRouter(tags=["Finanzas · Movimientos"])
 
 @router.get(
     "/usuarios/{id_usuario}/movimientos",
-    # response_model=MovimientoResponse,
+    # response_model=MovimientoUsuarioResponse,
     summary="Obtener todos los movimientos del usuario.",
     description="Obtiene el movimiento en especifico",
     status_code=status.HTTP_200_OK
@@ -42,6 +42,36 @@ async def obtener_movimiento(
         )
     
     return movimiento_usuario
+
+
+@router.get(
+    path="/movimientos/{id_transaccion}",
+    summary="Obtener transacción",
+    description="Obtiene la información de la transacción realizada.",
+    status_code=status.HTTP_200_OK
+)
+async def obtener_movimientos(
+    id_transaccion: int,
+    db: AsyncSession = Depends(get_db)
+):
+    transaccion = (
+        await db.scalar(
+            select(Movimiento)
+            .where(Movimiento.id_transaccion == id_transaccion)
+            .options(
+                selectinload(Movimiento.categoria),
+                selectinload(Movimiento.cuenta)
+            )
+        )
+    )
+
+    if not transaccion:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Movimiento no encontrado."
+        )
+
+    return transaccion
 
 
 @router.post(

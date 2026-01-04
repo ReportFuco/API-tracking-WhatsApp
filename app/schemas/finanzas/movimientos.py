@@ -5,42 +5,68 @@ from pydantic import (
     ConfigDict
 )
 from typing import Optional, Any
-from app.models.finanzas import EnumTipoMovimiento, EnumTipoGasto
+from app.models.finanzas import (
+    EnumTipoMovimiento, 
+    EnumTipoGasto
+)
 from datetime import datetime
 
 
-class MovimientoResponse(BaseModel):
+# class MovimientoUsuarioResponse(BaseModel):
 
-    id_transaccion:int
-    nombre_usuario: Optional[str] = None
-    nombre_cuenta: Optional[str] = None
-    tipo_cuenta: Optional[str] = None
-    tipo_movimiento: EnumTipoMovimiento
-    tipo_gasto: EnumTipoGasto
-    monto: int
-    categoria: Optional[str] = None
-    created_at: datetime
+#     id_transaccion:int = Field(..., examples=[1])
+#     nombre_usuario: Optional[str] = Field(
+#         default=None, 
+#         examples=["Francisco Antonio"], 
+#         description="Nombre del usuario que realizó el movimiento."
+#     )
+#     nombre_cuenta: Optional[str] = Field(
+#         default=None, 
+#         examples=["Fuco cuenta rut"], 
+#         description="Nombre de la cuenta creada por el usuario."
+#     )
+#     tipo_cuenta: Optional[str] = Field(
+#         default=None, 
+#         examples=["Cuenta ahorro"], 
+#         description="Tipo de cuenta del usuario."
+#     )
+#     tipo_movimiento: EnumTipoMovimiento = Field(..., examples=[EnumTipoMovimiento.GASTO.value])
+#     tipo_gasto: EnumTipoGasto = Field(..., examples=[EnumTipoGasto.VARIABLE.value])
+#     monto: int = Field(..., examples=[30590], description="Monto de la transacción")
+#     categoria: Optional[str] = Field(
+#         default=None, 
+#         examples=["comida"], 
+#         description="Categoria asignada al movimiento."
+#     )
+#     created_at: datetime = Field(
+#         default=..., 
+#         examples=["2026-01-03T21:00:15.745034"], 
+#         description="Fecha de creación."
+#     )
 
-    @model_validator(mode='before')
-    @classmethod
-    def validate_info(cls, data: Any)->Any:
-        if not isinstance(data, dict):
-            data = data.__dict__
+#     @model_validator(mode='before')
+#     @classmethod
+#     def validate_info(cls, data: Any)->Any:
+#         if not isinstance(data, dict):
+#             data = data.__dict__
 
-        usuario = data.get("usuario")
-        categoria = data.get("categoria")
-        cuenta = data.get("cuenta")
+#         usuario = data.get("usuario")
+#         categoria = data.get("categoria")
+#         cuenta = data.get("cuenta")
 
-        if usuario:
-            data["nombre_usuario"] = usuario.nombre
-        if categoria:
-            data["categoria"] = categoria.nombre
-        if cuenta:
-            data["nombre_cuenta"] = cuenta.nombre_cuenta
-            data["tipo_cuenta"] = cuenta.tipo_cuenta
+#         if usuario:
+#             data["nombre_usuario"] = usuario.nombre
+#         if categoria:
+#             data["categoria"] = categoria.nombre
+#         if cuenta:
+#             data["nombre_cuenta"] = cuenta.nombre_cuenta
+#             data["tipo_cuenta"] = cuenta.tipo_cuenta
             
-        return data
+#         return data
     
+
+# class MovimientoResponse(BaseModel):
+
 
 class MovimientoSimpleResponse(BaseModel):
     id_transaccion:int
