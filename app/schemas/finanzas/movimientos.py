@@ -1,4 +1,9 @@
-from pydantic import BaseModel, model_validator
+from pydantic import (
+    BaseModel, 
+    model_validator, 
+    Field, 
+    ConfigDict
+)
 from typing import Optional, Any
 from app.models.finanzas import EnumTipoMovimiento, EnumTipoGasto
 from datetime import datetime
@@ -58,3 +63,34 @@ class MovimientoSimpleResponse(BaseModel):
             
         return data
     
+
+class MovimientoCreate(BaseModel):
+    id_usuario: int = Field(..., examples=[1], description="Ingresa el ID del usuario.")
+    id_categoria: int = Field(..., examples=[1], description="Ingresa el ID de la categoria.")
+    id_cuenta: int = Field(..., examples=[1], description="ID de la cuenta del usuario.")
+    tipo_movimiento: EnumTipoMovimiento = Field(
+        ..., 
+        examples=[EnumTipoMovimiento.GASTO.value], 
+        description="Se ingresa el tipo de movimiento, este puede ser 'gasto' o 'ingreso'."
+    )
+    tipo_gasto: EnumTipoGasto = Field(
+        ..., 
+        examples=[EnumTipoGasto.FIJO.value], 
+        description="Se ingresa el tipo de gasto, puede ser 'variable' o 'fijo'."
+    )
+    monto: int = Field(
+        ..., 
+        examples=[3500], 
+        description="Ingresa el monto del movimiento.",
+        gt=0
+    )
+    
+    descripcion: Optional[str] = Field(
+        None, 
+        examples=["Aquí va la descripción"], 
+        description="Ingresa una descripción del gasto, algún detalle."
+    )
+
+    model_config = ConfigDict(
+        title="Crear movimiento"
+    )

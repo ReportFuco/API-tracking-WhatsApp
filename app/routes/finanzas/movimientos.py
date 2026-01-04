@@ -1,5 +1,6 @@
 from app.schemas.finanzas import (
     MovimientoResponse,
+    MovimientoCreate
 )
 from fastapi import APIRouter, Depends, HTTPException,status
 from app.models import Usuario, Movimiento, CategoriaFinanza, CuentaBancaria
@@ -42,3 +43,54 @@ async def obtener_movimiento(
     
     return movimiento_usuario
 
+
+@router.post(
+    path="/movimientos",
+    summary="crear movimiento",
+    status_code=status.HTTP_201_CREATED
+)
+async def crear_movimiento(
+    data:MovimientoCreate,
+    db:AsyncSession = Depends(get_db)
+):
+    categoria = (
+        await db.scalar(
+            select(CategoriaFinanza)
+            .where(CategoriaFinanza.id_categoria == data.id_categoria)
+        )
+    )
+    if not categoria:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Categoría no encontrada."
+        )
+    cuenta = (
+        await db.scalar(
+            select(CuentaBancaria)
+            .where(
+                CuentaBancaria.id_cuenta == data.id_cuenta,
+                CuentaBancaria.activo.is_(True),
+                CuentaBancaria.id_usuario == data.id_usuario
+            )
+        )
+    )
+    if not cuenta:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cuenta no encontrada o no pertenece al usuario."
+        )
+    
+    movimiento = Movimiento(
+        id_usuario=data.id_usuario,
+        id_categoria=categoria.id_categoria,
+        id_cuenta=cuenta.id_cuenta,
+        tipo_movimiento=data.tipo_movimiento,
+        tipo_gasto=data.tipo_gasto,
+        monto=data.monto,
+        descripcion=data.descripcion    
+    )
+    db.add(movimiento)
+    await db.flush()
+    await db.refresh(movimiento)
+
+    return movimiento
