@@ -1,9 +1,20 @@
 from app.schemas.finanzas import (
-    # MovimientoUsuarioResponse,
-    MovimientoCreate
+    MovimientoCreate,
+    MovimientoUsuarioResponse,
+    MovimientoResponse
 )
-from fastapi import APIRouter, Depends, HTTPException,status
-from app.models import Usuario, Movimiento, CategoriaFinanza, CuentaBancaria
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status
+)
+from app.models import (
+    Usuario,
+    Movimiento,
+    CategoriaFinanza,
+    CuentaBancaria
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from sqlalchemy import select
@@ -12,13 +23,12 @@ from sqlalchemy.orm import selectinload
 
 router = APIRouter(tags=["Finanzas · Movimientos"])
 
-
 @router.get(
     "/usuarios/{id_usuario}/movimientos",
-    # response_model=MovimientoUsuarioResponse,
     summary="Obtener todos los movimientos del usuario.",
     description="Obtiene el movimiento en especifico",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    response_model=MovimientoUsuarioResponse
 )
 async def obtener_movimiento(
     id_usuario: int,
@@ -30,7 +40,10 @@ async def obtener_movimiento(
             .where(Usuario.id_usuario == id_usuario)
             .options(
                 selectinload(Usuario.transacciones)
-                .selectinload(Movimiento.categoria)
+                    .selectinload(Movimiento.categoria),
+                selectinload(Usuario.transacciones)
+                    .selectinload(Movimiento.cuenta)
+                    .selectinload(CuentaBancaria.banco)
             )
         )
     )

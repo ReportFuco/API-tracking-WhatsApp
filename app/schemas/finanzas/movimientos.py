@@ -12,69 +12,17 @@ from app.models.finanzas import (
 from datetime import datetime
 
 
-# class MovimientoUsuarioResponse(BaseModel):
+class MovimientoResponse(BaseModel):
+    id_transaccion:int = Field(..., examples=[1])
+    tipo_movimiento: EnumTipoMovimiento = Field(..., examples=[EnumTipoMovimiento.GASTO.value])
+    tipo_gasto: EnumTipoGasto = Field(..., examples=[EnumTipoGasto.FIJO.value])
+    categoria: Optional[str] = Field(None, examples=["comida"])
+    nombre_cuenta: Optional[str] = Field(None, examples=["Cuenta de Ahorro Banco estado"])
+    tipo_cuenta: Optional[str] = Field(None, examples=["Cuenta ahorro"])
+    nombre_banco: Optional[str] = Field(None, examples=["Banco Estado"])
 
-#     id_transaccion:int = Field(..., examples=[1])
-#     nombre_usuario: Optional[str] = Field(
-#         default=None, 
-#         examples=["Francisco Antonio"], 
-#         description="Nombre del usuario que realizó el movimiento."
-#     )
-#     nombre_cuenta: Optional[str] = Field(
-#         default=None, 
-#         examples=["Fuco cuenta rut"], 
-#         description="Nombre de la cuenta creada por el usuario."
-#     )
-#     tipo_cuenta: Optional[str] = Field(
-#         default=None, 
-#         examples=["Cuenta ahorro"], 
-#         description="Tipo de cuenta del usuario."
-#     )
-#     tipo_movimiento: EnumTipoMovimiento = Field(..., examples=[EnumTipoMovimiento.GASTO.value])
-#     tipo_gasto: EnumTipoGasto = Field(..., examples=[EnumTipoGasto.VARIABLE.value])
-#     monto: int = Field(..., examples=[30590], description="Monto de la transacción")
-#     categoria: Optional[str] = Field(
-#         default=None, 
-#         examples=["comida"], 
-#         description="Categoria asignada al movimiento."
-#     )
-#     created_at: datetime = Field(
-#         default=..., 
-#         examples=["2026-01-03T21:00:15.745034"], 
-#         description="Fecha de creación."
-#     )
-
-#     @model_validator(mode='before')
-#     @classmethod
-#     def validate_info(cls, data: Any)->Any:
-#         if not isinstance(data, dict):
-#             data = data.__dict__
-
-#         usuario = data.get("usuario")
-#         categoria = data.get("categoria")
-#         cuenta = data.get("cuenta")
-
-#         if usuario:
-#             data["nombre_usuario"] = usuario.nombre
-#         if categoria:
-#             data["categoria"] = categoria.nombre
-#         if cuenta:
-#             data["nombre_cuenta"] = cuenta.nombre_cuenta
-#             data["tipo_cuenta"] = cuenta.tipo_cuenta
-            
-#         return data
-    
-
-# class MovimientoResponse(BaseModel):
-
-
-class MovimientoSimpleResponse(BaseModel):
-    id_transaccion:int
-    tipo_movimiento: EnumTipoMovimiento
-    tipo_gasto: EnumTipoGasto
-    categoria: str
-    monto:int
-    created_at: datetime
+    monto:int = Field(..., examples=[5000])
+    created_at: datetime = Field(..., examples=["2026-01-03T18:37:18.638764"])
 
     @model_validator(mode='before')
     @classmethod
@@ -83,12 +31,33 @@ class MovimientoSimpleResponse(BaseModel):
             data = data.__dict__
 
         categoria = data.get("categoria")
+        cuenta = data.get("cuenta")
+        banco = cuenta.banco
 
         if categoria:
             data["categoria"] = categoria.nombre
-            
+        if cuenta:
+            data["nombre_cuenta"] = cuenta.nombre_cuenta
+            data["tipo_cuenta"] = cuenta.tipo_cuenta
+        if banco:
+            data["nombre_banco"] = banco.nombre_banco
+
         return data
     
+    model_config = ConfigDict(
+        title="Respuesta movimiento",
+        from_attributes=True
+    )
+    
+
+class MovimientoUsuarioResponse(BaseModel):
+    username: str = Field(..., examples=["Fuco"])
+    transacciones: list[MovimientoResponse]
+
+    model_config = ConfigDict(
+        title="Respuesta movimiento usuario"
+    )
+
 
 class MovimientoCreate(BaseModel):
     id_usuario: int = Field(..., examples=[1], description="Ingresa el ID del usuario.")

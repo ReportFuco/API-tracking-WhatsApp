@@ -2,7 +2,7 @@ from pydantic import BaseModel, model_validator, Field, ConfigDict
 from datetime import datetime
 from app.models import EnumCuentas
 from typing import Type, Any, Optional
-from .movimientos import MovimientoSimpleResponse
+from .movimientos import MovimientoResponse
 
 
 # Respuesta de las cuentas en general con transacciones
@@ -103,7 +103,7 @@ class CuentasMovimientosResponse(BaseModel):
     tipo_cuenta: EnumCuentas = Field(..., examples=[EnumCuentas.CUENTA_AHORRO.value])
     nombre_banco: Optional[str] = Field(None, examples=["Falabella"])
     created_at:datetime
-    transacciones: list[MovimientoSimpleResponse] = []
+    transacciones: list[MovimientoResponse] = []
 
 
     @model_validator(mode="before")

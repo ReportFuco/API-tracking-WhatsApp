@@ -5,6 +5,7 @@ from app import settings
 from app.routes import router
 from app.core.logging import setup_logging
 from app.core.middleware import logging_middleware
+from fastapi_swagger_dark import install
 
 
 setup_logging()
@@ -12,12 +13,14 @@ setup_logging()
 app = FastAPI(
     title=settings.TITLE_API,
     version=settings.VERSION_API,
-    description="API encargada de realizar registros a áreas como finanzas, deportes, hábitos entre otros."
+    description="API encargada de realizar registros a áreas como finanzas, deportes, hábitos entre otros.",
+    redoc_url=None,
+    docs_url=None
 )
 
 app.middleware("http")(logging_middleware)
 app.include_router(router)
-
+install(app)
 
 @app.get(
     path="/", 
