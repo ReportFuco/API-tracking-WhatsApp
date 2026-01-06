@@ -1,8 +1,8 @@
 """reset migraciones
 
-Revision ID: dbef5ab4f55a
+Revision ID: a906b77edcc7
 Revises: 
-Create Date: 2026-01-03 18:26:53.481922
+Create Date: 2026-01-06 19:01:49.951955
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'dbef5ab4f55a'
+revision: str = 'a906b77edcc7'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -75,17 +75,18 @@ def upgrade() -> None:
     sa.Column('id_usuario', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('username', sa.String(length=20), nullable=False),
     sa.Column('nombre', sa.String(length=50), nullable=False),
-    sa.Column('contraseña', sa.String(), nullable=False),
+    sa.Column('hashed_password', sa.String(), nullable=False),
     sa.Column('apellido', sa.String(length=50), nullable=False),
     sa.Column('telefono', sa.String(length=11), nullable=False),
-    sa.Column('correo', sa.String(), nullable=False),
-    sa.Column('activo', sa.Boolean(), server_default=sa.text('true'), nullable=False),
+    sa.Column('email', sa.String(), nullable=False),
+    sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=False),
+    sa.Column('is_superuser', sa.Boolean(), server_default=sa.text('false'), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id_usuario'),
     sa.UniqueConstraint('telefono'),
     sa.UniqueConstraint('username')
     )
-    op.create_index(op.f('ix_usuario_correo'), 'usuario', ['correo'], unique=True)
+    op.create_index(op.f('ix_usuario_email'), 'usuario', ['email'], unique=True)
     op.create_table('cuenta_bancaria',
     sa.Column('id_cuenta', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('id_usuario', sa.Integer(), nullable=False),
@@ -224,7 +225,7 @@ def downgrade() -> None:
     op.drop_table('habito')
     op.drop_table('entrenamiento')
     op.drop_table('cuenta_bancaria')
-    op.drop_index(op.f('ix_usuario_correo'), table_name='usuario')
+    op.drop_index(op.f('ix_usuario_email'), table_name='usuario')
     op.drop_table('usuario')
     op.drop_table('libros')
     op.drop_table('gimnasio')

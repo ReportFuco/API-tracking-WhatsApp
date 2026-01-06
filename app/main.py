@@ -1,6 +1,7 @@
 from fastapi import FastAPI, status
 from fastapi.responses import RedirectResponse
 from app import settings
+from app.auth.routes import router as auth_router
 
 from app.routes import router
 from app.core.logging import setup_logging
@@ -14,13 +15,14 @@ app = FastAPI(
     title=settings.TITLE_API,
     version=settings.VERSION_API,
     description="API encargada de realizar registros a áreas como finanzas, deportes, hábitos entre otros.",
-    redoc_url=None,
-    docs_url=None
+    # redoc_url=None,
+    # docs_url=None
 )
 
 app.middleware("http")(logging_middleware)
 app.include_router(router)
-install(app)
+app.include_router(auth_router)
+# install(app)
 
 @app.get(
     path="/", 

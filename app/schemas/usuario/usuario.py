@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, model_validator, Field, ConfigDict
 from datetime import datetime
 from typing import Any, Type, Optional
 
@@ -8,9 +8,7 @@ class UsuarioCreate(BaseModel):
     username:str = Field(..., min_length=3, max_length=20, examples=["Fuco"])
     nombre: str = Field(..., min_length=1, max_length=50,examples=["Francisco Antonio", "Felipe Ignacio"])
     apellido: str = Field(..., min_length=1, max_length=50, examples=["Arancibia Guaiquiante", "Quinteros Berrios"])
-    contraseña: str = Field(..., min_length=8, max_length=50, examples=["ChanchitoFeliz123."])
     telefono: str = Field(..., examples=["56978086719"])
-    correo: EmailStr = Field(..., examples=["frarancibia.g@gmail.com"])
 
     @model_validator(mode="before")
     @classmethod
@@ -62,4 +60,22 @@ class UsuarioDetailResponse(BaseModel):
 
     model_config = ConfigDict(
         title="Detalle de respuesta"
+    )
+
+
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
+
+
+class UsuarioPerfilResponse(BaseModel):
+    id_usuario: int = Field(..., examples=[1])
+    username: str = Field(..., examples=["Fuco"])
+    nombre: str = Field(..., examples=["Francisco"])
+    apellido: str = Field(..., examples=["Arancibia"])
+    telefono: str = Field(..., examples=["56978086719"])
+    created_at: datetime
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        title="Perfil de Usuario"
     )

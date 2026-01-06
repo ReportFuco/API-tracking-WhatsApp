@@ -6,7 +6,7 @@ from sqlalchemy import select, or_, and_
 from app.models import Usuario
 from loguru import logger
 from app.schemas.usuario import (
-    UsuarioCreate,  
+    UsuarioPerfilResponse,  
     UsuarioResponse,
     UsuarioPatchSchema,
     UsuarioDetailResponse
@@ -14,6 +14,55 @@ from app.schemas.usuario import (
 
 
 router = APIRouter(tags=["Usuario"])
+
+
+@router.post(
+    "/perfil",
+    response_model=UsuarioPerfilResponse,
+    status_code=status.HTTP_201_CREATED
+)
+async def crear_perfil(
+    data: UsuarioPerfilCreate,
+    user = Depends(current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    existente = await db.scalar(
+        select(Usuario).where(Usuario.auth_user_id == user.id)
+    )
+
+    if existente:
+        raise HTTPException(
+            status_code=409,
+            detail="El usuario ya tiene un perfil"
+        )
+
+    perfil = Usuario(
+        auth_user_id=user.id,
+        **data.model_dump()
+    )
+
+    db.add(perfil)
+    await db.flush()
+
+    return perfil
+
+
+@router.get(
+    "/perfil",
+    response_model=UsuarioPerfilResponse
+)
+async def obtener_mi_perfil(
+    user = Depends(current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    perfil = await db.scalar(
+        select(Usuario).where(Usuario.auth_user_id == user.id)
+    )
+
+    if not perfil:
+        raise HTTPException(404, "Perfil no encontrado")
+
+    return perfil
 
 
 @router.get(
@@ -62,55 +111,6 @@ async def obtener_usuario_id(
             detail="Usuario no encontrado o desactivado.")
 
     return usuario        
-
-
-@router.post(
-    "/",
-    summary="Crear usuario",
-    description="Crea un nuevo usuario dentro de la base de datos",
-    response_model=UsuarioDetailResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-async def crear_usuario(
-    usuario:UsuarioCreate, 
-    db:AsyncSession = Depends(get_db)
-):
-    usuario_existente = (
-        await db.execute(
-            select(Usuario)
-            .where(
-                or_(
-                    Usuario.telefono == usuario.telefono,
-                    Usuario.correo == usuario.correo,
-                    Usuario.nombre == usuario.nombre
-                )
-            )
-        )
-    ).scalar_one_or_none()
-
-    if usuario_existente:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, 
-            detail="Ya existe un usuario con esa informaión."
-        )
-
-    crear = Usuario(
-        nombre=usuario.nombre,
-        username=usuario.username,
-        apellido=usuario.apellido,
-        contraseña=get_password_hash(usuario.contraseña),
-        telefono=usuario.telefono,
-        correo=usuario.correo
-    )
-    db.add(crear)
-    await db.flush()
-
-    logger.info(f"Usuario creado", extra={"telefono": crear.telefono})
-    
-    return UsuarioDetailResponse(
-        mensaje=f"El usuario {crear.nombre} ha sido creado.",
-        detalle=UsuarioResponse.model_validate(crear)
-    )
 
 
 @router.patch(
