@@ -22,12 +22,9 @@ class Usuario(Base):
     id_usuario: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     nombre: Mapped[str] = mapped_column(String(50), nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     apellido: Mapped[str] = mapped_column(String(50), nullable=False)
     telefono: Mapped[str] = mapped_column(String(11), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String, unique=True, index=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("true"), default=True)
-    is_superuser: Mapped[bool] = mapped_column(Boolean, server_default=text("false"), default=False)
     auth_user_id = mapped_column(
     ForeignKey("user.id"),
         unique=True,

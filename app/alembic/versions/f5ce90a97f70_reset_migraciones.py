@@ -1,8 +1,8 @@
 """reset migraciones
 
-Revision ID: a906b77edcc7
+Revision ID: f5ce90a97f70
 Revises: 
-Create Date: 2026-01-06 19:01:49.951955
+Create Date: 2026-01-11 01:36:18.010496
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a906b77edcc7'
+revision: str = 'f5ce90a97f70'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -71,18 +71,28 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id_libro'),
     sa.UniqueConstraint('nombre_libro')
     )
+    op.create_table('user',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('email', sa.String(), nullable=False),
+    sa.Column('hashed_password', sa.String(), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('is_superuser', sa.Boolean(), nullable=False),
+    sa.Column('is_verified', sa.Boolean(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
     op.create_table('usuario',
     sa.Column('id_usuario', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('username', sa.String(length=20), nullable=False),
     sa.Column('nombre', sa.String(length=50), nullable=False),
-    sa.Column('hashed_password', sa.String(), nullable=False),
     sa.Column('apellido', sa.String(length=50), nullable=False),
     sa.Column('telefono', sa.String(length=11), nullable=False),
     sa.Column('email', sa.String(), nullable=False),
-    sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=False),
-    sa.Column('is_superuser', sa.Boolean(), server_default=sa.text('false'), nullable=False),
+    sa.Column('auth_user_id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['auth_user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id_usuario'),
+    sa.UniqueConstraint('auth_user_id'),
     sa.UniqueConstraint('telefono'),
     sa.UniqueConstraint('username')
     )
@@ -227,6 +237,8 @@ def downgrade() -> None:
     op.drop_table('cuenta_bancaria')
     op.drop_index(op.f('ix_usuario_email'), table_name='usuario')
     op.drop_table('usuario')
+    op.drop_index(op.f('ix_user_email'), table_name='user')
+    op.drop_table('user')
     op.drop_table('libros')
     op.drop_table('gimnasio')
     op.drop_table('ejercicios')

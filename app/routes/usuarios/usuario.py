@@ -1,20 +1,20 @@
 from sqlalchemy.ext.asyncio import AsyncSession 
 from fastapi import APIRouter, HTTPException, Depends, status
-from app.core.security import get_password_hash
 from app.db import get_db
 from sqlalchemy import select, or_, and_
 from app.models import Usuario
 from loguru import logger
+from app.auth.fastapi_users import current_user
 from app.schemas.usuario import (
     UsuarioPerfilResponse,  
     UsuarioResponse,
     UsuarioPatchSchema,
-    UsuarioDetailResponse
+    UsuarioDetailResponse,
+    UsuarioCreate
 )
 
 
 router = APIRouter(tags=["Usuario"])
-
 
 @router.post(
     "/perfil",
@@ -22,7 +22,7 @@ router = APIRouter(tags=["Usuario"])
     status_code=status.HTTP_201_CREATED
 )
 async def crear_perfil(
-    data: UsuarioPerfilCreate,
+    data: UsuarioCreate,
     user = Depends(current_user),
     db: AsyncSession = Depends(get_db),
 ):

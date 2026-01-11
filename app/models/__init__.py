@@ -21,6 +21,7 @@ from .entrenamiento import (
     EnumEstadoEntrenamiento
 )
 
+from .usuario_auth import User
 
 __all__ = [
     "Ejercicios", 
@@ -44,5 +45,6 @@ __all__ = [
     "Habito", 
     "RegistroHabito",
     "Usuario", 
-    "Mensaje"
+    "Mensaje",
+    "User"
 ]

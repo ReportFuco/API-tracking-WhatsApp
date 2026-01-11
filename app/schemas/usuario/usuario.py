@@ -1,7 +1,7 @@
 from pydantic import BaseModel, model_validator, Field, ConfigDict
 from datetime import datetime
 from typing import Any, Type, Optional
-
+ 
 
 class UsuarioCreate(BaseModel):
 
@@ -9,6 +9,7 @@ class UsuarioCreate(BaseModel):
     nombre: str = Field(..., min_length=1, max_length=50,examples=["Francisco Antonio", "Felipe Ignacio"])
     apellido: str = Field(..., min_length=1, max_length=50, examples=["Arancibia Guaiquiante", "Quinteros Berrios"])
     telefono: str = Field(..., examples=["56978086719"])
+    email: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -61,11 +62,6 @@ class UsuarioDetailResponse(BaseModel):
     model_config = ConfigDict(
         title="Detalle de respuesta"
     )
-
-
-from pydantic import BaseModel, Field, ConfigDict
-from datetime import datetime
-
 
 class UsuarioPerfilResponse(BaseModel):
     id_usuario: int = Field(..., examples=[1])
