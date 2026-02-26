@@ -62,17 +62,17 @@ async def obtener_usuarios(
 )
 async def editar_usuario(
     data: UsuarioPatchSchema, 
-    id_usuario:int, 
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_user)
 ):
     existente = (
         await db.execute(
             select(Usuario)
             .where(
                 and_(
-                    Usuario.id_usuario != id_usuario,
+                    Usuario.id_usuario != user.id,
                     or_(
-                        Usuario.correo == data.correo,
+                        Usuario.email == data.email,
                         Usuario.username == data.username,
                         Usuario.telefono == data.telefono
                     )
@@ -87,7 +87,7 @@ async def editar_usuario(
             detail="Correo, username o teléfono ya están en uso"
         )
     
-    usuario = (await db.scalar(select(Usuario).where(Usuario.id_usuario == id_usuario)))
+    usuario = (await db.scalar(select(Usuario).where(Usuario.id_usuario == user.id)))
 
     cambios = data.model_dump(exclude_unset=True).items()
 

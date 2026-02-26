@@ -1,1 +1,1 @@
-select * from usuario;
+select * from "user";

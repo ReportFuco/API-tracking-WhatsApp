@@ -36,7 +36,7 @@ class UsuarioPatchSchema(BaseModel):
     nombre: Optional[str] = Field(default=None, examples=["Tu nombre"])
     apellido: Optional[str] = Field(default=None, examples=["Tu Apellido"])
     telefono: Optional[str] = Field(default=None, examples=["Tu teléfono"])
-    correo: Optional[str] = Field(default=None, examples=["Tu correo"])
+    email: Optional[str] = Field(default=None, examples=["Tu correo"])
 
     model_config = ConfigDict(title="Modificar Usuario")
 
