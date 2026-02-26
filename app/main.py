@@ -6,7 +6,6 @@ from app.auth.routes import router as auth_router
 from app.routes import router
 from app.core.logging import setup_logging
 from app.core.middleware import logging_middleware
-# from fastapi_swagger_dark import install
 
 
 setup_logging()
@@ -18,7 +17,6 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
-# install(app)
 
 app.middleware("http")(logging_middleware)
 app.include_router(router)

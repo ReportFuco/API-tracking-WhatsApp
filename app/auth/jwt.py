@@ -1,5 +1,4 @@
 from fastapi_users.authentication import JWTStrategy
-from fastapi import Depends
 from app.settings import SECRET
 
 
