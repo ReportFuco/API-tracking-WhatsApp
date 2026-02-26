@@ -9,7 +9,7 @@ class UsuarioAuthRead(schemas.BaseUser[int]):
     is_superuser: bool
 
 
-class UsuarioAuthCreate(schemas.BaseUserCreate):
+class UsuarioAuthCreate(schemas.CreateUpdateDictModel):
 
     email: EmailStr = Field(examples=["tu-correo@gmail.com"])
     password: str = Field(examples=["Tu clave secreta"], min_length=6, max_length=20)

@@ -47,7 +47,7 @@ class UsuarioResponse(BaseModel):
     nombre: str = Field(..., examples=["Francisco Antonio"])
     apellido: str = Field(..., examples=["Arancibia Guaiquiante"])
     telefono: str = Field(..., examples=["56978086719"])
-    correo: str = Field(..., examples=["frarancibia.g@gmail.com"])
+    email: str = Field(..., examples=["frarancibia.g@gmail.com"])
     created_at: datetime = Field(examples=["2025-12-29T23:43:49.887Z"])
 
     model_config = ConfigDict(

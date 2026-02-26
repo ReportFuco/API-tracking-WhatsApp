@@ -4,47 +4,16 @@ from app.db import get_db
 from sqlalchemy import select, or_, and_
 from app.models import Usuario
 from loguru import logger
-from app.auth.fastapi_users import current_user
+from app.auth.fastapi_users import current_user, current_superuser
 from app.schemas.usuario import (
     UsuarioPerfilResponse,  
     UsuarioResponse,
     UsuarioPatchSchema,
-    UsuarioDetailResponse,
-    UsuarioCreate
+    UsuarioDetailResponse
 )
 
 
 router = APIRouter(tags=["Usuario"])
-
-@router.post(
-    "/perfil",
-    response_model=UsuarioPerfilResponse,
-    status_code=status.HTTP_201_CREATED
-)
-async def crear_perfil(
-    data: UsuarioCreate,
-    user = Depends(current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    existente = await db.scalar(
-        select(Usuario).where(Usuario.auth_user_id == user.id)
-    )
-
-    if existente:
-        raise HTTPException(
-            status_code=409,
-            detail="El usuario ya tiene un perfil"
-        )
-
-    perfil = Usuario(
-        auth_user_id=user.id,
-        **data.model_dump()
-    )
-
-    db.add(perfil)
-    await db.flush()
-
-    return perfil
 
 
 @router.get(
@@ -72,49 +41,20 @@ async def obtener_mi_perfil(
     response_model=list[UsuarioResponse],
     status_code=status.HTTP_200_OK
 )
-async def obtener_usuarios(db: AsyncSession = Depends(get_db)):
+async def obtener_usuarios(
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_superuser)
+):
     
     usuarios = (
-        await db.execute(
-            select(Usuario)
-            .where(Usuario.activo.is_(True))
-        )
+        await db.execute(select(Usuario))
     ).scalars().all()
 
     return usuarios
 
 
-@router.get(
-    "/{id_usuario}",
-    summary="Obtener usuario por su ID",
-    description="Obtiene el usuario mediante su ID",
-    response_model=UsuarioResponse,
-    status_code=status.HTTP_200_OK
-)
-async def obtener_usuario_id(
-    id_usuario:int, 
-    db: AsyncSession = Depends(get_db)
-):
-    usuario = (
-        await db.execute(
-            select(Usuario)
-            .where(
-                Usuario.id_usuario == id_usuario,
-                Usuario.activo.is_(True)
-            )
-        )
-    ).scalar_one_or_none()
-
-    if not usuario:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Usuario no encontrado o desactivado.")
-
-    return usuario        
-
-
 @router.patch(
-    "/{id_usuario}",
+    "/",
     summary="Editar datos Usuario",
     description="Enpoint encargado de modificar la información del usuario",
     response_model=UsuarioDetailResponse,
