@@ -124,7 +124,7 @@ async def actualizar_categoria(
     response_model=CategoriaDetailResponse,
     summary="Eliminar categoría",
     description="Elimina una categoría existente",
-    status_code=status.HTTP_204_NO_CONTENT
+    status_code=status.HTTP_200_OK
 )
 async def eliminar_categoria(
     id_categoria:int,

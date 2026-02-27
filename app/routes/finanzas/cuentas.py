@@ -11,7 +11,7 @@ from app.schemas.finanzas import (
     CuentasMovimientosResponse,
     CuentaPatch
 )
-from sqlalchemy.orm import selectinload, with_loader_criteria
+from sqlalchemy.orm import selectinload
 from app.auth.fastapi_users import current_user, current_superuser
 
 
@@ -115,7 +115,7 @@ async def crear_cuenta_bancaria(
     summary="Obtener cuenta y movimientos",
     description="Obtiene una cuenta de un usuario y sus movimientos",
     status_code=status.HTTP_200_OK,
-    response_model=CuentasMovimientosResponse
+    # response_model=CuentasMovimientosResponse
 )
 async def obtener_movimientos_cuenta(
     id_cuenta:int,
