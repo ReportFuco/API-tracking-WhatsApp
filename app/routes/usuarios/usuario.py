@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, HTTPException, Depends, status
 from app.db import get_db
 from sqlalchemy import select, or_, and_
-from app.models import Usuario
+from app.models import Usuario, User
 from loguru import logger
 from app.auth.fastapi_users import current_user, current_superuser
 from app.schemas.usuario import (
@@ -29,7 +29,10 @@ async def obtener_mi_perfil(
     )
 
     if not perfil:
-        raise HTTPException(404, "Perfil no encontrado")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Perfil no encontrado"
+        )
 
     return perfil
 
@@ -122,14 +125,15 @@ async def editar_usuario(
 )
 async def eliminar_usuario_soft(
     id_usuario: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_user)
 ):
     usuario = (
         await db.execute(
-            select(Usuario)
+            select(User)
             .where(
-                Usuario.id_usuario == id_usuario,
-                Usuario.activo.is_(True)
+                User.id == id_usuario,
+                User.is_active.is_(True)
             )
         )
     ).scalar_one_or_none()
@@ -140,14 +144,7 @@ async def eliminar_usuario_soft(
             detail="Usuario no encontrado o ya ha sido desactivado."
         )
 
-    usuario.activo = False
-
-    await db.flush()
-
-    return UsuarioDetailResponse(
-        mensaje=f"El usuario {usuario.nombre} ha sido desactivado.",
-        detalle=UsuarioResponse.model_validate(usuario)
-    )
+    usuario.is_active = False
 
 
 @router.delete(
@@ -158,7 +155,8 @@ async def eliminar_usuario_soft(
 )
 async def eliminar_usuario_permanete(
     id_usuario:int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_superuser)
 ):
     usuario = (
         await db.execute(

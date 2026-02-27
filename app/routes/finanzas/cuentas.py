@@ -7,70 +7,61 @@ from app.schemas.finanzas import (
     CuentasResponse,
     CuentaCreate,
     CuentaDetailResponse,
-    CuentasUsuarioResponse,
+    CuentaResponse,
     CuentasMovimientosResponse,
     CuentaPatch
 )
 from sqlalchemy.orm import selectinload, with_loader_criteria
+from app.auth.fastapi_users import current_user, current_superuser
 
 
-router = APIRouter(tags=["Finanzas · Cuentas"])
+router = APIRouter(prefix="/cuentas", tags=["Finanzas · Cuentas"])
 
 
 @router.get(
-    path="/usuarios/{id_usuario}/cuentas",
-    response_model=CuentasUsuarioResponse,
-    summary="Obtener Cuentas del usuario por ID",
+    path="/",
+    response_model=list[CuentaResponse],
+    summary="Obtener Cuentas del Usuario",
     description="Muestra todas las cuentas del usuario por su ID",
     status_code=status.HTTP_200_OK
 )
 async def obtener_cuentas_usuario(
-    id_usuario:int,
+    user = Depends(current_user),
     db:AsyncSession = Depends(get_db)
 ):    
-    usuario = (
+    cuentas = (
         await db.execute(
-            select(Usuario)
-            .where(Usuario.id_usuario == id_usuario)
-            .options(
-                selectinload(Usuario.transacciones),
-                selectinload(Usuario.cuentas)
-                    .selectinload(CuentaBancaria.banco),
-                with_loader_criteria(
-                    CuentaBancaria,
-                    CuentaBancaria.activo.is_(True),
-                    include_aliases=True
-                )
-
-            )
+            select(CuentaBancaria)
+            .where(CuentaBancaria.id_usuario == user.id)
+            .options(selectinload(CuentaBancaria.banco))
         )
-    ).scalar_one_or_none()
+    ).scalars().all()
 
-    if not usuario:
+    if not cuentas:
         raise HTTPException(
             status_code=404,
-            detail="Usuario no encontrado"
+            detail="Cuentas no Encontradas"
         )
     
-    return usuario
+    return cuentas
 
 
 @router.post(
-    path="/usuarios/{id_usuario}/cuentas",
+    path="/",
     summary="Crear cuenta bancaria",
     description="Crea la cuenta bancaria para realizar movimientos, ej: cuenta rut, credito etc",
     status_code=status.HTTP_201_CREATED,
-    response_model=CuentaDetailResponse
+    response_model=CuentasResponse
 )
 async def crear_cuenta_bancaria(
-    id_usuario:int,
     data: CuentaCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_user),
 ):
     usuario = (
         await db.execute(
             select(Usuario)
-            .where(Usuario.id_usuario == id_usuario, Usuario.activo.is_(True))
+            .where(Usuario.id_usuario == user.id)
             .options(selectinload(Usuario.cuentas))
         )
     ).scalar_one_or_none()
@@ -102,7 +93,7 @@ async def crear_cuenta_bancaria(
 
     # Crear la cuenta
     nueva_cuenta = CuentaBancaria(
-        id_usuario=id_usuario,
+        id_usuario=user.id,
         id_banco=data.id_banco,
         nombre_cuenta=data.nombre_cuenta,
         tipo_cuenta=data.tipo_cuenta
@@ -116,17 +107,14 @@ async def crear_cuenta_bancaria(
         attribute_names=["usuario", "banco", "transacciones"]
     )
 
-    return CuentaDetailResponse(
-        info=f"Cuenta {nueva_cuenta.nombre_cuenta} creada correctamente",
-        detalle=CuentasResponse.model_validate(nueva_cuenta)
-    )
+    return nueva_cuenta
 
 
 @router.get(
-    path="/cuentas/{id_cuenta}",
+    path="/{id_cuenta}",
     summary="Obtener cuenta y movimientos",
     description="Obtiene una cuenta de un usuario y sus movimientos",
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     response_model=CuentasMovimientosResponse
 )
 async def obtener_movimientos_cuenta(
@@ -158,7 +146,7 @@ async def obtener_movimientos_cuenta(
 
 
 @router.patch(
-    path="/cuentas/{id_cuenta}",
+    path="/{id_cuenta}",
     summary="Modificar Cuenta",
     description="Modifica la cuenta del usuario",
     status_code=status.HTTP_200_OK,
@@ -215,7 +203,7 @@ async def editar_cuenta(
 
 
 @router.delete(
-    path="/cuentas/{id_cuenta}",
+    path="/{id_cuenta}",
     summary="Desactivar Cuenta",
     description="Desactiva la cuenta bancaria del usuario",
     status_code=status.HTTP_200_OK,

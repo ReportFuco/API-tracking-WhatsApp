@@ -17,60 +17,58 @@ from app.models import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
+from app.auth.fastapi_users import current_superuser, current_user
 
 
-router = APIRouter(tags=["Finanzas · Movimientos"])
+router = APIRouter(prefix="/movimientos", tags=["Finanzas · Movimientos"])
 
 @router.get(
-    "/usuarios/{id_usuario}/movimientos",
+    "/",
     summary="Obtener todos los movimientos del usuario.",
     description="Obtiene el movimiento en especifico",
     status_code=status.HTTP_200_OK,
-    response_model=MovimientoUsuarioResponse
+    # response_model=MovimientoUsuarioResponse
 )
 async def obtener_movimiento(
-    id_usuario: int,
+    user = Depends(current_user),
     db: AsyncSession = Depends(get_db)
 ):
     movimiento_usuario = (
         await db.scalar(
-            select(Usuario)
-            .where(Usuario.id_usuario == id_usuario)
+            select(Movimiento)
+            .where(Movimiento.id_usuario == user.id)
             .options(
-                selectinload(Usuario.transacciones)
-                    .selectinload(Movimiento.categoria),
-                selectinload(Usuario.transacciones)
-                    .selectinload(Movimiento.cuenta)
-                    .selectinload(CuentaBancaria.banco)
+                selectinload(Movimiento.cuenta),
+                selectinload(Movimiento.categoria)
             )
         )
     )
-
-    if not movimiento_usuario:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Movimiento no encontrado."
-        )
     
-    return movimiento_usuario
+    return [movimiento_usuario]
 
 
 @router.get(
-    path="/movimientos/{id_transaccion}",
+    path="/{id_transaccion}",
     summary="Obtener transacción",
     description="Obtiene la información de la transacción realizada.",
     status_code=status.HTTP_200_OK
 )
 async def obtener_movimientos(
     id_transaccion: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_user)
 ):
     transaccion = (
         await db.scalar(
             select(Movimiento)
-            .where(Movimiento.id_transaccion == id_transaccion)
+            .where(
+                and_(
+                    Movimiento.id_transaccion == id_transaccion,
+                    Movimiento.id_usuario == user.id
+                )
+            )
             .options(
                 selectinload(Movimiento.categoria),
                 selectinload(Movimiento.cuenta)
@@ -94,7 +92,8 @@ async def obtener_movimientos(
 )
 async def crear_movimiento(
     data:MovimientoCreate,
-    db:AsyncSession = Depends(get_db)
+    db:AsyncSession = Depends(get_db),
+    user = Depends(current_user)
 ):
     categoria = (
         await db.scalar(
@@ -113,18 +112,18 @@ async def crear_movimiento(
             .where(
                 CuentaBancaria.id_cuenta == data.id_cuenta,
                 CuentaBancaria.activo.is_(True),
-                CuentaBancaria.id_usuario == data.id_usuario
+                CuentaBancaria.id_usuario == user.id
             )
         )
     )
     if not cuenta:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Cuenta no encontrada o no pertenece al usuario."
+            detail="Cuenta no encontrada."
         )
     
     movimiento = Movimiento(
-        id_usuario=data.id_usuario,
+        id_usuario=user.id,
         id_categoria=categoria.id_categoria,
         id_cuenta=cuenta.id_cuenta,
         tipo_movimiento=data.tipo_movimiento,

@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import CategoriaFinanza
 from app.db import get_db
 from sqlalchemy import select
+from app.auth.fastapi_users import current_superuser, current_user
 from app.schemas.finanzas import (
     CategoriaResponse, 
     CategoriaCreate, 
@@ -18,15 +19,13 @@ router = APIRouter(prefix="/categoria", tags=["Finanzas · Categorías"])
     response_model=list[CategoriaResponse],
     summary="Obtener todas las categorías",
     description="Enpoint encargado de obtener todas las categorías de los movimientos",
-    status_code=200
+    status_code=status.HTTP_200_OK
 )
-async def obtener_categorias(db:AsyncSession = Depends(get_db)):
-    
-    categoria = (
-        await db.execute(
-            select(CategoriaFinanza)
-        )
-    ).scalars().all()
+async def obtener_categorias(
+    db:AsyncSession = Depends(get_db),
+    user = Depends(current_user)  
+):    
+    categoria = (await db.execute(select(CategoriaFinanza))).scalars().all()
     
     return categoria
 
@@ -36,11 +35,12 @@ async def obtener_categorias(db:AsyncSession = Depends(get_db)):
     response_model=CategoriaResponse,
     summary="Obtener categoría por ID",
     description="Obtiene una categoría específica por su ID",
-    status_code=200
+    status_code=status.HTTP_200_OK
 )
 async def obtener_categoria(
     id_categoria: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_user)
 ):
     query = await db.execute(
         select(CategoriaFinanza).where(CategoriaFinanza.id_categoria == id_categoria)
@@ -56,14 +56,15 @@ async def obtener_categoria(
 
 @router.post(
     "/",
-    response_model=CategoriaDetailResponse,
+    response_model=CategoriaResponse,
     summary="Crear categoría",
     description="Crea categoria para utilizarla en los movimientos financieros",
     status_code=status.HTTP_201_CREATED
 )
 async def crear_categoria(
     data: CategoriaCreate, 
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_superuser)
 ):
     query = await db.execute(
         select(CategoriaFinanza)
@@ -82,22 +83,20 @@ async def crear_categoria(
     db.add(ingreso_categoria)
     await db.flush()
 
-    return CategoriaDetailResponse(
-        info=f"Categoría {ingreso_categoria.nombre} creado correctamente.",
-        detalle=CategoriaResponse.model_validate(ingreso_categoria)
-    )
+    return ingreso_categoria
 
 
 @router.patch(
     "/{id_categoria}",
-    response_model=CategoriaDetailResponse,
+    response_model=CategoriaResponse,
     summary="Actualizar categoría",
     description="Actualiza el nombre de una categoría existente"
 )
 async def actualizar_categoria(
     id_categoria:int,
     data:CategoriaPatch,
-    db:AsyncSession = Depends(get_db)
+    db:AsyncSession = Depends(get_db),
+    user = Depends(current_superuser)
 ):
     categoria = (
         await db.execute(
@@ -117,10 +116,7 @@ async def actualizar_categoria(
 
     await db.refresh(categoria)
 
-    return CategoriaDetailResponse(
-        info=f"la categoría {categoria.nombre} ha sido modificada.",
-        detalle=CategoriaResponse.model_validate(categoria)
-    )
+    return categoria
 
 
 @router.delete(
@@ -128,11 +124,12 @@ async def actualizar_categoria(
     response_model=CategoriaDetailResponse,
     summary="Eliminar categoría",
     description="Elimina una categoría existente",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_204_NO_CONTENT
 )
 async def eliminar_categoria(
     id_categoria:int,
-    db:AsyncSession = Depends(get_db)
+    db:AsyncSession = Depends(get_db),
+    user = Depends(current_superuser)
 ):
     categoria = (
         await db.execute(
@@ -141,16 +138,9 @@ async def eliminar_categoria(
         )
     ).scalar_one_or_none()
 
-    categoria_data = CategoriaResponse.model_validate(categoria)
-
     if categoria:
         await db.delete(categoria)
-        await db.commit()
-
-        return CategoriaDetailResponse(
-            info=f"La categoría fue eliminada correctamente.",
-            detalle=categoria_data
-        )
+    
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 

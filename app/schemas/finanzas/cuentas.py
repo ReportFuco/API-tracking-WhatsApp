@@ -57,7 +57,7 @@ class CuentaDetailResponse(BaseModel):
 
 
 # Respuesta sin detalle de movimientos
-class CuentaSimpleResponse(BaseModel):
+class CuentaResponse(BaseModel):
     id_cuenta:int = Field(..., examples=[1])
     nombre_cuenta: str = Field(..., examples=["Cuenta Falabella corriente"])
     tipo_cuenta:EnumCuentas = Field(..., examples=[EnumCuentas.CUENTA_AHORRO.value])
@@ -79,19 +79,6 @@ class CuentaSimpleResponse(BaseModel):
     
     model_config = ConfigDict(
         title="Respuesta simple cuenta"
-    )
-
-
-# Respuesta sin transacciones
-class CuentasUsuarioResponse(BaseModel):
-    id_usuario: int = Field(..., examples=[1])
-    nombre:str = Field(..., examples=["Francsico Arancibia"])
-    telefono:str = Field(..., examples=["56978086719"])
-    cuentas: list[CuentaSimpleResponse] = []
-    
-    model_config = ConfigDict(
-        title="Respuesta cuentas usuario",
-        from_attributes=True
     )
 
 
