@@ -17,9 +17,6 @@ class MovimientoResponse(BaseModel):
     tipo_movimiento: EnumTipoMovimiento = Field(..., examples=[EnumTipoMovimiento.GASTO.value])
     tipo_gasto: EnumTipoGasto = Field(..., examples=[EnumTipoGasto.FIJO.value])
     categoria: Optional[str] = Field(None, examples=["comida"])
-    nombre_cuenta: Optional[str] = Field(None, examples=["Cuenta de Ahorro Banco estado"])
-    tipo_cuenta: Optional[str] = Field(None, examples=["Cuenta ahorro"])
-    nombre_banco: Optional[str] = Field(None, examples=["Banco Estado"])
 
     monto:int = Field(..., examples=[5000])
     created_at: datetime = Field(..., examples=["2026-01-03T18:37:18.638764"])
@@ -32,15 +29,12 @@ class MovimientoResponse(BaseModel):
 
         categoria = data.get("categoria")
         cuenta = data.get("cuenta")
-        banco = cuenta.banco
 
         if categoria:
             data["categoria"] = categoria.nombre
         if cuenta:
             data["nombre_cuenta"] = cuenta.nombre_cuenta
             data["tipo_cuenta"] = cuenta.tipo_cuenta
-        if banco:
-            data["nombre_banco"] = banco.nombre_banco
 
         return data
     

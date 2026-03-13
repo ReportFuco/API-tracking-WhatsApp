@@ -32,7 +32,7 @@ CREDENCIALES_EVOLUTION = {
 
 # Alembic
 ALEMBIC_VERSIONS_PATH = Path("app/alembic/versions")
-ALEMBIC_INI = "app/alembic.ini" # Donde está el archivo alembic.ini
+ALEMBIC_INI = "app/alembic.ini" 
 
 
 SECRET = os.getenv("SECRET_JWT", "Sin info")

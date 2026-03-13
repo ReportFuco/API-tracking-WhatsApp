@@ -54,24 +54,3 @@ class UsuarioResponse(BaseModel):
         from_attributes=True,
         title="Respuesta Usuario"
     )
-
-class UsuarioDetailResponse(BaseModel):
-    mensaje: str = Field(..., examples=["Detalle del mensaje (eliminado, modificado etc)"])
-    detalle: UsuarioResponse
-
-    model_config = ConfigDict(
-        title="Detalle de respuesta"
-    )
-
-class UsuarioPerfilResponse(BaseModel):
-    id_usuario: int = Field(..., examples=[1])
-    username: str = Field(..., examples=["Fuco"])
-    nombre: str = Field(..., examples=["Francisco"])
-    apellido: str = Field(..., examples=["Arancibia"])
-    telefono: str = Field(..., examples=["56978086719"])
-    created_at: datetime
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        title="Perfil de Usuario"
-    )

@@ -36,6 +36,7 @@ class Usuario(Base):
     )
 
     # Relaciones
+    user:Mapped["User"] = relationship("User", back_populates="usuario")
     mensajes: Mapped[list["Mensaje"]] = relationship(back_populates="usuario")
     habitos: Mapped[list["Habito"]] = relationship(back_populates="usuario")
     lecturas: Mapped[list["Lectura"]] = relationship(back_populates="usuario")

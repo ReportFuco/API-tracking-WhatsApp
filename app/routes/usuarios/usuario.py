@@ -2,23 +2,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, HTTPException, Depends, status
 from app.db import get_db
 from sqlalchemy import select, or_, and_
+from sqlalchemy.orm import selectinload
 from app.models import Usuario, User
 from loguru import logger
 from app.auth.fastapi_users import current_user, current_superuser
-from app.schemas.usuario import (
-    UsuarioPerfilResponse,  
+from app.schemas.usuario import ( 
     UsuarioResponse,
-    UsuarioPatchSchema,
-    UsuarioDetailResponse
+    UsuarioPatchSchema
 )
 
 
 router = APIRouter(tags=["Usuario"])
 
-
 @router.get(
     "/perfil",
-    response_model=UsuarioPerfilResponse
+    response_model=UsuarioResponse
 )
 async def obtener_mi_perfil(
     user = Depends(current_user),
@@ -41,7 +39,7 @@ async def obtener_mi_perfil(
     "/",
     summary="Obtener todos los usuarios",
     description="Obtiene todos los usuarios activos de la base de datos",
-    response_model=list[UsuarioResponse],
+    # response_model=list[UsuarioResponse],
     status_code=status.HTTP_200_OK
 )
 async def obtener_usuarios(
@@ -50,17 +48,20 @@ async def obtener_usuarios(
 ):
     
     usuarios = (
-        await db.execute(select(Usuario))
-    ).scalars().all()
+    await db.execute(
+        select(Usuario)
+        .options(selectinload(Usuario.user))
+    )
+).scalars().all()
 
     return usuarios
 
 
 @router.patch(
-    "/",
+    "/perfil",
     summary="Editar datos Usuario",
     description="Enpoint encargado de modificar la información del usuario",
-    response_model=UsuarioDetailResponse,
+    response_model=UsuarioResponse,
     status_code=status.HTTP_200_OK
 )
 async def editar_usuario(
@@ -105,10 +106,7 @@ async def editar_usuario(
             setattr(usuario, field, value)
 
         await db.flush()
-        return UsuarioDetailResponse(
-            mensaje=f"Usuario {usuario.nombre} ha sido editado.",
-            detalle=UsuarioResponse.model_validate(usuario)
-        )
+        return usuario
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
@@ -120,13 +118,12 @@ async def editar_usuario(
     "/{id_usuario}",
     summary="Desactivar usuario por ID",
     description="Desactiva al usuario (soft delete)",
-    response_model=UsuarioDetailResponse,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_204_NO_CONTENT
 )
 async def eliminar_usuario_soft(
     id_usuario: int,
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_superuser)
 ):
     usuario = (
         await db.execute(
