@@ -151,10 +151,11 @@ async def crear_cuenta_bancaria(
 )
 async def editar_cuenta(
     id_cuenta: int,
-    data:CuentaPatch,
-    db:AsyncSession = Depends(get_db),
+    data: CuentaPatch,
+    db: AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
+
     cuenta = await db.scalar(
         select(CuentaBancaria)
         .where(
@@ -163,17 +164,18 @@ async def editar_cuenta(
             CuentaBancaria.id_usuario == user.id
         )
     )
-    
+
     if not cuenta:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Cuenta no encontrada."
         )
-    
+
     if data.nombre_cuenta:
         existe = await db.scalar(
             select(CuentaBancaria.id_cuenta)
             .where(
+                CuentaBancaria.id_usuario == user.id,
                 CuentaBancaria.nombre_cuenta == data.nombre_cuenta,
                 CuentaBancaria.id_cuenta != id_cuenta
             )
@@ -185,18 +187,19 @@ async def editar_cuenta(
                 detail="El nombre de la cuenta ya existe."
             )
 
-    
-    for field, value in data.model_dump(exclude_unset=True).items():
+    update_data = data.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
         setattr(cuenta, field, value)
 
     await db.flush()
+
     await db.refresh(
         cuenta,
         attribute_names=["banco"]
     )
 
     return cuenta
-
 
 @router.delete(
     path="/{id_cuenta}",
