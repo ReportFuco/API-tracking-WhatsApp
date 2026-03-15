@@ -13,10 +13,10 @@ class UsuarioAuthCreate(schemas.CreateUpdateDictModel):
 
     email: EmailStr = Field(examples=["tu-correo@gmail.com"])
     password: str = Field(examples=["Tu clave secreta"], min_length=6, max_length=20)
-    username: str = Field(examples=["tu nombre de usuario"])
-    nombre: str = Field(examples=["Tu nombre"])
-    apellido: str = Field(examples=["Tu apellido"])
-    telefono: str = Field(examples=["Tu teléfono"])
+    username: str = Field(examples=["tu nombre de usuario"], max_length=20)
+    nombre: str = Field(examples=["Tu nombre"], max_length=20)
+    apellido: str = Field(examples=["Tu apellido"], max_length=20)
+    telefono: str = Field(examples=["Tu teléfono"], max_length=11)
 
     model_config = ConfigDict(
         extra="forbid"
