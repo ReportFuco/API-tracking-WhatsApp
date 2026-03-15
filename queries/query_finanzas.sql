@@ -25,3 +25,6 @@ GROUP BY producto
 ORDER BY gastado DESC;
 
 
+UPDATE "user" SET is_superuser = TRUE WHERE id = 1
+
+select * from "user"

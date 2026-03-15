@@ -55,14 +55,14 @@ async def obtener_movimiento(
 
 
 @router.get(
-    path="/{id_transaccion}",
+    path="/{id_movimiento}",
     summary="Obtener transacción",
     description="Obtiene la información de la transacción realizada.",
     status_code=status.HTTP_200_OK,
     response_model=MovimientoResponse
 )
 async def obtener_movimientos(
-    id_transaccion: int,
+    id_movimiento: int,
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
@@ -71,7 +71,7 @@ async def obtener_movimientos(
             select(Movimiento)
             .where(
                 and_(
-                    Movimiento.id_transaccion == id_transaccion,
+                    Movimiento.id_transaccion == id_movimiento,
                     Movimiento.id_usuario == user.id
                 )
             )

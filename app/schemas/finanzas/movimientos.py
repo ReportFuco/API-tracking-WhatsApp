@@ -21,6 +21,7 @@ class MovimientoResponse(BaseModel):
     nombre_cuenta: Optional[str] = Field(None, examples=["Nombre cuenta"])
 
     monto:int = Field(..., examples=[5000])
+    descripcion:str = Field(..., examples=["Descripcion del movimiento"])
     created_at: datetime = Field(..., examples=["2026-01-03T18:37:18.638764"])
 
     @model_validator(mode='before')

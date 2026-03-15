@@ -1,13 +1,7 @@
 
 -- Ver los usuarios activos
 SELECT * FROM usuario;
-
-
-
-UPDATE "user" 
-SET is_superuser = TRUE,
-    is_verified = TRUE 
-WHERE id = 1;
+UPDATE usuario SET auth_user_id = 3 WHERE id_usuario = 3
 
 SELECT * FROM usuario;
 SELECT * FROM "user";
@@ -31,6 +25,3 @@ FROM movimiento AS mov
 UPDATE cuenta_bancaria 
 SET activo = TRUE
 WHERE id_cuenta = 1;
-
-
-SELECT * FROM cuenta_bancaria;
