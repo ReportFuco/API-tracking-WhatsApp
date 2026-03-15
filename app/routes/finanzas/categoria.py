@@ -7,8 +7,7 @@ from app.auth.fastapi_users import current_superuser, current_user
 from app.schemas.finanzas import (
     CategoriaResponse, 
     CategoriaCreate, 
-    CategoriaPatch, 
-    CategoriaDetailResponse
+    CategoriaPatch
 )
 
 
@@ -121,10 +120,9 @@ async def actualizar_categoria(
 
 @router.delete(
     "/{id_categoria}",
-    response_model=CategoriaDetailResponse,
     summary="Eliminar categoría",
     description="Elimina una categoría existente",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_204_NO_CONTENT
 )
 async def eliminar_categoria(
     id_categoria:int,

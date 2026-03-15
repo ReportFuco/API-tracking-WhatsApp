@@ -2,7 +2,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, HTTPException, Depends, status
 from app.db import get_db
 from sqlalchemy import select, or_, and_
-from sqlalchemy.orm import selectinload
 from app.models import Usuario, User
 from loguru import logger
 from app.auth.fastapi_users import current_user, current_superuser
@@ -39,7 +38,7 @@ async def obtener_mi_perfil(
     "/",
     summary="Obtener todos los usuarios",
     description="Obtiene todos los usuarios activos de la base de datos",
-    # response_model=list[UsuarioResponse],
+    response_model=list[UsuarioResponse],
     status_code=status.HTTP_200_OK
 )
 async def obtener_usuarios(
@@ -48,11 +47,8 @@ async def obtener_usuarios(
 ):
     
     usuarios = (
-    await db.execute(
-        select(Usuario)
-        .options(selectinload(Usuario.user))
-    )
-).scalars().all()
+        await db.execute(select(Usuario))
+    ).scalars().all()
 
     return usuarios
 

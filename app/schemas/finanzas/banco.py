@@ -40,21 +40,3 @@ class BancoResponse(BaseModel):
             }
         }
     }
-
-class BancoDetailResponse(BaseModel):
-    info: str
-    detalle: BancoResponse
-
-    model_config = {
-        "title":"Detalle Respuesta Banco",
-        "json_schema_extra":{
-            "example": {
-                "info": "Informacion del registro.",
-                "detalle": {
-                    "id_banco":1,
-                    "nombre_banco":"Falabella",
-                    "created_at": "2025-12-29T21:35:40.965433"
-                }
-            }
-        }
-    }

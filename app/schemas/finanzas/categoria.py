@@ -27,12 +27,3 @@ class CategoriaPatch(BaseModel):
     model_config = ConfigDict(
         title="Modificar categoría"
     )
-    
-
-class CategoriaDetailResponse(BaseModel):
-    info: str = Field(..., examples=["detalle del usuario (POST, PATCH, DELETE)"])
-    detalle: CategoriaResponse
-
-    model_config = ConfigDict(
-        title="Detalle respuesta categoría"
-    )

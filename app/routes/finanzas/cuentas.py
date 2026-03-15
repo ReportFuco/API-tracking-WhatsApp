@@ -64,10 +64,13 @@ async def obtener_movimientos_cuenta(
                 CuentaBancaria.id_usuario == user.id
             )
             .options(
-                selectinload(CuentaBancaria.banco),
-                selectinload(CuentaBancaria.transacciones)
-                .selectinload(Movimiento.categoria)
-            )
+            selectinload(CuentaBancaria.banco),
+            selectinload(CuentaBancaria.transacciones)
+                .selectinload(Movimiento.categoria),
+
+            selectinload(CuentaBancaria.transacciones)
+                .selectinload(Movimiento.cuenta)
+)
         )
     ).scalar_one_or_none()
 
@@ -208,6 +211,7 @@ async def editar_cuenta(
     status_code=status.HTTP_204_NO_CONTENT
 )
 async def desactivar_cuenta(
+    id_cuenta: int,
     user = Depends(current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -215,7 +219,8 @@ async def desactivar_cuenta(
         await db.execute(
             select(CuentaBancaria)
             .where(
-                CuentaBancaria.id_cuenta == user.id,
+                CuentaBancaria.id_cuenta == id_cuenta,
+                CuentaBancaria.id_usuario == user.id,
                 CuentaBancaria.activo.is_(True)
             )
         )
@@ -228,8 +233,3 @@ async def desactivar_cuenta(
         )
 
     existe.activo = False
-
-    await db.refresh(
-        existe,
-        attribute_names=["usuario", "banco", "transacciones"]
-    )

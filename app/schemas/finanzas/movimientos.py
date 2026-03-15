@@ -13,10 +13,12 @@ from datetime import datetime
 
 
 class MovimientoResponse(BaseModel):
+
     id_transaccion:int = Field(..., examples=[1])
     tipo_movimiento: EnumTipoMovimiento = Field(..., examples=[EnumTipoMovimiento.GASTO.value])
     tipo_gasto: EnumTipoGasto = Field(..., examples=[EnumTipoGasto.FIJO.value])
     categoria: Optional[str] = Field(None, examples=["comida"])
+    nombre_cuenta: Optional[str] = Field(None, examples=["Nombre cuenta"])
 
     monto:int = Field(..., examples=[5000])
     created_at: datetime = Field(..., examples=["2026-01-03T18:37:18.638764"])
@@ -34,22 +36,12 @@ class MovimientoResponse(BaseModel):
             data["categoria"] = categoria.nombre
         if cuenta:
             data["nombre_cuenta"] = cuenta.nombre_cuenta
-            data["tipo_cuenta"] = cuenta.tipo_cuenta
 
         return data
     
     model_config = ConfigDict(
         title="Respuesta movimiento",
         from_attributes=True
-    )
-    
-
-class MovimientoUsuarioResponse(BaseModel):
-    username: str = Field(..., examples=["Fuco"])
-    transacciones: list[MovimientoResponse]
-
-    model_config = ConfigDict(
-        title="Respuesta movimiento usuario"
     )
 
 
@@ -81,4 +73,16 @@ class MovimientoCreate(BaseModel):
 
     model_config = ConfigDict(
         title="Crear movimiento"
+    )
+
+
+class MovimientoPatch(BaseModel):
+    tipo_movimiento: Optional[EnumTipoMovimiento] = None
+    tipo_gasto: Optional[EnumTipoGasto] = None
+    id_categoria: Optional[int] = None
+    id_cuenta: Optional[int] = None
+    monto: Optional[int] = None
+
+    model_config = ConfigDict(
+        title="Modificar Movimiento"
     )

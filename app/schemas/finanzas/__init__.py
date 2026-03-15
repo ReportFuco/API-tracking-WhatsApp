@@ -1,5 +1,10 @@
-from .movimientos import MovimientoResponse, MovimientoUsuarioResponse, MovimientoCreate
-from .banco import BancoCreate, BancoResponse, BancoDetailResponse
+from .movimientos import (
+    MovimientoResponse, 
+    MovimientoPatch, 
+    MovimientoCreate
+)
+
+from .banco import BancoCreate, BancoResponse
 
 from .cuentas import (
     CuentaCreate, 
@@ -8,15 +13,24 @@ from .cuentas import (
     CuentaPatch
 )
 
-from .categoria import CategoriaResponse, CategoriaPatch, CategoriaDetailResponse, CategoriaCreate
+from .categoria import (
+    CategoriaResponse, 
+    CategoriaPatch, 
+    CategoriaCreate
+)
 
 
 __all__ = [
 
+    # Categorías
+    "CategoriaResponse",
+    "CategoriaPatch",
+    "CategoriaCreate",
+
     # Movimientos
     "MovimientoResponse",
-    "MovimientoUsuarioResponse",
     "MovimientoCreate",
+    "MovimientoPatch",
 
     # Cuentas
     "CuentaResponse",
@@ -26,6 +40,5 @@ __all__ = [
 
     # Banco
     "BancoCreate",
-    "BancoResponse",
-    "BancoDetailResponse"
+    "BancoResponse"
 ]

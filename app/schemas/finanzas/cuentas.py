@@ -43,6 +43,7 @@ class CuentasMovimientosResponse(CuentaResponse):
             data = data.__dict__
 
         transacciones = data.get("transacciones", [])
+        
         if transacciones:
             data["transacciones"] = transacciones
         return data
