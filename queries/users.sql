@@ -25,3 +25,9 @@ LEFT JOIN categoria_finanza AS cat
     ON cat.id_categoria = mov.id_categoria
 LEFT JOIN cuenta_bancaria AS cb
     ON cb.id_usuario = u.id_usuario
+
+
+
+SELECT * FROM usuario
+
+

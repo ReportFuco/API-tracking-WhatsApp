@@ -1,0 +1,3170 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "API Tracking Habitos",
+        "description": "API encargada de realizar registros a áreas como finanzas, deportes, hábitos entre otros.",
+        "version": "0.1.0"
+    },
+    "paths": {
+        "/api/usuarios/perfil": {
+            "get": {
+                "tags": [
+                    "Usuario"
+                ],
+                "summary": "Obtener Mi Perfil",
+                "operationId": "obtener_mi_perfil_api_usuarios_perfil_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UsuarioResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Usuario"
+                ],
+                "summary": "Editar datos Usuario",
+                "description": "Enpoint encargado de modificar la información del usuario",
+                "operationId": "editar_usuario_api_usuarios_perfil_patch",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UsuarioPatchSchema"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UsuarioResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/usuarios/": {
+            "get": {
+                "tags": [
+                    "Usuario"
+                ],
+                "summary": "Obtener todos los usuarios",
+                "description": "Obtiene todos los usuarios activos de la base de datos",
+                "operationId": "obtener_usuarios_api_usuarios__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/UsuarioResponse"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Obtener Usuarios Api Usuarios  Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/usuarios/{id_usuario}": {
+            "delete": {
+                "tags": [
+                    "Usuario"
+                ],
+                "summary": "Desactivar usuario por ID",
+                "description": "Desactiva al usuario (soft delete)",
+                "operationId": "eliminar_usuario_soft_api_usuarios__id_usuario__delete",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_usuario",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Usuario"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful Response"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/usuarios/{id_usuario}/permanente": {
+            "delete": {
+                "tags": [
+                    "Usuario"
+                ],
+                "summary": "Eliminar Usuario por ID",
+                "description": "Eliminar el usuario de la base de datos",
+                "operationId": "eliminar_usuario_permanete_api_usuarios__id_usuario__permanente_delete",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_usuario",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Usuario"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful Response"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/finanzas/cuentas/": {
+            "get": {
+                "tags": [
+                    "Finanzas · Cuentas"
+                ],
+                "summary": "Obtener Cuentas del Usuario",
+                "description": "Muestra todas las cuentas del usuario por su ID",
+                "operationId": "obtener_cuentas_usuario_api_finanzas_cuentas__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/CuentaResponse"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Obtener Cuentas Usuario Api Finanzas Cuentas  Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Finanzas · Cuentas"
+                ],
+                "summary": "Crear cuenta bancaria",
+                "description": "Crea la cuenta bancaria para realizar movimientos, ej: cuenta rut, credito etc",
+                "operationId": "crear_cuenta_bancaria_api_finanzas_cuentas__post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CuentaCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CuentaResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/finanzas/cuentas/{id_cuenta}": {
+            "get": {
+                "tags": [
+                    "Finanzas · Cuentas"
+                ],
+                "summary": "Obtener cuenta y movimientos",
+                "description": "Obtiene una cuenta de un usuario y sus movimientos",
+                "operationId": "obtener_movimientos_cuenta_api_finanzas_cuentas__id_cuenta__get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_cuenta",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Cuenta"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CuentasMovimientosResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Finanzas · Cuentas"
+                ],
+                "summary": "Modificar Cuenta",
+                "description": "Modifica la cuenta del usuario",
+                "operationId": "editar_cuenta_api_finanzas_cuentas__id_cuenta__patch",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_cuenta",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Cuenta"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CuentaPatch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CuentaResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Finanzas · Cuentas"
+                ],
+                "summary": "Desactivar Cuenta",
+                "description": "Desactiva la cuenta bancaria del usuario",
+                "operationId": "desactivar_cuenta_api_finanzas_cuentas__id_cuenta__delete",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_cuenta",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Cuenta"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful Response"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/finanzas/movimientos/": {
+            "get": {
+                "tags": [
+                    "Finanzas · Movimientos"
+                ],
+                "summary": "Obtener todos los movimientos del usuario.",
+                "description": "Obtiene el movimiento en especifico",
+                "operationId": "obtener_movimiento_api_finanzas_movimientos__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/MovimientoResponse"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Obtener Movimiento Api Finanzas Movimientos  Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Finanzas · Movimientos"
+                ],
+                "summary": "crear movimiento",
+                "operationId": "crear_movimiento_api_finanzas_movimientos__post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MovimientoCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovimientoResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/finanzas/movimientos/{id_movimiento}": {
+            "get": {
+                "tags": [
+                    "Finanzas · Movimientos"
+                ],
+                "summary": "Obtener transacción",
+                "description": "Obtiene la información de la transacción realizada.",
+                "operationId": "obtener_movimientos_api_finanzas_movimientos__id_movimiento__get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_movimiento",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Movimiento"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovimientoResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Finanzas · Movimientos"
+                ],
+                "summary": "Modificar movimiento",
+                "operationId": "editar_movimiento_api_finanzas_movimientos__id_movimiento__patch",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_movimiento",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Movimiento"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MovimientoPatch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovimientoResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/finanzas/banco/": {
+            "get": {
+                "tags": [
+                    "Finanzas · Bancos"
+                ],
+                "summary": "Obtener todos los Bancos",
+                "description": "Enpoint encargado de obtener todos los Bancos dentro de la base de datos",
+                "operationId": "obtener_bancos_api_finanzas_banco__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/BancoResponse"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Obtener Bancos Api Finanzas Banco  Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Finanzas · Bancos"
+                ],
+                "summary": "Crear Banco",
+                "description": "Enpoint encargado de generar un Banco",
+                "operationId": "crear_banco_api_finanzas_banco__post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BancoCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BancoResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/finanzas/banco/{id_banco}": {
+            "get": {
+                "tags": [
+                    "Finanzas · Bancos"
+                ],
+                "summary": "Obtener Banco según su ID",
+                "description": "Obtiene los detalles del banco según su ID",
+                "operationId": "obtener_banco_id_api_finanzas_banco__id_banco__get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_banco",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Banco"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BancoResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Finanzas · Bancos"
+                ],
+                "summary": "Actualizar Banco",
+                "description": "Endpoint encargado de actualizar el nombre de un Banco según su ID",
+                "operationId": "actualizar_banco_api_finanzas_banco__id_banco__patch",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_banco",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Banco"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BancoCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BancoResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Finanzas · Bancos"
+                ],
+                "summary": "Eliminar Banco",
+                "description": "Endpoint encargado de eliminar un Banco según su ID",
+                "operationId": "eliminar_banco_api_finanzas_banco__id_banco__delete",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_banco",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Banco"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful Response"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/finanzas/categoria/": {
+            "get": {
+                "tags": [
+                    "Finanzas · Categorías"
+                ],
+                "summary": "Obtener todas las categorías",
+                "description": "Enpoint encargado de obtener todas las categorías de los movimientos",
+                "operationId": "obtener_categorias_api_finanzas_categoria__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/CategoriaResponse"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Obtener Categorias Api Finanzas Categoria  Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Finanzas · Categorías"
+                ],
+                "summary": "Crear categoría",
+                "description": "Crea categoria para utilizarla en los movimientos financieros",
+                "operationId": "crear_categoria_api_finanzas_categoria__post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoriaCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoriaResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/finanzas/categoria/{id_categoria}": {
+            "get": {
+                "tags": [
+                    "Finanzas · Categorías"
+                ],
+                "summary": "Obtener categoría por ID",
+                "description": "Obtiene una categoría específica por su ID",
+                "operationId": "obtener_categoria_api_finanzas_categoria__id_categoria__get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_categoria",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Categoria"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoriaResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Finanzas · Categorías"
+                ],
+                "summary": "Actualizar categoría",
+                "description": "Actualiza el nombre de una categoría existente",
+                "operationId": "actualizar_categoria_api_finanzas_categoria__id_categoria__patch",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_categoria",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Categoria"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoriaPatch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoriaResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Finanzas · Categorías"
+                ],
+                "summary": "Eliminar categoría",
+                "description": "Elimina una categoría existente",
+                "operationId": "eliminar_categoria_api_finanzas_categoria__id_categoria__delete",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_categoria",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Categoria"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful Response"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/entrenamientos/gimnasio/": {
+            "get": {
+                "tags": [
+                    "Entrenamientos · Gimnasio"
+                ],
+                "summary": "Obtener todos los Gimnasios",
+                "description": "Obtiene todos los gimnasios activos, con búsqueda opcional",
+                "operationId": "obtener_gimnasios_api_entrenamientos_gimnasio__get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Texto a buscar en nombre del gimnasio o comuna",
+                            "title": "Q"
+                        },
+                        "description": "Texto a buscar en nombre del gimnasio o comuna"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GimnasioResponse"
+                                    },
+                                    "title": "Response Obtener Gimnasios Api Entrenamientos Gimnasio  Get"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Entrenamientos · Gimnasio"
+                ],
+                "summary": "Crear Gimnasio",
+                "description": "Agrega un gimnasio a la base de datos",
+                "operationId": "crear_gimnasio_api_entrenamientos_gimnasio__post",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GimnasioCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GimnasioResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/entrenamientos/gimnasio/{id_gimnasio}": {
+            "get": {
+                "tags": [
+                    "Entrenamientos · Gimnasio"
+                ],
+                "summary": "Obtener un Gimnasio",
+                "description": "Obtiene un gimnasio en específico, entrega los nombres, direcciones, coordenadas entre otros",
+                "operationId": "obtener_gimnasio_id_api_entrenamientos_gimnasio__id_gimnasio__get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_gimnasio",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Gimnasio"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GimnasioResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Entrenamientos · Gimnasio"
+                ],
+                "summary": "Actualizar Gimnasio",
+                "description": "Actualiza parcialmente los campos de un Gimnasio",
+                "operationId": "actualizar_gimnasio_api_entrenamientos_gimnasio__id_gimnasio__patch",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_gimnasio",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Gimnasio"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GimnasioEdit"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GimnasioResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Entrenamientos · Gimnasio"
+                ],
+                "summary": "Eliminar Gimnasio",
+                "description": "Desactiva el Gimnasio dentro de la base de datos",
+                "operationId": "eliminar_gimnasio_api_entrenamientos_gimnasio__id_gimnasio__delete",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_gimnasio",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Gimnasio"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful Response"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/entrenamientos/fuerza/": {
+            "get": {
+                "tags": [
+                    "Entrenamientos · Fuerza"
+                ],
+                "summary": "Obtener entrenamientos de fuerza del Usuario",
+                "description": "Obtiene las sesiones de fuerza realizadas por el usuario",
+                "operationId": "obtener_entrenamientos_usuario_api_entrenamientos_fuerza__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/EntrenoFuerzaResponse"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Obtener Entrenamientos Usuario Api Entrenamientos Fuerza  Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Entrenamientos · Fuerza"
+                ],
+                "summary": "Iniciar entrenamiento de Fuerza",
+                "description": "Inicia una sesión de entrenamiento para poder ingresar las series de entrenamientos",
+                "operationId": "activar_entrenamiento_api_entrenamientos_fuerza__post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EntrenoFuerzaCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntrenoFuerzaResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/entrenamientos/fuerza/activo": {
+            "get": {
+                "tags": [
+                    "Entrenamientos · Fuerza"
+                ],
+                "summary": "Ver entrenamiento activo",
+                "description": "Devuelve el Entrenamiento activo, mostrando las series realizadas e información relevante",
+                "operationId": "obtener_entrenamiento_activo_api_entrenamientos_fuerza_activo_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntrenoFuerzaSerieResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/entrenamientos/fuerza/{id_entrenamiento_fuerza}": {
+            "get": {
+                "tags": [
+                    "Entrenamientos · Fuerza"
+                ],
+                "summary": "Obtener detalle del entrenamiento de Fuerza",
+                "description": "Se obtiene el detalle del entrenamiento en especifico, retornando los detalles generales como series, lugar de entreno entre otros",
+                "operationId": "obtener_detalle_entreno_fuerza_api_entrenamientos_fuerza__id_entrenamiento_fuerza__get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id_entrenamiento_fuerza",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Entrenamiento Fuerza"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntrenoFuerzaSerieResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/entrenamientos/fuerza/{id_usuario}": {
+            "patch": {
+                "tags": [
+                    "Entrenamientos · Fuerza"
+                ],
+                "summary": "Finalizar Sesion Fuerza",
+                "operationId": "finalizar_sesion_fuerza_api_entrenamientos_fuerza__id_usuario__patch",
+                "parameters": [
+                    {
+                        "name": "id_usuario",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Usuario"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntrenoFuerzaDetailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/entrenamientos/series/{id_usuario}": {
+            "post": {
+                "tags": [
+                    "Entrenamientos · Series Fuerza"
+                ],
+                "summary": "Agregar Serie Fuerza",
+                "operationId": "agregar_serie_fuerza_api_entrenamientos_series__id_usuario__post",
+                "parameters": [
+                    {
+                        "name": "id_usuario",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id Usuario"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SerieFuerzaCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/jwt/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Auth:Jwt.Login",
+                "operationId": "auth_jwt_login_auth_jwt_login_post",
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Body_auth_jwt_login_auth_jwt_login_post"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BearerResponse"
+                                },
+                                "example": {
+                                    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiOTIyMWZmYzktNjQwZi00MzcyLTg2ZDMtY2U2NDJjYmE1NjAzIiwiYXVkIjoiZmFzdGFwaS11c2VyczphdXRoIiwiZXhwIjoxNTcxNTA0MTkzfQ.M10bjOe45I5Ncu_uXvOmVV8QxnL-nZfcH96U90JaocI",
+                                    "token_type": "bearer"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                },
+                                "examples": {
+                                    "LOGIN_BAD_CREDENTIALS": {
+                                        "summary": "Bad credentials or the user is inactive.",
+                                        "value": {
+                                            "detail": "LOGIN_BAD_CREDENTIALS"
+                                        }
+                                    },
+                                    "LOGIN_USER_NOT_VERIFIED": {
+                                        "summary": "The user is not verified.",
+                                        "value": {
+                                            "detail": "LOGIN_USER_NOT_VERIFIED"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/jwt/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Auth:Jwt.Logout",
+                "operationId": "auth_jwt_logout_auth_jwt_logout_post",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing token or inactive user."
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register:Register",
+                "operationId": "register_register_auth_register_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UsuarioAuthCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UsuarioAuthRead"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                },
+                                "examples": {
+                                    "REGISTER_USER_ALREADY_EXISTS": {
+                                        "summary": "A user with this email already exists.",
+                                        "value": {
+                                            "detail": "REGISTER_USER_ALREADY_EXISTS"
+                                        }
+                                    },
+                                    "REGISTER_INVALID_PASSWORD": {
+                                        "summary": "Password validation failed.",
+                                        "value": {
+                                            "detail": {
+                                                "code": "REGISTER_INVALID_PASSWORD",
+                                                "reason": "Password should beat least 3 characters"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "BancoCreate": {
+                "properties": {
+                    "nombre_banco": {
+                        "type": "string",
+                        "title": "Nombre Banco"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "nombre_banco"
+                ],
+                "title": "Crear Banco",
+                "example": {
+                    "nombre_banco": "Santander"
+                }
+            },
+            "BancoResponse": {
+                "properties": {
+                    "id_banco": {
+                        "type": "integer",
+                        "title": "Id Banco"
+                    },
+                    "nombre_banco": {
+                        "type": "string",
+                        "title": "Nombre Banco"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_banco",
+                    "nombre_banco",
+                    "created_at"
+                ],
+                "title": "Respuesta Banco",
+                "example": {
+                    "created_at": "2025-12-23 09:17:44.901232",
+                    "id": 2,
+                    "nombre": "Banco Falabella"
+                }
+            },
+            "BearerResponse": {
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "title": "Access Token"
+                    },
+                    "token_type": {
+                        "type": "string",
+                        "title": "Token Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "access_token",
+                    "token_type"
+                ],
+                "title": "BearerResponse"
+            },
+            "Body_auth_jwt_login_auth_jwt_login_post": {
+                "properties": {
+                    "grant_type": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "pattern": "^password$"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Grant Type"
+                    },
+                    "username": {
+                        "type": "string",
+                        "title": "Username"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "title": "Password"
+                    },
+                    "scope": {
+                        "type": "string",
+                        "title": "Scope",
+                        "default": ""
+                    },
+                    "client_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Client Id"
+                    },
+                    "client_secret": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "format": "password",
+                        "title": "Client Secret"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "username",
+                    "password"
+                ],
+                "title": "Body_auth_jwt_login_auth_jwt_login_post"
+            },
+            "CategoriaCreate": {
+                "properties": {
+                    "nombre": {
+                        "type": "string",
+                        "title": "Nombre",
+                        "examples": [
+                            "comida"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "nombre"
+                ],
+                "title": "Crear categoría"
+            },
+            "CategoriaPatch": {
+                "properties": {
+                    "nombre": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre",
+                        "examples": [
+                            "nueva categoría"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "nombre"
+                ],
+                "title": "Modificar categoría"
+            },
+            "CategoriaResponse": {
+                "properties": {
+                    "id_categoria": {
+                        "type": "integer",
+                        "title": "Id Categoria",
+                        "examples": [
+                            1
+                        ]
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "title": "Nombre",
+                        "examples": [
+                            "comida"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At",
+                        "examples": [
+                            "2026-01-03T22:11:30.105251"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_categoria",
+                    "nombre",
+                    "created_at"
+                ],
+                "title": "Respuesta categoría"
+            },
+            "CuentaCreate": {
+                "properties": {
+                    "id_banco": {
+                        "type": "integer",
+                        "title": "Id Banco",
+                        "examples": [
+                            1
+                        ]
+                    },
+                    "nombre_cuenta": {
+                        "type": "string",
+                        "title": "Nombre Cuenta",
+                        "examples": [
+                            "Tu nombre de cuenta"
+                        ]
+                    },
+                    "tipo_cuenta": {
+                        "$ref": "#/components/schemas/EnumCuentas",
+                        "examples": [
+                            "Cuenta ahorro"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_banco",
+                    "nombre_cuenta",
+                    "tipo_cuenta"
+                ],
+                "title": "Crear cuenta"
+            },
+            "CuentaPatch": {
+                "properties": {
+                    "nombre_cuenta": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Cuenta",
+                        "examples": [
+                            "Nuevo nombre de cuenta"
+                        ]
+                    },
+                    "tipo_cuenta": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/EnumCuentas"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "examples": [
+                            "Cuenta ahorro"
+                        ]
+                    }
+                },
+                "type": "object",
+                "title": "CuentaPatch",
+                "description": "Actualizar cuenta"
+            },
+            "CuentaResponse": {
+                "properties": {
+                    "id_cuenta": {
+                        "type": "integer",
+                        "title": "Id Cuenta",
+                        "examples": [
+                            1
+                        ]
+                    },
+                    "nombre_cuenta": {
+                        "type": "string",
+                        "title": "Nombre Cuenta",
+                        "examples": [
+                            "Cuenta Falabella corriente"
+                        ]
+                    },
+                    "tipo_cuenta": {
+                        "$ref": "#/components/schemas/EnumCuentas",
+                        "examples": [
+                            "Cuenta ahorro"
+                        ]
+                    },
+                    "nombre_banco": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Banco",
+                        "examples": [
+                            "Falabella"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_cuenta",
+                    "nombre_cuenta",
+                    "tipo_cuenta",
+                    "created_at"
+                ],
+                "title": "Respuesta simple cuenta"
+            },
+            "CuentasMovimientosResponse": {
+                "properties": {
+                    "id_cuenta": {
+                        "type": "integer",
+                        "title": "Id Cuenta",
+                        "examples": [
+                            1
+                        ]
+                    },
+                    "nombre_cuenta": {
+                        "type": "string",
+                        "title": "Nombre Cuenta",
+                        "examples": [
+                            "Cuenta Falabella corriente"
+                        ]
+                    },
+                    "tipo_cuenta": {
+                        "$ref": "#/components/schemas/EnumCuentas",
+                        "examples": [
+                            "Cuenta ahorro"
+                        ]
+                    },
+                    "nombre_banco": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Banco",
+                        "examples": [
+                            "Falabella"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    },
+                    "transacciones": {
+                        "items": {
+                            "$ref": "#/components/schemas/MovimientoResponse"
+                        },
+                        "type": "array",
+                        "title": "Transacciones",
+                        "default": []
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_cuenta",
+                    "nombre_cuenta",
+                    "tipo_cuenta",
+                    "created_at"
+                ],
+                "title": "Detalle respuesta movimientos cuentas"
+            },
+            "EntrenoFuerzaCreate": {
+                "properties": {
+                    "observacion": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Observacion"
+                    },
+                    "id_gimnasio": {
+                        "type": "integer",
+                        "title": "Id Gimnasio"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_gimnasio"
+                ],
+                "title": "Crear entreno de Fuerza"
+            },
+            "EntrenoFuerzaDetailResponse": {
+                "properties": {
+                    "info": {
+                        "type": "string",
+                        "title": "Info"
+                    },
+                    "detalle": {
+                        "$ref": "#/components/schemas/EntrenoFuerzaSerieResponse"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "info",
+                    "detalle"
+                ],
+                "title": "EntrenoFuerzaDetailResponse"
+            },
+            "EntrenoFuerzaResponse": {
+                "properties": {
+                    "id_entrenamiento": {
+                        "type": "integer",
+                        "title": "Id Entrenamiento"
+                    },
+                    "id_entrenamiento_fuerza": {
+                        "type": "integer",
+                        "title": "Id Entrenamiento Fuerza"
+                    },
+                    "estado": {
+                        "type": "string",
+                        "title": "Estado"
+                    },
+                    "inicio_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Inicio At"
+                    },
+                    "fin_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Fin At"
+                    },
+                    "nombre_gimnasio": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Gimnasio"
+                    },
+                    "nombre_cadena": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Cadena"
+                    },
+                    "comuna": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Comuna"
+                    },
+                    "direccion": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Direccion"
+                    },
+                    "latitud": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Latitud"
+                    },
+                    "longitud": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Longitud"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_entrenamiento",
+                    "id_entrenamiento_fuerza",
+                    "estado",
+                    "inicio_at",
+                    "fin_at"
+                ],
+                "title": "EntrenoFuerzaResponse"
+            },
+            "EntrenoFuerzaSerieResponse": {
+                "properties": {
+                    "id_entrenamiento_fuerza": {
+                        "type": "integer",
+                        "title": "Id Entrenamiento Fuerza"
+                    },
+                    "estado": {
+                        "type": "string",
+                        "title": "Estado"
+                    },
+                    "inicio_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Inicio At"
+                    },
+                    "fin_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Fin At"
+                    },
+                    "nombre_gimnasio": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Gimnasio"
+                    },
+                    "nombre_cadena": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Cadena"
+                    },
+                    "comuna": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Comuna"
+                    },
+                    "direccion": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Direccion"
+                    },
+                    "latitud": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Latitud"
+                    },
+                    "longitud": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Longitud"
+                    },
+                    "series": {
+                        "items": {
+                            "$ref": "#/components/schemas/SerieFuerzaResponse"
+                        },
+                        "type": "array",
+                        "title": "Series",
+                        "default": []
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_entrenamiento_fuerza",
+                    "estado",
+                    "inicio_at",
+                    "fin_at"
+                ],
+                "title": "EntrenoFuerzaSerieResponse"
+            },
+            "EnumCuentas": {
+                "type": "string",
+                "enum": [
+                    "Cuenta Corriente",
+                    "Cuenta vista",
+                    "Cuenta ahorro"
+                ],
+                "title": "EnumCuentas"
+            },
+            "EnumTipoGasto": {
+                "type": "string",
+                "enum": [
+                    "variable",
+                    "fijo"
+                ],
+                "title": "EnumTipoGasto"
+            },
+            "EnumTipoMovimiento": {
+                "type": "string",
+                "enum": [
+                    "gasto",
+                    "ingreso"
+                ],
+                "title": "EnumTipoMovimiento"
+            },
+            "ErrorModel": {
+                "properties": {
+                    "detail": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
+                                "type": "object"
+                            }
+                        ],
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "ErrorModel"
+            },
+            "GimnasioCreate": {
+                "properties": {
+                    "nombre_gimnasio": {
+                        "type": "string",
+                        "title": "Nombre Gimnasio"
+                    },
+                    "nombre_cadena": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Cadena"
+                    },
+                    "direccion": {
+                        "type": "string",
+                        "title": "Direccion"
+                    },
+                    "comuna": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Comuna"
+                    },
+                    "latitud": {
+                        "type": "number",
+                        "title": "Latitud"
+                    },
+                    "longitud": {
+                        "type": "number",
+                        "title": "Longitud"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "nombre_gimnasio",
+                    "nombre_cadena",
+                    "direccion",
+                    "comuna",
+                    "latitud",
+                    "longitud"
+                ],
+                "title": "Crear Gimnasio",
+                "example": {
+                    "comuna": "Ñuñoa",
+                    "direccion": "Av. Siempre Viva 123",
+                    "latitud": -33.456,
+                    "longitud": -70.648,
+                    "nombre_cadena": "Smart Fit",
+                    "nombre_gimnasio": "Smart Fit Oeste"
+                }
+            },
+            "GimnasioEdit": {
+                "properties": {
+                    "nombre_gimnasio": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Gimnasio"
+                    },
+                    "nombre_cadena": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Cadena"
+                    },
+                    "direccion": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Direccion"
+                    },
+                    "comuna": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Comuna"
+                    },
+                    "latitud": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Latitud"
+                    },
+                    "longitud": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Longitud"
+                    }
+                },
+                "type": "object",
+                "title": "Editar Gimnasio",
+                "example": {
+                    "comuna": "Ñuñoa",
+                    "direccion": "Av. Siempre Viva 123",
+                    "latitud": -33.456,
+                    "longitud": -70.648,
+                    "nombre_cadena": "Smart Fit",
+                    "nombre_gimnasio": "Smart Fit Oeste"
+                }
+            },
+            "GimnasioResponse": {
+                "properties": {
+                    "id_gimnasio": {
+                        "type": "integer",
+                        "title": "Id Gimnasio"
+                    },
+                    "nombre_gimnasio": {
+                        "type": "string",
+                        "title": "Nombre Gimnasio"
+                    },
+                    "nombre_cadena": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Cadena"
+                    },
+                    "direccion": {
+                        "type": "string",
+                        "title": "Direccion"
+                    },
+                    "comuna": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Comuna"
+                    },
+                    "latitud": {
+                        "type": "number",
+                        "title": "Latitud"
+                    },
+                    "longitud": {
+                        "type": "number",
+                        "title": "Longitud"
+                    },
+                    "activo": {
+                        "type": "boolean",
+                        "title": "Activo"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_gimnasio",
+                    "nombre_gimnasio",
+                    "nombre_cadena",
+                    "direccion",
+                    "comuna",
+                    "latitud",
+                    "longitud",
+                    "activo",
+                    "created_at"
+                ],
+                "title": "Respuesta Gimnasio",
+                "example": {
+                    "activo": true,
+                    "comuna": "Ñuñoa",
+                    "created_at": "2025-12-23T09:17:44.901232",
+                    "direccion": "Av. Siempre Viva 123",
+                    "id_gimnasio": 1,
+                    "latitud": -33.456,
+                    "longitud": -70.648,
+                    "nombre_gimnasio": "Smart Fit"
+                }
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "MovimientoCreate": {
+                "properties": {
+                    "id_categoria": {
+                        "type": "integer",
+                        "title": "Id Categoria",
+                        "description": "Ingresa el ID de la categoria.",
+                        "examples": [
+                            1
+                        ]
+                    },
+                    "id_cuenta": {
+                        "type": "integer",
+                        "title": "Id Cuenta",
+                        "description": "ID de la cuenta del usuario.",
+                        "examples": [
+                            1
+                        ]
+                    },
+                    "tipo_movimiento": {
+                        "$ref": "#/components/schemas/EnumTipoMovimiento",
+                        "description": "Se ingresa el tipo de movimiento, este puede ser 'gasto' o 'ingreso'.",
+                        "examples": [
+                            "gasto"
+                        ]
+                    },
+                    "tipo_gasto": {
+                        "$ref": "#/components/schemas/EnumTipoGasto",
+                        "description": "Se ingresa el tipo de gasto, puede ser 'variable' o 'fijo'.",
+                        "examples": [
+                            "fijo"
+                        ]
+                    },
+                    "monto": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0.0,
+                        "title": "Monto",
+                        "description": "Ingresa el monto del movimiento.",
+                        "examples": [
+                            3500
+                        ]
+                    },
+                    "descripcion": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Descripcion",
+                        "description": "Ingresa una descripción del gasto, algún detalle.",
+                        "examples": [
+                            "Aquí va la descripción"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_categoria",
+                    "id_cuenta",
+                    "tipo_movimiento",
+                    "tipo_gasto",
+                    "monto"
+                ],
+                "title": "Crear movimiento"
+            },
+            "MovimientoPatch": {
+                "properties": {
+                    "tipo_movimiento": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/EnumTipoMovimiento"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "tipo_gasto": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/EnumTipoGasto"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "id_categoria": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Id Categoria"
+                    },
+                    "id_cuenta": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Id Cuenta"
+                    },
+                    "monto": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Monto"
+                    }
+                },
+                "type": "object",
+                "title": "Modificar Movimiento"
+            },
+            "MovimientoResponse": {
+                "properties": {
+                    "id_transaccion": {
+                        "type": "integer",
+                        "title": "Id Transaccion",
+                        "examples": [
+                            1
+                        ]
+                    },
+                    "tipo_movimiento": {
+                        "$ref": "#/components/schemas/EnumTipoMovimiento",
+                        "examples": [
+                            "gasto"
+                        ]
+                    },
+                    "tipo_gasto": {
+                        "$ref": "#/components/schemas/EnumTipoGasto",
+                        "examples": [
+                            "fijo"
+                        ]
+                    },
+                    "categoria": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Categoria",
+                        "examples": [
+                            "comida"
+                        ]
+                    },
+                    "nombre_cuenta": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Cuenta",
+                        "examples": [
+                            "Nombre cuenta"
+                        ]
+                    },
+                    "monto": {
+                        "type": "integer",
+                        "title": "Monto",
+                        "examples": [
+                            5000
+                        ]
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "title": "Descripcion",
+                        "examples": [
+                            "Descripcion del movimiento"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At",
+                        "examples": [
+                            "2026-01-03T18:37:18.638764"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_transaccion",
+                    "tipo_movimiento",
+                    "tipo_gasto",
+                    "monto",
+                    "descripcion",
+                    "created_at"
+                ],
+                "title": "Respuesta movimiento"
+            },
+            "SerieFuerzaCreate": {
+                "properties": {
+                    "id_ejercicio": {
+                        "type": "integer",
+                        "title": "Id Ejercicio"
+                    },
+                    "es_calentamiento": {
+                        "type": "boolean",
+                        "title": "Es Calentamiento"
+                    },
+                    "cantidad_peso": {
+                        "type": "integer",
+                        "title": "Cantidad Peso"
+                    },
+                    "repeticiones": {
+                        "type": "integer",
+                        "title": "Repeticiones"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_ejercicio",
+                    "es_calentamiento",
+                    "cantidad_peso",
+                    "repeticiones"
+                ],
+                "title": "SerieFuerzaCreate"
+            },
+            "SerieFuerzaResponse": {
+                "properties": {
+                    "id_fuerza_detalle": {
+                        "type": "integer",
+                        "title": "Id Fuerza Detalle"
+                    },
+                    "es_calentamiento": {
+                        "type": "boolean",
+                        "title": "Es Calentamiento"
+                    },
+                    "cantidad_peso": {
+                        "type": "number",
+                        "title": "Cantidad Peso"
+                    },
+                    "repeticiones": {
+                        "type": "integer",
+                        "title": "Repeticiones"
+                    },
+                    "nombre_ejercicio": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre Ejercicio"
+                    },
+                    "tipo_ejercicio": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Tipo Ejercicio"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_fuerza_detalle",
+                    "es_calentamiento",
+                    "cantidad_peso",
+                    "repeticiones"
+                ],
+                "title": "SerieFuerzaResponse"
+            },
+            "UsuarioAuthCreate": {
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email",
+                        "examples": [
+                            "tu-correo@gmail.com"
+                        ]
+                    },
+                    "password": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 6,
+                        "title": "Password",
+                        "examples": [
+                            "Tu clave secreta"
+                        ]
+                    },
+                    "username": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "title": "Username",
+                        "examples": [
+                            "tu nombre de usuario"
+                        ]
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "title": "Nombre",
+                        "examples": [
+                            "Tu nombre"
+                        ]
+                    },
+                    "apellido": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "title": "Apellido",
+                        "examples": [
+                            "Tu apellido"
+                        ]
+                    },
+                    "telefono": {
+                        "type": "string",
+                        "maxLength": 11,
+                        "title": "Telefono",
+                        "examples": [
+                            "Tu teléfono"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                    "email",
+                    "password",
+                    "username",
+                    "nombre",
+                    "apellido",
+                    "telefono"
+                ],
+                "title": "UsuarioAuthCreate"
+            },
+            "UsuarioAuthRead": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "email": {
+                        "type": "string",
+                        "title": "Email"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "title": "Is Active"
+                    },
+                    "is_superuser": {
+                        "type": "boolean",
+                        "title": "Is Superuser"
+                    },
+                    "is_verified": {
+                        "type": "boolean",
+                        "title": "Is Verified",
+                        "default": false
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "email",
+                    "is_active",
+                    "is_superuser"
+                ],
+                "title": "UsuarioAuthRead"
+            },
+            "UsuarioPatchSchema": {
+                "properties": {
+                    "username": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Username",
+                        "examples": [
+                            "Tu nombre de usuario"
+                        ]
+                    },
+                    "nombre": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nombre",
+                        "examples": [
+                            "Tu nombre"
+                        ]
+                    },
+                    "apellido": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Apellido",
+                        "examples": [
+                            "Tu Apellido"
+                        ]
+                    },
+                    "telefono": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Telefono",
+                        "examples": [
+                            "Tu teléfono"
+                        ]
+                    },
+                    "email": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Email",
+                        "examples": [
+                            "Tu correo"
+                        ]
+                    }
+                },
+                "type": "object",
+                "title": "Modificar Usuario"
+            },
+            "UsuarioResponse": {
+                "properties": {
+                    "id_usuario": {
+                        "type": "integer",
+                        "title": "Id Usuario",
+                        "examples": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    },
+                    "username": {
+                        "type": "string",
+                        "title": "Username",
+                        "examples": [
+                            "Fuco"
+                        ]
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "title": "Nombre",
+                        "examples": [
+                            "Francisco Antonio"
+                        ]
+                    },
+                    "apellido": {
+                        "type": "string",
+                        "title": "Apellido",
+                        "examples": [
+                            "Arancibia Guaiquiante"
+                        ]
+                    },
+                    "telefono": {
+                        "type": "string",
+                        "title": "Telefono",
+                        "examples": [
+                            "56978086719"
+                        ]
+                    },
+                    "email": {
+                        "type": "string",
+                        "title": "Email",
+                        "examples": [
+                            "frarancibia.g@gmail.com"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At",
+                        "examples": [
+                            "2025-12-29T23:43:49.887Z"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id_usuario",
+                    "username",
+                    "nombre",
+                    "apellido",
+                    "telefono",
+                    "email",
+                    "created_at"
+                ],
+                "title": "Respuesta Usuario"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        },
+        "securitySchemes": {
+            "OAuth2PasswordBearer": {
+                "type": "oauth2",
+                "flows": {
+                    "password": {
+                        "scopes": {},
+                        "tokenUrl": "auth/jwt/login"
+                    }
+                }
+            }
+        }
+    }
+}
