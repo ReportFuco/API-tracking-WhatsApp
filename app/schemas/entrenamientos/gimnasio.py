@@ -79,11 +79,6 @@ class GimnasioResponse(BaseModel):
     }
 
 
-class GimnasioDetailResponse(BaseModel):
-    info: str
-    detalle: GimnasioResponse
-    
-
 class GimnasioSimpleResponse(BaseModel):
     nombre_gimnasio: str
     comuna: str

@@ -1,34 +1,26 @@
 
 -- Reiniciar los Index para no duplicar la información
 
-truncate table 
-    usuario,
-    mensaje,
-    gimnasio,
-    entrenamiento,
-    entrenamiento_aerobico,
-    entrenamiento_fuerza,
-    serie_fuerza,
-    ejercicios,
-    banco,
-    cuenta_bancaria,
-    categoria_finanza,
-    movimiento,
-    categoria_habito,
-    habito,
-    registro_habito,
-    libros,
-    lectura,
-    registro_lectura
-restart identity cascade;
-
-
--- ingresar Usuarios para las pruebas
-
-insert into usuario (nombre, telefono)
-values ('Francisco Arancibia', '56978086719'),
-       ('Rodrigo Arancibia', '56954951334'),
-       ('Daniel Arancibia', '56962288047');
+-- truncate table 
+--     usuario,
+--     mensaje,
+--     gimnasio,
+--     entrenamiento,
+--     entrenamiento_aerobico,
+--     entrenamiento_fuerza,
+--     serie_fuerza,
+--     ejercicios,
+--     banco,
+--     cuenta_bancaria,
+--     categoria_finanza,
+--     movimiento,
+--     categoria_habito,
+--     habito,
+--     registro_habito,
+--     libros,
+--     lectura,
+--     registro_lectura
+-- restart identity cascade;
 
 -- insertar ejercicios
 

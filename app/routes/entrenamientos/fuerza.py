@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.auth.fastapi_users import current_user, current_superuser
 from app.db.session import get_db
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -22,73 +23,48 @@ from app.models import (
 
 router = APIRouter(prefix="/fuerza", tags=["Entrenamientos · Fuerza"])
 
-
 @router.get(
-    "/{id_usuario}",
+    "/",
     summary="Obtener entrenamientos de fuerza del Usuario",
     description="Obtiene las sesiones de fuerza realizadas por el usuario",
     response_model=list[EntrenoFuerzaResponse],
-    status_code=200
+    status_code=status.HTTP_200_OK
 )
 async def obtener_entrenamientos_usuario(
-    id_usuario: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_user)
 ):
-    user_query = await db.execute(
-        select(Usuario.id_usuario)
-        .where(Usuario.id_usuario == id_usuario)
-    )
-    usuario = user_query.scalar_one_or_none()
-
-    if not usuario:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Usuario {id_usuario} no existe."
+    
+    entreno_fuerza = (
+        await db.execute(
+                select(EntrenamientoFuerza)
+                .join(Entrenamiento)
+                .where(Entrenamiento.id_usuario == user.id)
+                .options(selectinload(EntrenamientoFuerza.gimnasio))
         )
-
-    query = await db.execute(
-        select(EntrenamientoFuerza)
-        .join(Entrenamiento)
-        .where(Entrenamiento.id_usuario == id_usuario)
-        .options(
-            selectinload(EntrenamientoFuerza.gimnasio)
-        )
-    )
-
-    entreno_fuerza = query.scalars().all()
+    ).scalars().all()
 
     return entreno_fuerza
 
 
 @router.get(
-    path="/{id_usuario}/activo",
+    path="/activo",
     summary="Ver entrenamiento activo",
     response_model=EntrenoFuerzaSerieResponse,
     description="Devuelve el Entrenamiento activo, mostrando las series realizadas e información relevante",
-    status_code=200
+    status_code=status.HTTP_200_OK
 )
-async def ver_procesos_activos(id_usuario:int, db:AsyncSession = Depends(get_db)):
-    usuario = (
-        await db.execute(
-            select(Usuario).where(
-                Usuario.id_usuario == id_usuario,
-                Usuario.activo.is_(True)
-            )
-        )
-    ).scalar_one_or_none()
-
-    if not usuario:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"Usuario {id_usuario} no encontrado o desactivado."
-        )
+async def obtener_entrenamiento_activo(
+    user = Depends(current_user), 
+    db:AsyncSession = Depends(get_db)
+):
     
     entreno_activo = (
         await db.execute(
             select(EntrenamientoFuerza)
             .join(Entrenamiento)
             .where(
-                Entrenamiento.id_usuario == id_usuario,
+                Entrenamiento.id_usuario == user.id,
                 EntrenamientoFuerza.estado == EstadoEntreno.ACTIVO
             )
             .options(
@@ -101,29 +77,31 @@ async def ver_procesos_activos(id_usuario:int, db:AsyncSession = Depends(get_db)
 
     if not entreno_activo:
         raise HTTPException(
-            status_code=404, 
+            status_code=status.HTTP_404_NOT_FOUND, 
             detail=f"Usuario sin sessiones activas."
         )
 
     return entreno_activo
 
 @router.get(
-        path="/{id_entrenamiento_fuerza}/detalle",
-        summary="Obtener detalle del entrenamiento de Fuerza",
-        response_model=EntrenoFuerzaSerieResponse,
-        description="Se obtiene el detalle del entrenamiento en especifico, retornando los detalles generales como series, lugar de entreno entre otros",
-        status_code=200
+    path="/{id_entrenamiento_fuerza}",
+    summary="Obtener detalle del entrenamiento de Fuerza",
+    response_model=EntrenoFuerzaSerieResponse,
+    description="Se obtiene el detalle del entrenamiento en especifico, retornando los detalles generales como series, lugar de entreno entre otros",
+    status_code=status.HTTP_200_OK
 )
 async def obtener_detalle_entreno_fuerza(
     id_entrenamiento_fuerza:int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_user)
 ):
     query_entreno_fuerza = (
         await db.execute(
             select(EntrenamientoFuerza)
             .join(Entrenamiento)
             .where(
-                EntrenamientoFuerza.id_entrenamiento_fuerza == id_entrenamiento_fuerza
+                EntrenamientoFuerza.id_entrenamiento_fuerza == id_entrenamiento_fuerza,
+                Entrenamiento.id_usuario == user.id
             )
             .options(
                 selectinload(EntrenamientoFuerza.gimnasio),
@@ -142,53 +120,38 @@ async def obtener_detalle_entreno_fuerza(
     return query_entreno_fuerza
 
 
-
 @router.post(
-    path="/{id_usuario}",
-    response_model=EntrenoFuerzaDetailResponse,
+    path="/",
+    response_model=EntrenoFuerzaResponse,
     summary="Iniciar entrenamiento de Fuerza",
     description="Inicia una sesión de entrenamiento para poder ingresar las series de entrenamientos",
     status_code=201
 )
 async def activar_entrenamiento(
-    id_usuario:int,
     data:EntrenoFuerzaCreate,
+    user = Depends(current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    query = await db.execute(
-        select(Usuario)
-        .where(
-            Usuario.id_usuario == id_usuario,
-            Usuario.activo.is_(True)
-        )
-    )
-    usuario = query.scalar_one_or_none()
-
-    if not usuario:
-        raise HTTPException(status_code=404, detail=f"Usuario {id_usuario} no existe.")
     
-    stmt = (
-        select(EntrenamientoFuerza)
-        .join(Entrenamiento)
-        .where(
-            Entrenamiento.id_usuario == id_usuario,
-            EntrenamientoFuerza.estado == EstadoEntreno.ACTIVO
+    existe = (
+        await db.execute(
+            select(EntrenamientoFuerza)
+            .join(Entrenamiento)
+            .where(
+                Entrenamiento.id_usuario == user.id,
+                EntrenamientoFuerza.estado == EstadoEntreno.ACTIVO
+            )
         )
-        .options(
-            selectinload(EntrenamientoFuerza.gimnasio)
-        )
-    )
-
-    existe = (await db.execute(stmt)).scalar_one_or_none()
+    ).scalar_one_or_none()
 
     if existe:
         raise HTTPException(
-            status_code=409,
+            status_code=status.HTTP_409_CONFLICT,
             detail="Ya existe un entrenamiento de fuerza activo"
         )
 
     entreno = Entrenamiento(
-        id_usuario=id_usuario,
+        id_usuario=user.id,
         tipo_entrenamiento=TipoEntreno.FUERZA,
         observacion=data.observacion
     )
@@ -201,8 +164,7 @@ async def activar_entrenamiento(
     )
 
     db.add(entreno_fuerza)
-    await db.commit()
-    await db.refresh(entreno_fuerza)
+    await db.flush()
 
     entreno_fuerza = (
         await db.execute(
@@ -215,10 +177,7 @@ async def activar_entrenamiento(
         )
     ).scalar_one()
 
-    return EntrenoFuerzaDetailResponse(
-        info=f"Entreno {entreno_fuerza.id_entrenamiento_fuerza} iniciado.",
-        detalle=EntrenoFuerzaResponse.model_validate(entreno_fuerza)
-    )
+    return entreno_fuerza
 
 
 @router.patch(

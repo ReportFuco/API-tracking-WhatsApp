@@ -1,27 +1,27 @@
 
 -- Ver los usuarios activos
-SELECT * FROM usuario;
-UPDATE usuario SET auth_user_id = 3 WHERE id_usuario = 3
 
-SELECT * FROM usuario;
 SELECT * FROM "user";
--- Movimiento de tabla
+
 SELECT 
-    mov.id_transaccion,
+    u.username,
+    cat.nombre,
+    cb.nombre_cuenta,
     mov.tipo_movimiento,
     mov.tipo_gasto,
     mov.monto,
     mov.descripcion,
     mov.created_at,
-    cue.nombre_cuenta,
-    cat.nombre
+    CASE
+        WHEN mov.descripcion ILIKE '%monster%'
+            OR mov.descripcion ILIKE '%redbull%'
+        THEN 'Energética'
+        ELSE 'No energética'
+    END AS energeticas
 FROM movimiento AS mov
-    LEFT JOIN cuenta_bancaria AS cue
-        ON cue.id_cuenta = mov.id_cuenta
-    LEFT JOIN categoria_finanza AS cat
-        ON cat.id_categoria = mov.id_categoria;
-
-
-UPDATE cuenta_bancaria 
-SET activo = TRUE
-WHERE id_cuenta = 1;
+LEFT JOIN usuario AS u
+    ON mov.id_usuario = u.id_usuario
+LEFT JOIN categoria_finanza AS cat
+    ON cat.id_categoria = mov.id_categoria
+LEFT JOIN cuenta_bancaria AS cb
+    ON cb.id_usuario = u.id_usuario

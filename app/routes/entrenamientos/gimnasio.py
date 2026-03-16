@@ -1,33 +1,34 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func
+from app.auth.fastapi_users import current_superuser, current_user
 from app.db.session import get_db
+from typing import Optional
 from app.models.entrenamiento import Gimnasio
 from app.schemas.entrenamientos import (
     GimnasioResponse, 
-    GimnasioCreate, 
-    GimnasioDetailResponse, 
+    GimnasioCreate,
     GimnasioEdit
 )
 
 
 router = APIRouter(prefix="/gimnasio", tags=["Entrenamientos · Gimnasio"])
 
-
 @router.get(
     path="/", 
     response_model=list[GimnasioResponse],
     summary="Obtener todos los Gimnasios",
     description="Obtiene todos los gimnasios activos, con búsqueda opcional",
-    status_code=200
+    status_code=status.HTTP_200_OK,
 )
 async def obtener_gimnasios(
-    q: str | None = Query(
+    q: Optional[str] = Query(
         default=None,
         description="Texto a buscar en nombre del gimnasio o comuna",
         min_length=1
     ),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_user)
 ):
     stmt = select(Gimnasio).where(Gimnasio.activo.is_(True))
 
@@ -52,56 +53,61 @@ async def obtener_gimnasios(
     response_model=GimnasioResponse,
     summary="Obtener un Gimnasio",
     description="Obtiene un gimnasio en específico, entrega los nombres, direcciones, coordenadas entre otros",
-    status_code=200
+    status_code=status.HTTP_200_OK
 )
-async def obtener_gimnasio_id(id_gimnasio:int, db:AsyncSession = Depends(get_db)):
-    query = await db.execute(
+async def obtener_gimnasio_id(
+    id_gimnasio:int, 
+    db:AsyncSession = Depends(get_db),
+    user = Depends(current_user)
+):
+
+    gimnasio = await db.scalar(
         select(Gimnasio).where(
-            Gimnasio.id_gimnasio == id_gimnasio
+            Gimnasio.id_gimnasio == id_gimnasio,
+            Gimnasio.activo.is_(True)
         )
     )
 
-    gimnasio = query.scalar_one_or_none()
     if not gimnasio:
         raise HTTPException(
             status_code=404,
             detail=f"Gimnasio con id {id_gimnasio} no existe."
         )
+
     return gimnasio
 
 
 @router.post(
     path="/",
-    response_model=GimnasioDetailResponse,
+    response_model=GimnasioResponse,
     summary="Crear Gimnasio",
     description="Agrega un gimnasio a la base de datos",
-    status_code=201
+    status_code=status.HTTP_201_CREATED
 )
 async def crear_gimnasio(
     data:GimnasioCreate, 
-    db:AsyncSession = Depends(get_db)
+    db:AsyncSession = Depends(get_db),
+    user = Depends(current_superuser)
 ):
     gimnasio = Gimnasio(**data.model_dump())
     db.add(gimnasio)
-    await db.commit()
+    await db.flush()
     await db.refresh(gimnasio)
-    return GimnasioDetailResponse(
-        info=f"Gimnasio {gimnasio.nombre_gimnasio} creado.",
-        detalle=GimnasioResponse.model_validate(gimnasio)
-    )
+    return gimnasio
 
 
 @router.patch(
     "/{id_gimnasio}",
-    response_model=GimnasioDetailResponse,
+    response_model=GimnasioResponse,
     summary="Actualizar Gimnasio",
     description="Actualiza parcialmente los campos de un Gimnasio",
-    status_code=200
+    status_code=status.HTTP_200_OK
 )
 async def actualizar_gimnasio(
     id_gimnasio: int,
     data: GimnasioEdit,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user = Depends(current_superuser)
 ):
     result = await db.execute(
         select(Gimnasio).where(Gimnasio.id_gimnasio == id_gimnasio)
@@ -125,31 +131,21 @@ async def actualizar_gimnasio(
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(gimnasio, field, value)
 
-    try:
-        await db.flush()
-        await db.commit()
-    except Exception:
-        await db.rollback()
-        raise
-
     await db.refresh(gimnasio)
 
-    return GimnasioDetailResponse(
-        info=f"Gimnasio {gimnasio.id_gimnasio} actualizado correctamente.",
-        detalle=GimnasioResponse.model_validate(gimnasio)
-    )
+    return gimnasio
 
 
 @router.delete(
     path="/{id_gimnasio}",
-    response_model=GimnasioDetailResponse,
     summary="Eliminar Gimnasio",
     description="Desactiva el Gimnasio dentro de la base de datos",
-    status_code=200    
+    status_code=status.HTTP_204_NO_CONTENT
 )
 async def eliminar_gimnasio(
     id_gimnasio: int, 
-    db:AsyncSession = Depends(get_db)
+    db:AsyncSession = Depends(get_db),
+    user = Depends(current_superuser)
 ):
     query = await db.execute(
         select(Gimnasio)
@@ -167,16 +163,4 @@ async def eliminar_gimnasio(
             detail=f"Gimnasio {id_gimnasio} no existe o ya se encuentra desactivado."
         )
     
-    try:
-        gimnasio.activo = False
-        await db.flush()
-        await db.commit()
-        await db.refresh(gimnasio)
-    except Exception:
-        await db.rollback()
-        raise
-
-    return GimnasioDetailResponse(
-        info=f"Se ha desactivado {gimnasio.nombre_gimnasio} correctamente.",
-        detalle=GimnasioResponse.model_validate(gimnasio)
-    )
+    gimnasio.activo = False
