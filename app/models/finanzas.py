@@ -15,9 +15,10 @@ import enum
 
 
 class EnumCuentas(enum.Enum):
-    CUENTA_CORRIENTE = "Cuenta Corriente"
-    CUENTA_VISTA = "Cuenta vista"
-    CUENTA_AHORRO = "Cuenta ahorro"
+    CUENTA_CORRIENTE = "cuenta corriente"
+    CUENTA_VISTA = "cuenta vista"
+    CUENTA_AHORRO = "cuenta ahorro"
+    CUENTA_CREDITO = "cuenta credito"
 
 
 class EnumTarjeta(enum.Enum):
