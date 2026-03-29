@@ -103,7 +103,7 @@ class Movimiento(Base):
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     id_categoria: Mapped[int] = mapped_column(ForeignKey("categoria_finanza.id_categoria"))
     id_cuenta: Mapped[int] = mapped_column(ForeignKey("cuenta_bancaria.id_cuenta"))
-    tipo_movimiento: Mapped[str] = mapped_column(
+    tipo_movimiento: Mapped[EnumTipoMovimiento] = mapped_column(
         SQLEnum(
             EnumTipoMovimiento,
             name="tipo_movimiento",
@@ -112,7 +112,7 @@ class Movimiento(Base):
         ),
         nullable=False
     )
-    tipo_gasto: Mapped[str] = mapped_column(
+    tipo_gasto: Mapped[EnumTipoGasto] = mapped_column(
         SQLEnum(
             EnumTipoGasto,
             name="tipo_gasto",

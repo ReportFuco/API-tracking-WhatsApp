@@ -84,11 +84,3 @@ class EntrenoFuerzaSerieResponse(BaseModel):
         return data
 
 
-class EntrenoFuerzaDetailResponse(BaseModel):
-    info: str
-    detalle: EntrenoFuerzaSerieResponse
-
-    model_config = {
-        "from_attributes":True
-    }
-    

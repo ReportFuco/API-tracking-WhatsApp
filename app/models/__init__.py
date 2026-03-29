@@ -3,6 +3,9 @@ from .habitos import CategoriaHabito, Habito, RegistroHabito
 from .lecturas import Lectura, RegistroLectura
 from .finanzas import (
     EnumCuentas,
+    EnumTarjeta,
+    EnumTipoMovimiento,
+    EnumTipoGasto,
     Banco, 
     CategoriaFinanza, 
     CuentaBancaria, 
@@ -35,6 +38,9 @@ __all__ = [
     "EnumTipoEntrenamiento",
     "EnumEstadoEntrenamiento",
     "EnumCuentas",
+    "EnumTarjeta",
+    "EnumTipoMovimiento",
+    "EnumTipoGasto",
     "Banco", 
     "CategoriaFinanza", 
     "CuentaBancaria", 

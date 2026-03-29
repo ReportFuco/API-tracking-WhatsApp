@@ -8,7 +8,6 @@ from datetime import datetime
 from app.schemas.entrenamientos import (
     EntrenoFuerzaResponse, 
     EntrenoFuerzaCreate, 
-    EntrenoFuerzaDetailResponse,
     EntrenoFuerzaSerieResponse
 )
 from app.models import (
@@ -212,7 +211,7 @@ async def activar_entrenamiento(
 
 @router.patch(
     path="/activo/cerrar",
-    response_model=EntrenoFuerzaDetailResponse
+    response_model=EntrenoFuerzaResponse
 )
 async def finalizar_sesion_fuerza(
     user = Depends(current_user),
@@ -247,9 +246,6 @@ async def finalizar_sesion_fuerza(
     await db.flush()
     await db.refresh(entreno_activo)
 
-    return EntrenoFuerzaDetailResponse(
-        info="Entrenamiento de Fuerza cerrado correctamente.",
-        detalle=EntrenoFuerzaSerieResponse.model_validate(entreno_activo)
-    )
+    return EntrenoFuerzaResponse.model_validate(entreno_activo)
 
 

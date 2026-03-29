@@ -34,7 +34,7 @@ class CuentaResponse(BaseModel):
 # Con movimientos
 class CuentasMovimientosResponse(CuentaResponse):
     
-    transacciones: list[MovimientoResponse] = []
+    transacciones: list[MovimientoResponse] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod
