@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.fastapi_users import current_user, current_superuser
+from app.auth.fastapi_users import current_user
 from app.db.session import get_db
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -15,6 +15,7 @@ from app.models import (
     EntrenamientoFuerza, 
     Entrenamiento,
     Usuario,
+    Gimnasio,
     EnumTipoEntrenamiento as TipoEntreno,
     EnumEstadoEntrenamiento as EstadoEntreno,
     SerieFuerza
@@ -22,6 +23,18 @@ from app.models import (
 
 
 router = APIRouter(prefix="/fuerza", tags=["Entrenamientos · Fuerza"])
+
+
+async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
+    usuario = await db.scalar(
+        select(Usuario).where(Usuario.auth_user_id == user.id)
+    )
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Perfil de usuario no encontrado."
+        )
+    return usuario
 
 @router.get(
     "/",
@@ -34,12 +47,13 @@ async def obtener_entrenamientos_usuario(
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
+    usuario = await obtener_usuario_actual(user, db)
     
     entreno_fuerza = (
         await db.execute(
                 select(EntrenamientoFuerza)
                 .join(Entrenamiento)
-                .where(Entrenamiento.id_usuario == user.id)
+                .where(Entrenamiento.id_usuario == usuario.id_usuario)
                 .options(selectinload(EntrenamientoFuerza.gimnasio))
         )
     ).scalars().all()
@@ -58,13 +72,14 @@ async def obtener_entrenamiento_activo(
     user = Depends(current_user), 
     db:AsyncSession = Depends(get_db)
 ):
+    usuario = await obtener_usuario_actual(user, db)
     
     entreno_activo = (
         await db.execute(
             select(EntrenamientoFuerza)
             .join(Entrenamiento)
             .where(
-                Entrenamiento.id_usuario == user.id,
+                Entrenamiento.id_usuario == usuario.id_usuario,
                 EntrenamientoFuerza.estado == EstadoEntreno.ACTIVO
             )
             .options(
@@ -95,13 +110,15 @@ async def obtener_detalle_entreno_fuerza(
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
+    usuario = await obtener_usuario_actual(user, db)
+
     query_entreno_fuerza = (
         await db.execute(
             select(EntrenamientoFuerza)
             .join(Entrenamiento)
             .where(
                 EntrenamientoFuerza.id_entrenamiento_fuerza == id_entrenamiento_fuerza,
-                Entrenamiento.id_usuario == user.id
+                Entrenamiento.id_usuario == usuario.id_usuario
             )
             .options(
                 selectinload(EntrenamientoFuerza.gimnasio),
@@ -132,13 +149,14 @@ async def activar_entrenamiento(
     user = Depends(current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    usuario = await obtener_usuario_actual(user, db)
     
     existe = (
         await db.execute(
             select(EntrenamientoFuerza)
             .join(Entrenamiento)
             .where(
-                Entrenamiento.id_usuario == user.id,
+                Entrenamiento.id_usuario == usuario.id_usuario,
                 EntrenamientoFuerza.estado == EstadoEntreno.ACTIVO
             )
         )
@@ -150,8 +168,20 @@ async def activar_entrenamiento(
             detail="Ya existe un entrenamiento de fuerza activo"
         )
 
+    gimnasio = await db.scalar(
+        select(Gimnasio).where(
+            Gimnasio.id_gimnasio == data.id_gimnasio,
+            Gimnasio.activo.is_(True)
+        )
+    )
+    if not gimnasio:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Gimnasio no encontrado o inactivo."
+        )
+
     entreno = Entrenamiento(
-        id_usuario=user.id,
+        id_usuario=usuario.id_usuario,
         tipo_entrenamiento=TipoEntreno.FUERZA,
         observacion=data.observacion
     )
@@ -181,32 +211,21 @@ async def activar_entrenamiento(
 
 
 @router.patch(
-    path="/{id_usuario}",
+    path="/activo/cerrar",
     response_model=EntrenoFuerzaDetailResponse
 )
 async def finalizar_sesion_fuerza(
-    id_usuario:int, 
+    user = Depends(current_user),
     db:AsyncSession=Depends(get_db)
 ):
-    usuario = (
-        await db.execute(
-            select(Usuario)
-            .where(Usuario.id_usuario == id_usuario)
-        )
-    ).scalar_one_or_none()
-
-    if not usuario:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"Usuario {id_usuario} no encontrado."
-        )
+    usuario = await obtener_usuario_actual(user, db)
     
     entreno_activo = (
         await db.execute(
             select(EntrenamientoFuerza)
             .where(
                 EntrenamientoFuerza.entrenamiento.has(
-                    Entrenamiento.id_usuario == id_usuario
+                    Entrenamiento.id_usuario == usuario.id_usuario
                 ),
                 EntrenamientoFuerza.estado == EstadoEntreno.ACTIVO
             ).options(
@@ -219,18 +238,18 @@ async def finalizar_sesion_fuerza(
     if not entreno_activo:
         raise HTTPException(
             status_code=404, 
-            detail=f"El usuario {id_usuario} no tiene sesiones activas."
+            detail="No tienes sesiones activas."
         )
 
     entreno_activo.estado = EstadoEntreno.CERRADO
     entreno_activo.fin_at = datetime.now()
 
-    await db.commit()
+    await db.flush()
     await db.refresh(entreno_activo)
 
     return EntrenoFuerzaDetailResponse(
-        info=f"Entrenamiento de Fuerza del usuario {id_usuario} ha sido cerrado correctamente.",
-        detalle=EntrenoFuerzaResponse.model_validate(entreno_activo)
+        info="Entrenamiento de Fuerza cerrado correctamente.",
+        detalle=EntrenoFuerzaSerieResponse.model_validate(entreno_activo)
     )
 
 

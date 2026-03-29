@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from datetime import datetime
 from .gimnasio import GimnasioSimpleResponse
 from .series import SerieFuerzaResponse
@@ -61,7 +61,7 @@ class EntrenoFuerzaSerieResponse(BaseModel):
     latitud: float | None = None
     longitud: float | None = None
 
-    series: list[SerieFuerzaResponse] = []
+    series: list[SerieFuerzaResponse] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 
