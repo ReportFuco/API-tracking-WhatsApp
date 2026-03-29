@@ -3,7 +3,6 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from app.db import get_db
 from sqlalchemy import select, or_, and_
 from app.models import Usuario, User
-from loguru import logger
 from app.auth.fastapi_users import current_user, current_superuser
 from app.schemas.usuario import ( 
     UsuarioResponse,
@@ -13,6 +12,18 @@ from app.schemas.usuario import (
 
 router = APIRouter(tags=["Usuario"])
 
+
+async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
+    usuario = await db.scalar(
+        select(Usuario).where(Usuario.auth_user_id == user.id)
+    )
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Perfil no encontrado"
+        )
+    return usuario
+
 @router.get(
     "/perfil",
     response_model=UsuarioResponse
@@ -21,17 +32,7 @@ async def obtener_mi_perfil(
     user = Depends(current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    perfil = await db.scalar(
-        select(Usuario).where(Usuario.auth_user_id == user.id)
-    )
-
-    if not perfil:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Perfil no encontrado"
-        )
-
-    return perfil
+    return await obtener_usuario_actual(user, db)
 
 
 @router.get(
@@ -65,49 +66,46 @@ async def editar_usuario(
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
+    usuario_actual = await obtener_usuario_actual(user, db)
+    cambios_dict = data.model_dump(exclude_unset=True)
+
+    if not cambios_dict:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No se enviaron cambios para actualizar"
+        )
+
+    criterios_unicos = []
+    if "email" in cambios_dict:
+        criterios_unicos.append(Usuario.email == cambios_dict["email"])
+    if "username" in cambios_dict:
+        criterios_unicos.append(Usuario.username == cambios_dict["username"])
+    if "telefono" in cambios_dict:
+        criterios_unicos.append(Usuario.telefono == cambios_dict["telefono"])
+
     existente = (
         await db.execute(
             select(Usuario)
             .where(
                 and_(
-                    Usuario.id_usuario != user.id,
-                    or_(
-                        Usuario.email == data.email,
-                        Usuario.username == data.username,
-                        Usuario.telefono == data.telefono
-                    )
+                    Usuario.id_usuario != usuario_actual.id_usuario,
+                    or_(*criterios_unicos)
                 )
             )
         )
-    ).scalar_one_or_none()
+    ).scalar_one_or_none() if criterios_unicos else None
 
     if existente:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Correo, username o teléfono ya están en uso"
         )
-    
-    usuario = (await db.scalar(select(Usuario).where(Usuario.id_usuario == user.id)))
 
-    cambios = data.model_dump(exclude_unset=True).items()
+    for field, value in cambios_dict.items():
+        setattr(usuario_actual, field, value)
 
-    if not cambios:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No se enviaron cambios para actualizar"
-        )
-
-    if usuario:
-        for field, value in cambios:
-            setattr(usuario, field, value)
-
-        await db.flush()
-        return usuario
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Usuario no encontrado"
-        )
+    await db.flush()
+    return usuario_actual
     
 
 @router.delete(

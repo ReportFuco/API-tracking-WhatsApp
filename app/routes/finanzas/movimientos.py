@@ -12,7 +12,8 @@ from fastapi import (
 from app.models import (
     Movimiento,
     CategoriaFinanza,
-    CuentaBancaria
+    CuentaBancaria,
+    Usuario
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
@@ -22,6 +23,18 @@ from app.auth.fastapi_users import current_user
 
 
 router = APIRouter(prefix="/movimientos", tags=["Finanzas · Movimientos"])
+
+
+async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
+    usuario = await db.scalar(
+        select(Usuario).where(Usuario.auth_user_id == user.id)
+    )
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Perfil de usuario no encontrado."
+        )
+    return usuario
 
 @router.get(
     "/",
@@ -34,10 +47,12 @@ async def obtener_movimiento(
     user = Depends(current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    usuario = await obtener_usuario_actual(user, db)
+
     movimiento_usuario = (
         await db.execute(
             select(Movimiento)
-            .where(Movimiento.id_usuario == user.id)
+            .where(Movimiento.id_usuario == usuario.id_usuario)
             .options(
                 selectinload(Movimiento.cuenta),
                 selectinload(Movimiento.categoria)
@@ -66,13 +81,15 @@ async def obtener_movimientos(
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
+    usuario = await obtener_usuario_actual(user, db)
+
     transaccion = (
         await db.scalar(
             select(Movimiento)
             .where(
                 and_(
                     Movimiento.id_transaccion == id_movimiento,
-                    Movimiento.id_usuario == user.id
+                    Movimiento.id_usuario == usuario.id_usuario
                 )
             )
             .options(
@@ -103,6 +120,8 @@ async def crear_movimiento(
     db:AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
+    usuario = await obtener_usuario_actual(user, db)
+
     categoria = (
         await db.scalar(
             select(CategoriaFinanza)
@@ -120,7 +139,7 @@ async def crear_movimiento(
             .where(
                 CuentaBancaria.id_cuenta == data.id_cuenta,
                 CuentaBancaria.activo.is_(True),
-                CuentaBancaria.id_usuario == user.id
+                CuentaBancaria.id_usuario == usuario.id_usuario
             )
         )
     )
@@ -132,7 +151,7 @@ async def crear_movimiento(
     
     movimiento = Movimiento(
         **data.model_dump(),
-        id_usuario=user.id
+        id_usuario=usuario.id_usuario
     )
 
     db.add(movimiento)
@@ -157,11 +176,12 @@ async def editar_movimiento(
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
+    usuario = await obtener_usuario_actual(user, db)
     
     movimiento = await db.scalar(
         select(Movimiento).where(
             Movimiento.id_transaccion == id_movimiento,
-            Movimiento.id_usuario == user.id
+            Movimiento.id_usuario == usuario.id_usuario
         )
     )
 

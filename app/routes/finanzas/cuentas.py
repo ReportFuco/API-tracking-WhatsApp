@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from sqlalchemy import select
-from app.models import Banco, CuentaBancaria, Movimiento
+from app.models import Banco, CuentaBancaria, Movimiento, Usuario
 from app.schemas.finanzas import (
     CuentaCreate,
     CuentaResponse,
@@ -15,6 +15,18 @@ from app.auth.fastapi_users import current_user
 
 router = APIRouter(prefix="/cuentas", tags=["Finanzas · Cuentas"])
 
+
+async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
+    usuario = await db.scalar(
+        select(Usuario).where(Usuario.auth_user_id == user.id)
+    )
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Perfil de usuario no encontrado."
+        )
+    return usuario
+
 @router.get(
     path="/",
     response_model=list[CuentaResponse],
@@ -26,10 +38,12 @@ async def obtener_cuentas_usuario(
     user = Depends(current_user),
     db:AsyncSession = Depends(get_db)
 ):    
+    usuario = await obtener_usuario_actual(user, db)
+
     cuentas = (
         await db.execute(
             select(CuentaBancaria)
-            .where(CuentaBancaria.id_usuario == user.id)
+            .where(CuentaBancaria.id_usuario == usuario.id_usuario)
             .options(selectinload(CuentaBancaria.banco))
         )
     ).scalars().all()
@@ -55,13 +69,15 @@ async def obtener_movimientos_cuenta(
     user = Depends(current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    usuario = await obtener_usuario_actual(user, db)
+
     movimientos_cuenta = (
         await db.execute(
             select(CuentaBancaria)
             .where(
                 CuentaBancaria.id_cuenta == id_cuenta,
                 CuentaBancaria.activo.is_(True),
-                CuentaBancaria.id_usuario == user.id
+                CuentaBancaria.id_usuario == usuario.id_usuario
             )
             .options(
             selectinload(CuentaBancaria.banco),
@@ -95,6 +111,7 @@ async def crear_cuenta_bancaria(
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user),
 ):
+    usuario = await obtener_usuario_actual(user, db)
 
     # Validar que el banco exista
     banco = (
@@ -113,7 +130,7 @@ async def crear_cuenta_bancaria(
     cuenta_existente = (
         await db.execute(
             select(CuentaBancaria).where(
-                CuentaBancaria.id_usuario == user.id,
+                CuentaBancaria.id_usuario == usuario.id_usuario,
                 CuentaBancaria.nombre_cuenta == data.nombre_cuenta
             )
         )
@@ -127,7 +144,7 @@ async def crear_cuenta_bancaria(
 
     # Crear cuenta
     nueva_cuenta = CuentaBancaria(
-        id_usuario=user.id,
+        id_usuario=usuario.id_usuario,
         id_banco=data.id_banco,
         nombre_cuenta=data.nombre_cuenta,
         tipo_cuenta=data.tipo_cuenta
@@ -158,13 +175,14 @@ async def editar_cuenta(
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
+    usuario = await obtener_usuario_actual(user, db)
 
     cuenta = await db.scalar(
         select(CuentaBancaria)
         .where(
             CuentaBancaria.id_cuenta == id_cuenta,
             CuentaBancaria.activo.is_(True),
-            CuentaBancaria.id_usuario == user.id
+            CuentaBancaria.id_usuario == usuario.id_usuario
         )
     )
 
@@ -178,7 +196,7 @@ async def editar_cuenta(
         existe = await db.scalar(
             select(CuentaBancaria.id_cuenta)
             .where(
-                CuentaBancaria.id_usuario == user.id,
+                CuentaBancaria.id_usuario == usuario.id_usuario,
                 CuentaBancaria.nombre_cuenta == data.nombre_cuenta,
                 CuentaBancaria.id_cuenta != id_cuenta
             )
@@ -215,12 +233,14 @@ async def desactivar_cuenta(
     user = Depends(current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    usuario = await obtener_usuario_actual(user, db)
+
     existe = (
         await db.execute(
             select(CuentaBancaria)
             .where(
                 CuentaBancaria.id_cuenta == id_cuenta,
-                CuentaBancaria.id_usuario == user.id,
+                CuentaBancaria.id_usuario == usuario.id_usuario,
                 CuentaBancaria.activo.is_(True)
             )
         )
