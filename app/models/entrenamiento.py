@@ -12,6 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from app.db.base import Base
+from app.models.db_schemas import ENTRENAMIENTOS_SCHEMA, USUARIOS_SCHEMA, table_ref
 import enum
 
 
@@ -42,6 +43,7 @@ class EnumMusculo(enum.Enum):
 
 class Gimnasio(Base):
     __tablename__= "gimnasio"
+    __table_args__ = {"schema": ENTRENAMIENTOS_SCHEMA}
 
     id_gimnasio: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     nombre_gimnasio: Mapped[str] = mapped_column(String, nullable=False, unique=True)
@@ -61,13 +63,15 @@ class Gimnasio(Base):
 
 class Entrenamiento(Base):
     __tablename__ = "entrenamiento"
+    __table_args__ = {"schema": ENTRENAMIENTOS_SCHEMA}
 
     id_entrenamiento: Mapped[int] = mapped_column(Integer, primary_key=True)
-    id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
+    id_usuario: Mapped[int] = mapped_column(ForeignKey(table_ref(USUARIOS_SCHEMA, "usuario.id_usuario")))
     tipo_entrenamiento: Mapped[str] = mapped_column(
         SQLEnum(
             EnumTipoEntrenamiento,
             name="tipo_entrenamiento",
+            schema=ENTRENAMIENTOS_SCHEMA,
             create_type=True,
             values_callable=lambda x: [e.value for e in x]
         )
@@ -87,13 +91,15 @@ class Entrenamiento(Base):
 
 class EntrenamientoAerobico(Base):
     __tablename__ = "entrenamiento_aerobico"
+    __table_args__ = {"schema": ENTRENAMIENTOS_SCHEMA}
 
     id_aerobico: Mapped[int] = mapped_column(Integer, primary_key=True)
-    id_entrenamiento: Mapped[int] = mapped_column(ForeignKey("entrenamiento.id_entrenamiento"), unique=True)
+    id_entrenamiento: Mapped[int] = mapped_column(ForeignKey(table_ref(ENTRENAMIENTOS_SCHEMA, "entrenamiento.id_entrenamiento")), unique=True)
     tipo_aerobico: Mapped[EnumTipoAerobico] = mapped_column(
         SQLEnum(
             EnumTipoAerobico,
             name="tipo aerobico",
+            schema=ENTRENAMIENTOS_SCHEMA,
             values_callable=lambda x: [e.value for e in x]
         )
     )
@@ -106,14 +112,16 @@ class EntrenamientoAerobico(Base):
 
 class EntrenamientoFuerza(Base):
     __tablename__ = "entrenamiento_fuerza"
+    __table_args__ = {"schema": ENTRENAMIENTOS_SCHEMA}
 
     id_entrenamiento_fuerza: Mapped[int] = mapped_column(Integer, primary_key=True)
-    id_entrenamiento: Mapped[int] = mapped_column(ForeignKey("entrenamiento.id_entrenamiento"), unique=True)
-    id_gimnasio: Mapped[int] = mapped_column(ForeignKey("gimnasio.id_gimnasio"))
+    id_entrenamiento: Mapped[int] = mapped_column(ForeignKey(table_ref(ENTRENAMIENTOS_SCHEMA, "entrenamiento.id_entrenamiento")), unique=True)
+    id_gimnasio: Mapped[int] = mapped_column(ForeignKey(table_ref(ENTRENAMIENTOS_SCHEMA, "gimnasio.id_gimnasio")))
     estado: Mapped[EnumEstadoEntrenamiento] = mapped_column(
         SQLEnum(
             EnumEstadoEntrenamiento,
             name="estado_entrenamiento_fuerza",
+            schema=ENTRENAMIENTOS_SCHEMA,
             values_callable=lambda x: [e.value for e in x]
         ),
         server_default="activo",
@@ -133,10 +141,11 @@ class EntrenamientoFuerza(Base):
 
 class SerieFuerza(Base):
     __tablename__="serie_fuerza"
+    __table_args__ = {"schema": ENTRENAMIENTOS_SCHEMA}
 
     id_fuerza_detalle: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True)
-    id_entrenamiento_fuerza: Mapped[int] = mapped_column(ForeignKey("entrenamiento_fuerza.id_entrenamiento_fuerza"))
-    id_ejercicio: Mapped[int] = mapped_column(ForeignKey("ejercicios.id_ejercicio"))
+    id_entrenamiento_fuerza: Mapped[int] = mapped_column(ForeignKey(table_ref(ENTRENAMIENTOS_SCHEMA, "entrenamiento_fuerza.id_entrenamiento_fuerza")))
+    id_ejercicio: Mapped[int] = mapped_column(ForeignKey(table_ref(ENTRENAMIENTOS_SCHEMA, "ejercicios.id_ejercicio")))
     es_calentamiento: Mapped[bool] = mapped_column(Boolean)
     cantidad_peso: Mapped[float] = mapped_column(Float, nullable=False)
     repeticiones: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -150,6 +159,7 @@ class SerieFuerza(Base):
 
 class Ejercicios(Base):
     __tablename__ = "ejercicios"
+    __table_args__ = {"schema": ENTRENAMIENTOS_SCHEMA}
 
     id_ejercicio: Mapped[int] = mapped_column(Integer, primary_key=True)
     nombre: Mapped[str] = mapped_column(String(100))
@@ -157,6 +167,7 @@ class Ejercicios(Base):
         SQLEnum(
             EnumMusculo,
             name="musculos",
+            schema=ENTRENAMIENTOS_SCHEMA,
             values_callable=lambda x: [e.value for e in x]
         )
     )

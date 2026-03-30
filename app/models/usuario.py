@@ -13,10 +13,12 @@ from app.models.habitos import Habito
 from app.models.entrenamiento import Entrenamiento
 from app.models.lecturas import Lectura
 from app.models.finanzas import CuentaBancaria, Movimiento
+from app.models.db_schemas import AUTH_SCHEMA, USUARIOS_SCHEMA, table_ref
 
 
 class Usuario(Base):
     __tablename__= "usuario"
+    __table_args__ = {"schema": USUARIOS_SCHEMA}
 
     id_usuario: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
@@ -25,7 +27,7 @@ class Usuario(Base):
     telefono: Mapped[str] = mapped_column(String(11), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String, unique=True, index=True)
     auth_user_id = mapped_column(
-    ForeignKey("user.id"),
+    ForeignKey(table_ref(AUTH_SCHEMA, "user.id")),
         unique=True,
         nullable=False
     )
@@ -47,9 +49,10 @@ class Usuario(Base):
 
 class Mensaje(Base):
     __tablename__ = "mensaje"
+    __table_args__ = {"schema": USUARIOS_SCHEMA}
 
     id_mensaje: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
+    id_usuario: Mapped[int] = mapped_column(ForeignKey(table_ref(USUARIOS_SCHEMA, "usuario.id_usuario")))
     contenido: Mapped[str] = mapped_column(Text)
     direccion: Mapped[str] = mapped_column(String(50))
     created_at: Mapped[datetime] = mapped_column(

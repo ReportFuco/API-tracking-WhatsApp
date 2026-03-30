@@ -3,10 +3,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
 
 from app.db.base import Base
+from app.models.db_schemas import AUTH_SCHEMA
 
 
 class User(SQLAlchemyBaseUserTable[int], Base):
     __tablename__ = "user"
+    __table_args__ = {"schema": AUTH_SCHEMA}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
