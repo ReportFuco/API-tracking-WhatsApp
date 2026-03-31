@@ -132,7 +132,7 @@ class Movimiento(Base):
     descripcion: Mapped[str] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 
-        default=datetime.now(), 
+        default=datetime.now, 
         server_default=text("now()")
     )
 

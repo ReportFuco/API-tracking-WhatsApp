@@ -150,7 +150,7 @@ async def crear_movimiento(
         )
     
     movimiento = Movimiento(
-        **data.model_dump(),
+        **data.model_dump(exclude_none=True),
         id_usuario=usuario.id_usuario
     )
 

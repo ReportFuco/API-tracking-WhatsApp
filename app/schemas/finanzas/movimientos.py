@@ -71,6 +71,11 @@ class MovimientoCreate(BaseModel):
         examples=["Aquí va la descripción"], 
         description="Ingresa una descripción del gasto, algún detalle."
     )
+    created_at: Optional[datetime] = Field(
+        None,
+        examples=["2025-12-15T10:30:00"],
+        description="Fecha del movimiento. Si no se envía, se usa la fecha actual."
+    )
 
     model_config = ConfigDict(
         title="Crear movimiento"
