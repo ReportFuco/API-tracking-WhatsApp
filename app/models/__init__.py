@@ -23,10 +23,24 @@ from .entrenamiento import (
     EnumTipoEntrenamiento,
     EnumEstadoEntrenamiento
 )
+from .catalogo import Marca, Producto
+from .compras import Cadena, Local, Compra, CompraDetalle
+from .nutricion import Consumo, ConsumoDetalle, TablaNutricional, MetaNutricional, PesoUsuario
 
 from .usuario_auth import User
 
 __all__ = [
+    "Marca",
+    "Producto",
+    "Cadena",
+    "Local",
+    "Compra",
+    "CompraDetalle",
+    "Consumo",
+    "ConsumoDetalle",
+    "TablaNutricional",
+    "MetaNutricional",
+    "PesoUsuario",
     "Ejercicios", 
     "Entrenamiento", 
     "EntrenamientoAerobico", 
