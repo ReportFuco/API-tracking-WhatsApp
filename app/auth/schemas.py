@@ -1,5 +1,7 @@
+from typing import Any
+
 from fastapi_users import schemas
-from pydantic import Field, EmailStr, ConfigDict
+from pydantic import Field, EmailStr, ConfigDict, model_validator
 
 
 class UsuarioAuthRead(schemas.BaseUser[int]):
@@ -17,6 +19,24 @@ class UsuarioAuthCreate(schemas.CreateUpdateDictModel):
     nombre: str = Field(examples=["Tu nombre"], max_length=20)
     apellido: str = Field(examples=["Tu apellido"], max_length=20)
     telefono: str = Field(examples=["Tu teléfono"], max_length=11)
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalizar_telefono(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            telefono = str(data.get("telefono", ""))
+            telefono = telefono.replace("+", "").replace(" ", "").strip()
+
+            if not telefono.isdigit():
+                raise ValueError("El telefono debe contener solo numeros.")
+            if len(telefono) != 11:
+                raise ValueError(
+                    f"El numero ingresado es de {len(telefono)}. Debe tener exactamente 11 numeros."
+                )
+
+            data["telefono"] = telefono
+
+        return data
 
     model_config = ConfigDict(
         extra="forbid"

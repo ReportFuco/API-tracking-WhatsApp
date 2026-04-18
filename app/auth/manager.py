@@ -1,8 +1,8 @@
 from fastapi_users import BaseUserManager
-from fastapi_users import exceptions
-from fastapi import Depends, Request
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
+from sqlalchemy import or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import User, Usuario
@@ -34,7 +34,30 @@ class UserManager(BaseUserManager[User, int]):
 
         existing_user = await self.user_db.get_by_email(user_create.email)
         if existing_user is not None:
-            raise exceptions.UserAlreadyExists()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="El correo ya se encuentra registrado.",
+            )
+
+        existing_profile = await self.session.scalar(
+            select(Usuario).where(
+                or_(
+                    Usuario.username == user_create.username,
+                    Usuario.telefono == user_create.telefono,
+                )
+            )
+        )
+        if existing_profile is not None:
+            if existing_profile.username == user_create.username:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="El nombre de usuario ya se encuentra registrado.",
+                )
+            if existing_profile.telefono == user_create.telefono:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="El telefono ya se encuentra registrado.",
+                )
 
         user_dict: dict[str, object] = {
             "email": user_create.email,
@@ -48,18 +71,29 @@ class UserManager(BaseUserManager[User, int]):
             if hasattr(user_create, "is_verified"):
                 user_dict["is_verified"] = user_create.is_verified
 
-        user = await self.user_db.create(user_dict)
+        try:
+            user = User(**user_dict)
+            self.session.add(user)
+            await self.session.flush()
 
-        perfil = Usuario(
-            auth_user_id=user.id,
-            username=user_create.username,
-            nombre=user_create.nombre,
-            apellido=user_create.apellido,
-            telefono=user_create.telefono,
-            email=user.email,
-        )
-        self.session.add(perfil)
-        await self.session.flush()
+            perfil = Usuario(
+                auth_user_id=user.id,
+                username=user_create.username,
+                nombre=user_create.nombre,
+                apellido=user_create.apellido,
+                telefono=user_create.telefono,
+                email=user.email,
+            )
+            self.session.add(perfil)
+            await self.session.flush()
+
+        except IntegrityError as exc:
+            await self.session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="No fue posible crear el usuario porque correo, username o telefono ya existen.",
+            ) from exc
+
         await self.on_after_register(user, request)
 
         return user
