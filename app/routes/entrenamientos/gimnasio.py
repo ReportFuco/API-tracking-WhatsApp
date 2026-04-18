@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import time
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func
 from app.auth.fastapi_users import current_superuser, current_user
 from app.db.session import get_db
-from typing import Optional
 from app.models.entrenamiento import Gimnasio
 from app.schemas.entrenamientos import (
     GimnasioResponse, 
@@ -13,6 +15,16 @@ from app.schemas.entrenamientos import (
 
 
 router = APIRouter(prefix="/gimnasio", tags=["Entrenamientos · Gimnasio"])
+_GIMNASIOS_CACHE_SECONDS = 15
+_gimnasios_cache: dict[str, tuple[float, list[Gimnasio]]] = {}
+
+
+def _cache_key(q: Optional[str]) -> str:
+    return (q or "").strip().lower()
+
+
+def _clear_gimnasios_cache() -> None:
+    _gimnasios_cache.clear()
 
 @router.get(
     path="/", 
@@ -22,6 +34,7 @@ router = APIRouter(prefix="/gimnasio", tags=["Entrenamientos · Gimnasio"])
     status_code=status.HTTP_200_OK,
 )
 async def obtener_gimnasios(
+    response: Response,
     q: Optional[str] = Query(
         default=None,
         description="Texto a buscar en nombre del gimnasio o comuna",
@@ -30,6 +43,18 @@ async def obtener_gimnasios(
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
+    cache_key = _cache_key(q)
+    cached = _gimnasios_cache.get(cache_key)
+    now = time.monotonic()
+
+    if response is not None:
+        response.headers["Cache-Control"] = (
+            f"private, max-age={_GIMNASIOS_CACHE_SECONDS}"
+        )
+
+    if cached is not None and now - cached[0] < _GIMNASIOS_CACHE_SECONDS:
+        return cached[1]
+
     stmt = select(Gimnasio).where(Gimnasio.activo.is_(True))
 
     if q:
@@ -44,6 +69,7 @@ async def obtener_gimnasios(
 
     result = await db.execute(stmt)
     gimnasios = result.scalars().all()
+    _gimnasios_cache[cache_key] = (now, gimnasios)
 
     return gimnasios
 
@@ -93,6 +119,7 @@ async def crear_gimnasio(
     db.add(gimnasio)
     await db.flush()
     await db.refresh(gimnasio)
+    _clear_gimnasios_cache()
     return gimnasio
 
 
@@ -131,7 +158,9 @@ async def actualizar_gimnasio(
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(gimnasio, field, value)
 
+    await db.flush()
     await db.refresh(gimnasio)
+    _clear_gimnasios_cache()
 
     return gimnasio
 
@@ -164,3 +193,4 @@ async def eliminar_gimnasio(
         )
     
     gimnasio.activo = False
+    _clear_gimnasios_cache()

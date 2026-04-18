@@ -1,11 +1,30 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-class EjercicioResponse(BaseModel):
-    id_ejercicio: int
+from app.models import EnumMusculo
+
+
+class EjercicioBase(BaseModel):
     nombre: str
-    tipo: str
-    url_video: str | None
+    tipo: EnumMusculo
+    url_video: str | None = None
 
-    model_config = {
-        "from_attributes": True
-    }
+
+class EjercicioCreate(EjercicioBase):
+    pass
+
+
+class EjercicioPatch(BaseModel):
+    nombre: str | None = None
+    tipo: EnumMusculo | None = None
+    url_video: str | None = None
+
+
+class EjercicioResponse(EjercicioBase):
+    id_ejercicio: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MusculoResponse(BaseModel):
+    codigo: str
+    nombre: str

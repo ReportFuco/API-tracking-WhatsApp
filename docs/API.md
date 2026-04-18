@@ -279,9 +279,31 @@ Prefijo: `/api/entrenamientos`
 
 Submódulos:
 
+- `ejercicios`
 - `gimnasio`
 - `fuerza`
 - `series`
+
+#### Ejercicios
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/api/entrenamientos/ejercicios/` | usuario | Lista ejercicios, acepta filtros `q` y `tipo` |
+| `GET` | `/api/entrenamientos/ejercicios/musculos` | usuario | Lista los tipos musculares disponibles |
+| `GET` | `/api/entrenamientos/ejercicios/{id_ejercicio}` | usuario | Obtiene un ejercicio |
+| `POST` | `/api/entrenamientos/ejercicios/` | superuser | Crea ejercicio |
+| `PATCH` | `/api/entrenamientos/ejercicios/{id_ejercicio}` | superuser | Edita ejercicio |
+| `DELETE` | `/api/entrenamientos/ejercicios/{id_ejercicio}` | superuser | Elimina ejercicio si no tiene series asociadas |
+
+Payload create:
+
+```json
+{
+  "nombre": "Press banca plano",
+  "tipo": "pecho",
+  "url_video": "https://youtube.com/ejemplo"
+}
+```
 
 #### Gimnasios
 
@@ -712,6 +734,16 @@ Esta sección resume los cuerpos más comunes para IA y automatizaciones.
   "es_calentamiento": false,
   "cantidad_peso": 80,
   "repeticiones": 6
+}
+```
+
+### Ejercicio create
+
+```json
+{
+  "nombre": "Remo con barra",
+  "tipo": "espalda",
+  "url_video": "https://youtube.com/ejemplo"
 }
 ```
 

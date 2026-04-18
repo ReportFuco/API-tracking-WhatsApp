@@ -46,6 +46,7 @@ Zona separada para mantenimiento y control global.
 - gestión de bancos
 - gestión de categorías financieras
 - gestión de gimnasios
+- gestión de ejercicios
 - gestión de marcas
 - gestión de productos
 - gestión de cadenas
@@ -89,6 +90,7 @@ Zona separada para mantenimiento y control global.
 /admin/bancos
 /admin/categorias-finanzas
 /admin/gimnasios
+/admin/ejercicios
 /admin/marcas
 /admin/productos
 /admin/cadenas
@@ -115,6 +117,8 @@ Subnavegación sugerida:
 - Compras: `Compras`, `Nueva compra`
 - Nutrición: `Consumos`, `Metas`, `Peso`
 
+Para entrenamientos conviene además consumir el catálogo de `Ejercicios` para poblar selectores y filtros por músculo.
+
 ## Navegación admin
 Sidebar separada, idealmente con un look distinto pero emparentado.
 
@@ -129,7 +133,7 @@ Sidebar separada, idealmente con un look distinto pero emparentado.
 Subnavegación sugerida:
 
 - Finanzas maestras: `Bancos`, `Categorías`
-- Entrenamientos maestros: `Gimnasios`
+- Entrenamientos maestros: `Gimnasios`, `Ejercicios`
 - Catálogo: `Marcas`, `Productos`
 - Compras maestras: `Cadenas`, `Locales`
 - Nutrición maestra: `Tablas nutricionales`
@@ -367,6 +371,7 @@ Bloques sugeridos:
 - tarjeta de entrenamiento activo
 - últimas sesiones
 - acceso a gimnasios disponibles
+- acceso a catálogo de ejercicios por músculo para iniciar series más rápido
 
 ## 8. Entrenamientos > Sesión activa
 Ruta sugerida:
@@ -393,6 +398,8 @@ Componentes:
 Endpoints relacionados:
 
 - `GET /api/entrenamientos/fuerza/activo`
+- `GET /api/entrenamientos/ejercicios/`
+- `GET /api/entrenamientos/ejercicios/musculos`
 - `POST /api/entrenamientos/series/`
 - `PATCH /api/entrenamientos/series/{id}`
 - `DELETE /api/entrenamientos/series/{id}`
@@ -707,7 +714,33 @@ Endpoints relacionados:
 - `PATCH /api/entrenamientos/gimnasio/{id}`
 - `DELETE /api/entrenamientos/gimnasio/{id}`
 
-## 6. Admin > Marcas
+## 6. Admin > Ejercicios
+Ruta sugerida:
+
+```txt
+/admin/ejercicios
+```
+
+Objetivo:
+
+- mantener el catálogo de ejercicios usado por las series de fuerza
+
+Componentes:
+
+- tabla con nombre, músculo principal y video
+- filtro por músculo
+- formulario create/edit
+- protección visual para ejercicios ya usados en series
+
+Endpoints relacionados:
+
+- `GET /api/entrenamientos/ejercicios/`
+- `GET /api/entrenamientos/ejercicios/musculos`
+- `POST /api/entrenamientos/ejercicios/`
+- `PATCH /api/entrenamientos/ejercicios/{id}`
+- `DELETE /api/entrenamientos/ejercicios/{id}`
+
+## 7. Admin > Marcas
 Ruta sugerida:
 
 ```txt
@@ -724,7 +757,7 @@ Endpoints relacionados:
 - `PATCH /api/catalogo/marca/{id}`
 - `DELETE /api/catalogo/marca/{id}`
 
-## 7. Admin > Productos
+## 8. Admin > Productos
 Ruta sugerida:
 
 ```txt
