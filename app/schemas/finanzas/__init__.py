@@ -12,10 +12,10 @@ from .producto_financiero import (
 )
 
 from .cuentas import (
-    CuentaCreate, 
-    CuentasMovimientosResponse, 
-    CuentaResponse, 
-    CuentaPatch
+    CuentaUsuarioCreate,
+    CuentaUsuarioMovimientosResponse,
+    CuentaUsuarioResponse,
+    CuentaUsuarioPatch
 )
 
 from .categoria import (
@@ -38,10 +38,10 @@ __all__ = [
     "MovimientoPatch",
 
     # Cuentas
-    "CuentaResponse",
-    "CuentaCreate",
-    "CuentaPatch",
-    "CuentasMovimientosResponse",
+    "CuentaUsuarioResponse",
+    "CuentaUsuarioCreate",
+    "CuentaUsuarioPatch",
+    "CuentaUsuarioMovimientosResponse",
 
     # Banco
     "BancoCreate",

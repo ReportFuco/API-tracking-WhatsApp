@@ -7,10 +7,10 @@ from fastapi import HTTPException
 from app.db.session import AsyncSessionLocal
 from app.models import Banco, CategoriaFinanza, ProductoFinanciero, User, Usuario
 from app.models.finanzas import EnumTipoGasto, EnumTipoMovimiento
-from app.routes.finanzas.cuentas import crear_cuenta_bancaria, obtener_cuentas_usuario
+from app.routes.finanzas.cuentas import crear_cuenta_usuario, obtener_cuentas_usuario
 from app.routes.finanzas.movimientos import crear_movimiento, obtener_movimientos
 from app.routes.usuarios.usuario import editar_usuario
-from app.schemas.finanzas import CuentaCreate, MovimientoCreate
+from app.schemas.finanzas import CuentaUsuarioCreate, MovimientoCreate
 from app.schemas.usuario import UsuarioPatchSchema
 
 
@@ -83,8 +83,8 @@ async def test_ownership_finanzas_usuarios_end_to_end():
             user1 = SimpleNamespace(id=auth1.id)
             user2 = SimpleNamespace(id=auth2.id)
 
-            cuenta = await crear_cuenta_bancaria(
-                data=CuentaCreate(
+            cuenta = await crear_cuenta_usuario(
+                data=CuentaUsuarioCreate(
                     id_producto_financiero=producto.id_producto_financiero,
                     nombre_cuenta=f"Cuenta {seed}",
                 ),

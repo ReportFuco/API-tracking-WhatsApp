@@ -237,13 +237,13 @@ Payload base:
 }
 ```
 
-#### Cuentas bancarias
+#### Cuentas de usuario
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
 | `GET` | `/api/finanzas/cuentas/` | usuario | Lista las cuentas del usuario |
-| `GET` | `/api/finanzas/cuentas/{id_cuenta}` | usuario + ownership | Obtiene cuenta y movimientos |
-| `POST` | `/api/finanzas/cuentas/` | usuario | Crea una cuenta del usuario autenticado |
+| `GET` | `/api/finanzas/cuentas/{id_cuenta}` | usuario + ownership | Obtiene cuenta de usuario y movimientos |
+| `POST` | `/api/finanzas/cuentas/` | usuario | Crea una cuenta de usuario del autenticado |
 | `PATCH` | `/api/finanzas/cuentas/{id_cuenta}` | usuario + ownership | Edita cuenta |
 | `DELETE` | `/api/finanzas/cuentas/{id_cuenta}` | usuario + ownership | Desactiva cuenta |
 
@@ -321,12 +321,6 @@ Payload create:
   "url_video": "https://youtube.com/ejemplo"
 }
 ```
-
-Notas:
-
-- `movimiento` ya no guarda `id_usuario` directo
-- el ownership se resuelve por `id_cuenta`, porque cada cuenta pertenece a un único usuario
-- cambiar de cuenta en un `PATCH` solo permite cuentas activas del mismo usuario autenticado
 
 #### Gimnasios
 
@@ -704,7 +698,7 @@ Esta sección resume los cuerpos más comunes para IA y automatizaciones.
 }
 ```
 
-### Cuenta create
+### Cuenta usuario create
 
 ```json
 {
@@ -712,6 +706,12 @@ Esta sección resume los cuerpos más comunes para IA y automatizaciones.
   "nombre_cuenta": "Cuenta sueldo"
 }
 ```
+
+Notas:
+
+- `movimiento` ya no guarda `id_usuario` directo
+- el ownership se resuelve por `id_cuenta`, porque cada cuenta pertenece a un único usuario
+- cambiar de cuenta en un `PATCH` solo permite cuentas activas del mismo usuario autenticado
 
 ### Producto financiero create
 

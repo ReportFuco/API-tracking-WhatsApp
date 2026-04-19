@@ -8,7 +8,7 @@ from .finanzas import (
     Banco, 
     CategoriaFinanza, 
     ProductoFinanciero,
-    CuentaBancaria, 
+    CuentaUsuario,
     Movimiento
 )
 from .entrenamiento import (
@@ -57,7 +57,7 @@ __all__ = [
     "Banco", 
     "CategoriaFinanza", 
     "ProductoFinanciero",
-    "CuentaBancaria", 
+    "CuentaUsuario",
     "Movimiento",
     "Lectura",
     "RegistroLectura",

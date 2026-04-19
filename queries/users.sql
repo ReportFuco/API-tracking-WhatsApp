@@ -19,12 +19,13 @@ SELECT
         ELSE 'No energética'
     END AS energeticas
 FROM movimiento AS mov
+LEFT JOIN cuenta_usuario AS cb
+    ON mov.id_cuenta = cb.id_cuenta
 LEFT JOIN usuario AS u
-    ON mov.id_usuario = u.id_usuario
+    ON cb.id_usuario = u.id_usuario
 LEFT JOIN categoria_finanza AS cat
     ON cat.id_categoria = mov.id_categoria
-LEFT JOIN cuenta_bancaria AS cb
-    ON cb.id_usuario = u.id_usuario
+;
 
 
 

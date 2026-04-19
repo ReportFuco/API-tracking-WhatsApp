@@ -83,7 +83,7 @@ erDiagram
         string nombre_producto
     }
 
-    FINANZAS_CUENTA_BANCARIA {
+    FINANZAS_CUENTA_USUARIO {
         int id_cuenta PK
         int id_usuario FK
         int id_producto_financiero FK
@@ -206,10 +206,10 @@ erDiagram
     LECTURAS_LECTURA ||--o{ LECTURAS_REGISTRO_LECTURA : "registros"
 
     FINANZAS_BANCO ||--o{ FINANZAS_PRODUCTO_FINANCIERO : "productos"
-    FINANZAS_PRODUCTO_FINANCIERO ||--o{ FINANZAS_CUENTA_BANCARIA : "cuentas"
-    USUARIOS_USUARIO ||--o{ FINANZAS_CUENTA_BANCARIA : "cuentas"
+    FINANZAS_PRODUCTO_FINANCIERO ||--o{ FINANZAS_CUENTA_USUARIO : "cuentas"
+    USUARIOS_USUARIO ||--o{ FINANZAS_CUENTA_USUARIO : "cuentas"
     FINANZAS_CATEGORIA_FINANZA ||--o{ FINANZAS_MOVIMIENTO : "categorias"
-    FINANZAS_CUENTA_BANCARIA ||--o{ FINANZAS_MOVIMIENTO : "movimientos"
+    FINANZAS_CUENTA_USUARIO ||--o{ FINANZAS_MOVIMIENTO : "movimientos"
 
     USUARIOS_USUARIO ||--o{ ENTRENAMIENTOS_ENTRENAMIENTO : "entrenamientos"
     ENTRENAMIENTOS_ENTRENAMIENTO ||--o| ENTRENAMIENTOS_ENTRENAMIENTO_AEROBICO : "aerobico"
@@ -244,7 +244,7 @@ erDiagram
 
 - hábitos
 - lecturas
-- cuentas bancarias
+- cuentas de usuario
 - movimientos
 - entrenamientos
 - compras
@@ -267,10 +267,10 @@ erDiagram
 ### Finanzas
 
 - `finanzas.banco` 1 a N `finanzas.producto_financiero`
-- `finanzas.producto_financiero` 1 a N `finanzas.cuenta_bancaria`
-- `usuarios.usuario` 1 a N `finanzas.cuenta_bancaria`
+- `finanzas.producto_financiero` 1 a N `finanzas.cuenta_usuario`
+- `usuarios.usuario` 1 a N `finanzas.cuenta_usuario`
 - `finanzas.categoria_finanza` 1 a N `finanzas.movimiento`
-- `finanzas.cuenta_bancaria` 1 a N `finanzas.movimiento`
+- `finanzas.cuenta_usuario` 1 a N `finanzas.movimiento`
 
 ### Entrenamientos
 
@@ -303,7 +303,7 @@ Si queremos ajustar el modelo, estas son las piezas más sensibles:
 - `usuarios.usuario`: concentra casi todos los módulos personales
 - `catalogo.producto`: conecta catálogo con compras y nutrición
 - `entrenamientos.entrenamiento`: actúa como cabecera del entrenamiento y luego se especializa
-- `finanzas.producto_financiero`: separa banco de cuenta bancaria, lo que evita duplicar tipos de cuenta
+- `finanzas.producto_financiero`: separa banco de cuenta usuario, lo que evita duplicar tipos de cuenta
 - `finanzas.movimiento`: ahora depende de la cuenta como fuente de ownership, no del usuario directo
 
 ## Observaciones útiles para próximos ajustes

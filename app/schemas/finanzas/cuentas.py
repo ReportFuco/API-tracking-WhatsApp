@@ -5,7 +5,7 @@ from .movimientos import MovimientoResponse
 
 
 # Respuesta de las cuentas
-class CuentaResponse(BaseModel):
+class CuentaUsuarioResponse(BaseModel):
     id_cuenta:int = Field(..., examples=[1])
     nombre_cuenta: str = Field(..., examples=["Cuenta Falabella corriente"])
     id_producto_financiero: int = Field(..., examples=[1])
@@ -36,7 +36,7 @@ class CuentaResponse(BaseModel):
 
 
 # Con movimientos
-class CuentasMovimientosResponse(CuentaResponse):
+class CuentaUsuarioMovimientosResponse(CuentaUsuarioResponse):
     
     transacciones: list[MovimientoResponse] = Field(default_factory=list)
 
@@ -58,7 +58,7 @@ class CuentasMovimientosResponse(CuentaResponse):
     )
 
 
-class CuentaCreate(BaseModel):
+class CuentaUsuarioCreate(BaseModel):
     
     id_producto_financiero: int = Field(..., examples=[1])
     nombre_cuenta: str = Field(..., examples=["Tu nombre de cuenta"])
@@ -68,7 +68,7 @@ class CuentaCreate(BaseModel):
     )
 
 
-class CuentaPatch(BaseModel):
+class CuentaUsuarioPatch(BaseModel):
     """Actualizar cuenta"""
 
     nombre_cuenta: Optional[str] = Field(None, examples=["Nuevo nombre de cuenta"])

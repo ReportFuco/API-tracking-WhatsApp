@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 
 from app.auth.fastapi_users import current_superuser, current_user
 from app.db import get_db
-from app.models import Banco, CuentaBancaria, ProductoFinanciero
+from app.models import Banco, CuentaUsuario, ProductoFinanciero
 from app.schemas.finanzas import (
     ProductoFinancieroCreate,
     ProductoFinancieroPatch,
@@ -192,9 +192,9 @@ async def eliminar_producto_financiero(
     producto = await _obtener_producto_financiero(db, id_producto_financiero)
 
     cuenta_asociada = await db.scalar(
-        select(CuentaBancaria.id_cuenta).where(
-            CuentaBancaria.id_producto_financiero == id_producto_financiero,
-            CuentaBancaria.activo.is_(True),
+        select(CuentaUsuario.id_cuenta).where(
+            CuentaUsuario.id_producto_financiero == id_producto_financiero,
+            CuentaUsuario.activo.is_(True),
         )
     )
     if cuenta_asociada is not None:

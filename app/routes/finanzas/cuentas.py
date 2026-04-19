@@ -2,12 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from sqlalchemy import select
-from app.models import CuentaBancaria, Movimiento, ProductoFinanciero, Usuario
+from app.models import CuentaUsuario, Movimiento, ProductoFinanciero, Usuario
 from app.schemas.finanzas import (
-    CuentaCreate,
-    CuentaResponse,
-    CuentaPatch,
-    CuentasMovimientosResponse
+    CuentaUsuarioCreate,
+    CuentaUsuarioResponse,
+    CuentaUsuarioPatch,
+    CuentaUsuarioMovimientosResponse
 )
 from sqlalchemy.orm import selectinload
 from app.auth.fastapi_users import current_user
@@ -29,7 +29,7 @@ async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
 
 @router.get(
     path="/",
-    response_model=list[CuentaResponse],
+    response_model=list[CuentaUsuarioResponse],
     summary="Obtener Cuentas del Usuario",
     description="Muestra todas las cuentas del usuario por su ID",
     status_code=status.HTTP_200_OK
@@ -42,10 +42,10 @@ async def obtener_cuentas_usuario(
 
     cuentas = (
         await db.execute(
-            select(CuentaBancaria)
-            .where(CuentaBancaria.id_usuario == usuario.id_usuario)
+            select(CuentaUsuario)
+            .where(CuentaUsuario.id_usuario == usuario.id_usuario)
             .options(
-                selectinload(CuentaBancaria.producto_financiero)
+                selectinload(CuentaUsuario.producto_financiero)
                 .selectinload(ProductoFinanciero.banco)
             )
         )
@@ -65,7 +65,7 @@ async def obtener_cuentas_usuario(
     summary="Obtener cuenta y movimientos",
     description="Obtiene una cuenta de un usuario y sus movimientos",
     status_code=status.HTTP_200_OK,
-    response_model=CuentasMovimientosResponse
+    response_model=CuentaUsuarioMovimientosResponse
 )
 async def obtener_movimientos_cuenta(
     id_cuenta:int,
@@ -76,19 +76,19 @@ async def obtener_movimientos_cuenta(
 
     movimientos_cuenta = (
         await db.execute(
-            select(CuentaBancaria)
+            select(CuentaUsuario)
             .where(
-                CuentaBancaria.id_cuenta == id_cuenta,
-                CuentaBancaria.activo.is_(True),
-                CuentaBancaria.id_usuario == usuario.id_usuario
+                CuentaUsuario.id_cuenta == id_cuenta,
+                CuentaUsuario.activo.is_(True),
+                CuentaUsuario.id_usuario == usuario.id_usuario
             )
             .options(
-            selectinload(CuentaBancaria.producto_financiero)
+            selectinload(CuentaUsuario.producto_financiero)
                 .selectinload(ProductoFinanciero.banco),
-            selectinload(CuentaBancaria.transacciones)
+            selectinload(CuentaUsuario.transacciones)
                 .selectinload(Movimiento.categoria),
 
-            selectinload(CuentaBancaria.transacciones)
+            selectinload(CuentaUsuario.transacciones)
                 .selectinload(Movimiento.cuenta)
 )
         )
@@ -105,13 +105,13 @@ async def obtener_movimientos_cuenta(
 
 @router.post(
     path="/",
-    summary="Crear cuenta bancaria",
+    summary="Crear cuenta usuario",
     description="Crea una cuenta del usuario asociada a un producto financiero definido para un banco",
     status_code=status.HTTP_201_CREATED,
-    response_model=CuentaResponse
+    response_model=CuentaUsuarioResponse
 )
-async def crear_cuenta_bancaria(
-    data: CuentaCreate,
+async def crear_cuenta_usuario(
+    data: CuentaUsuarioCreate,
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user),
 ):
@@ -137,9 +137,9 @@ async def crear_cuenta_bancaria(
     # Validar que el usuario no tenga una cuenta con el mismo nombre
     cuenta_existente = (
         await db.execute(
-            select(CuentaBancaria).where(
-                CuentaBancaria.id_usuario == usuario.id_usuario,
-                CuentaBancaria.nombre_cuenta == data.nombre_cuenta
+            select(CuentaUsuario).where(
+                CuentaUsuario.id_usuario == usuario.id_usuario,
+                CuentaUsuario.nombre_cuenta == data.nombre_cuenta
             )
         )
     ).scalar_one_or_none()
@@ -151,7 +151,7 @@ async def crear_cuenta_bancaria(
         )
 
     # Crear cuenta
-    nueva_cuenta = CuentaBancaria(
+    nueva_cuenta = CuentaUsuario(
         id_usuario=usuario.id_usuario,
         id_producto_financiero=data.id_producto_financiero,
         nombre_cuenta=data.nombre_cuenta,
@@ -162,10 +162,10 @@ async def crear_cuenta_bancaria(
     # flush para obtener el id generado
     await db.flush()
     nueva_cuenta = await db.scalar(
-        select(CuentaBancaria)
-        .where(CuentaBancaria.id_cuenta == nueva_cuenta.id_cuenta)
+        select(CuentaUsuario)
+        .where(CuentaUsuario.id_cuenta == nueva_cuenta.id_cuenta)
         .options(
-            selectinload(CuentaBancaria.producto_financiero)
+            selectinload(CuentaUsuario.producto_financiero)
             .selectinload(ProductoFinanciero.banco)
         )
     )
@@ -178,22 +178,22 @@ async def crear_cuenta_bancaria(
     summary="Modificar Cuenta",
     description="Modifica la cuenta del usuario",
     status_code=status.HTTP_200_OK,
-    response_model=CuentaResponse
+    response_model=CuentaUsuarioResponse
 )
 async def editar_cuenta(
     id_cuenta: int,
-    data: CuentaPatch,
+    data: CuentaUsuarioPatch,
     db: AsyncSession = Depends(get_db),
     user = Depends(current_user)
 ):
     usuario = await obtener_usuario_actual(user, db)
 
     cuenta = await db.scalar(
-        select(CuentaBancaria)
+        select(CuentaUsuario)
         .where(
-            CuentaBancaria.id_cuenta == id_cuenta,
-            CuentaBancaria.activo.is_(True),
-            CuentaBancaria.id_usuario == usuario.id_usuario
+            CuentaUsuario.id_cuenta == id_cuenta,
+            CuentaUsuario.activo.is_(True),
+            CuentaUsuario.id_usuario == usuario.id_usuario
         )
     )
 
@@ -218,11 +218,11 @@ async def editar_cuenta(
 
     if data.nombre_cuenta:
         existe = await db.scalar(
-            select(CuentaBancaria.id_cuenta)
+            select(CuentaUsuario.id_cuenta)
             .where(
-                CuentaBancaria.id_usuario == usuario.id_usuario,
-                CuentaBancaria.nombre_cuenta == data.nombre_cuenta,
-                CuentaBancaria.id_cuenta != id_cuenta
+                CuentaUsuario.id_usuario == usuario.id_usuario,
+                CuentaUsuario.nombre_cuenta == data.nombre_cuenta,
+                CuentaUsuario.id_cuenta != id_cuenta
             )
         )
 
@@ -240,10 +240,10 @@ async def editar_cuenta(
     await db.flush()
 
     cuenta = await db.scalar(
-        select(CuentaBancaria)
-        .where(CuentaBancaria.id_cuenta == id_cuenta)
+        select(CuentaUsuario)
+        .where(CuentaUsuario.id_cuenta == id_cuenta)
         .options(
-            selectinload(CuentaBancaria.producto_financiero)
+            selectinload(CuentaUsuario.producto_financiero)
             .selectinload(ProductoFinanciero.banco)
         )
     )
@@ -253,7 +253,7 @@ async def editar_cuenta(
 @router.delete(
     path="/{id_cuenta}",
     summary="Desactivar Cuenta",
-    description="Desactiva la cuenta bancaria del usuario",
+    description="Desactiva la cuenta del usuario",
     status_code=status.HTTP_204_NO_CONTENT
 )
 async def desactivar_cuenta(
@@ -265,11 +265,11 @@ async def desactivar_cuenta(
 
     existe = (
         await db.execute(
-            select(CuentaBancaria)
+            select(CuentaUsuario)
             .where(
-                CuentaBancaria.id_cuenta == id_cuenta,
-                CuentaBancaria.id_usuario == usuario.id_usuario,
-                CuentaBancaria.activo.is_(True)
+                CuentaUsuario.id_cuenta == id_cuenta,
+                CuentaUsuario.id_usuario == usuario.id_usuario,
+                CuentaUsuario.activo.is_(True)
             )
         )
     ).scalar_one_or_none()

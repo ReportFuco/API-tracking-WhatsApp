@@ -10,7 +10,7 @@ from datetime import datetime
 from app.models.habitos import Habito
 from app.models.entrenamiento import Entrenamiento
 from app.models.lecturas import Lectura
-from app.models.finanzas import CuentaBancaria
+from app.models.finanzas import CuentaUsuario
 from app.models.db_schemas import AUTH_SCHEMA, USUARIOS_SCHEMA, table_ref
 
 
@@ -39,7 +39,7 @@ class Usuario(Base):
     user:Mapped["User"] = relationship("User", back_populates="usuario")
     habitos: Mapped[list["Habito"]] = relationship(back_populates="usuario")
     lecturas: Mapped[list["Lectura"]] = relationship(back_populates="usuario")
-    cuentas: Mapped[list["CuentaBancaria"]] = relationship(back_populates="usuario")
+    cuentas: Mapped[list["CuentaUsuario"]] = relationship(back_populates="usuario")
     entrenamientos: Mapped[list["Entrenamiento"]] = relationship(back_populates="usuario")
     compras: Mapped[list["Compra"]] = relationship(back_populates="usuario")
     consumos: Mapped[list["Consumo"]] = relationship(back_populates="usuario")

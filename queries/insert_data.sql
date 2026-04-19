@@ -11,7 +11,7 @@
 --     serie_fuerza,
 --     ejercicios,
 --     banco,
---     cuenta_bancaria,
+--     cuenta_usuario,
 --     categoria_finanza,
 --     movimiento,
 --     categoria_habito,

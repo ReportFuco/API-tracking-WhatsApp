@@ -12,7 +12,7 @@ from fastapi import (
 from app.models import (
     Movimiento,
     CategoriaFinanza,
-    CuentaBancaria,
+    CuentaUsuario,
     Usuario
 )
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -52,8 +52,8 @@ async def obtener_movimiento(
     movimiento_usuario = (
         await db.execute(
             select(Movimiento)
-            .join(CuentaBancaria, Movimiento.id_cuenta == CuentaBancaria.id_cuenta)
-            .where(CuentaBancaria.id_usuario == usuario.id_usuario)
+            .join(CuentaUsuario, Movimiento.id_cuenta == CuentaUsuario.id_cuenta)
+            .where(CuentaUsuario.id_usuario == usuario.id_usuario)
             .options(
                 selectinload(Movimiento.cuenta),
                 selectinload(Movimiento.categoria)
@@ -87,11 +87,11 @@ async def obtener_movimientos(
     transaccion = (
         await db.scalar(
             select(Movimiento)
-            .join(CuentaBancaria, Movimiento.id_cuenta == CuentaBancaria.id_cuenta)
+            .join(CuentaUsuario, Movimiento.id_cuenta == CuentaUsuario.id_cuenta)
             .where(
                 and_(
                     Movimiento.id_transaccion == id_movimiento,
-                    CuentaBancaria.id_usuario == usuario.id_usuario
+                    CuentaUsuario.id_usuario == usuario.id_usuario
                 )
             )
             .options(
@@ -137,11 +137,11 @@ async def crear_movimiento(
         )
     cuenta = (
         await db.scalar(
-            select(CuentaBancaria)
+            select(CuentaUsuario)
             .where(
-                CuentaBancaria.id_cuenta == data.id_cuenta,
-                CuentaBancaria.activo.is_(True),
-                CuentaBancaria.id_usuario == usuario.id_usuario
+                CuentaUsuario.id_cuenta == data.id_cuenta,
+                CuentaUsuario.activo.is_(True),
+                CuentaUsuario.id_usuario == usuario.id_usuario
             )
         )
     )
@@ -181,10 +181,10 @@ async def editar_movimiento(
     
     movimiento = await db.scalar(
         select(Movimiento)
-        .join(CuentaBancaria, Movimiento.id_cuenta == CuentaBancaria.id_cuenta)
+        .join(CuentaUsuario, Movimiento.id_cuenta == CuentaUsuario.id_cuenta)
         .where(
             Movimiento.id_transaccion == id_movimiento,
-            CuentaBancaria.id_usuario == usuario.id_usuario
+            CuentaUsuario.id_usuario == usuario.id_usuario
         )
     )
 
@@ -210,10 +210,10 @@ async def editar_movimiento(
 
     if "id_cuenta" in update_data:
         cuenta = await db.scalar(
-            select(CuentaBancaria).where(
-                CuentaBancaria.id_cuenta == update_data["id_cuenta"],
-                CuentaBancaria.activo.is_(True),
-                CuentaBancaria.id_usuario == usuario.id_usuario
+            select(CuentaUsuario).where(
+                CuentaUsuario.id_cuenta == update_data["id_cuenta"],
+                CuentaUsuario.activo.is_(True),
+                CuentaUsuario.id_usuario == usuario.id_usuario
             )
         )
         if not cuenta:

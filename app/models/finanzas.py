@@ -68,11 +68,11 @@ class ProductoFinanciero(Base):
     )
 
     banco: Mapped["Banco"] = relationship(back_populates="productos_financieros")
-    cuentas: Mapped[list["CuentaBancaria"]] = relationship(back_populates="producto_financiero")
+    cuentas: Mapped[list["CuentaUsuario"]] = relationship(back_populates="producto_financiero")
 
 
-class CuentaBancaria(Base):
-    __tablename__ = "cuenta_bancaria"
+class CuentaUsuario(Base):
+    __tablename__ = "cuenta_usuario"
     __table_args__ = {"schema": FINANZAS_SCHEMA}
 
     id_cuenta: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -114,7 +114,7 @@ class Movimiento(Base):
 
     id_transaccion: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id_categoria: Mapped[int] = mapped_column(ForeignKey(table_ref(FINANZAS_SCHEMA, "categoria_finanza.id_categoria")))
-    id_cuenta: Mapped[int] = mapped_column(ForeignKey(table_ref(FINANZAS_SCHEMA, "cuenta_bancaria.id_cuenta")))
+    id_cuenta: Mapped[int] = mapped_column(ForeignKey(table_ref(FINANZAS_SCHEMA, "cuenta_usuario.id_cuenta")))
     tipo_movimiento: Mapped[EnumTipoMovimiento] = mapped_column(
         SQLEnum(
             EnumTipoMovimiento,
@@ -143,4 +143,4 @@ class Movimiento(Base):
     )
 
     categoria: Mapped["CategoriaFinanza"] = relationship(back_populates="transacciones")
-    cuenta: Mapped["CuentaBancaria"] = relationship(back_populates="transacciones")
+    cuenta: Mapped["CuentaUsuario"] = relationship(back_populates="transacciones")
