@@ -2,9 +2,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import (
     String, 
     DateTime, 
-    ForeignKey, 
-    BigInteger, 
-    Text, 
+    ForeignKey,
     text
 )
 from app.db.base import Base
@@ -12,7 +10,7 @@ from datetime import datetime
 from app.models.habitos import Habito
 from app.models.entrenamiento import Entrenamiento
 from app.models.lecturas import Lectura
-from app.models.finanzas import CuentaBancaria, Movimiento
+from app.models.finanzas import CuentaBancaria
 from app.models.db_schemas import AUTH_SCHEMA, USUARIOS_SCHEMA, table_ref
 
 
@@ -39,32 +37,11 @@ class Usuario(Base):
 
     # Relaciones
     user:Mapped["User"] = relationship("User", back_populates="usuario")
-    mensajes: Mapped[list["Mensaje"]] = relationship(back_populates="usuario")
     habitos: Mapped[list["Habito"]] = relationship(back_populates="usuario")
     lecturas: Mapped[list["Lectura"]] = relationship(back_populates="usuario")
     cuentas: Mapped[list["CuentaBancaria"]] = relationship(back_populates="usuario")
-    transacciones: Mapped[list["Movimiento"]] = relationship(back_populates="usuario")
     entrenamientos: Mapped[list["Entrenamiento"]] = relationship(back_populates="usuario")
     compras: Mapped[list["Compra"]] = relationship(back_populates="usuario")
     consumos: Mapped[list["Consumo"]] = relationship(back_populates="usuario")
     metas_nutricionales: Mapped[list["MetaNutricional"]] = relationship(back_populates="usuario")
     pesos: Mapped[list["PesoUsuario"]] = relationship(back_populates="usuario")
-
-
-class Mensaje(Base):
-    __tablename__ = "mensaje"
-    __table_args__ = {"schema": USUARIOS_SCHEMA}
-
-    id_mensaje: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    id_usuario: Mapped[int] = mapped_column(ForeignKey(table_ref(USUARIOS_SCHEMA, "usuario.id_usuario")))
-    contenido: Mapped[str] = mapped_column(Text)
-    direccion: Mapped[str] = mapped_column(String(50))
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, 
-        default=datetime.now(),
-        server_default=text("now()")
-    )
-
-    usuario: Mapped["Usuario"] = relationship(back_populates="mensajes")
-
-    

@@ -267,10 +267,10 @@ Campos importantes:
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| `GET` | `/api/finanzas/movimientos/` | usuario | Lista movimientos del usuario |
-| `GET` | `/api/finanzas/movimientos/{id_movimiento}` | usuario + ownership | Obtiene movimiento por ID |
+| `GET` | `/api/finanzas/movimientos/` | usuario | Lista movimientos del usuario a partir de sus cuentas |
+| `GET` | `/api/finanzas/movimientos/{id_movimiento}` | usuario + ownership por cuenta | Obtiene movimiento por ID |
 | `POST` | `/api/finanzas/movimientos/` | usuario | Crea movimiento |
-| `PATCH` | `/api/finanzas/movimientos/{id_movimiento}` | usuario + ownership | Edita movimiento |
+| `PATCH` | `/api/finanzas/movimientos/{id_movimiento}` | usuario + ownership por cuenta | Edita movimiento |
 
 Payload create:
 
@@ -321,6 +321,12 @@ Payload create:
   "url_video": "https://youtube.com/ejemplo"
 }
 ```
+
+Notas:
+
+- `movimiento` ya no guarda `id_usuario` directo
+- el ownership se resuelve por `id_cuenta`, porque cada cuenta pertenece a un único usuario
+- cambiar de cuenta en un `PATCH` solo permite cuentas activas del mismo usuario autenticado
 
 #### Gimnasios
 

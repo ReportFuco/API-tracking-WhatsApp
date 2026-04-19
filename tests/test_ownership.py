@@ -109,7 +109,7 @@ async def test_ownership_finanzas_usuarios_end_to_end():
                 db=db,
                 user=user1,
             )
-            assert mov.id_usuario == perfil1.id_usuario
+            assert mov.id_cuenta == cuenta.id_cuenta
 
             with pytest.raises(HTTPException) as exc_mov:
                 await obtener_movimientos(

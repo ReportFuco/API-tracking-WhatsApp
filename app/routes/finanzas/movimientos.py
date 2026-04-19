@@ -52,7 +52,8 @@ async def obtener_movimiento(
     movimiento_usuario = (
         await db.execute(
             select(Movimiento)
-            .where(Movimiento.id_usuario == usuario.id_usuario)
+            .join(CuentaBancaria, Movimiento.id_cuenta == CuentaBancaria.id_cuenta)
+            .where(CuentaBancaria.id_usuario == usuario.id_usuario)
             .options(
                 selectinload(Movimiento.cuenta),
                 selectinload(Movimiento.categoria)
@@ -86,10 +87,11 @@ async def obtener_movimientos(
     transaccion = (
         await db.scalar(
             select(Movimiento)
+            .join(CuentaBancaria, Movimiento.id_cuenta == CuentaBancaria.id_cuenta)
             .where(
                 and_(
                     Movimiento.id_transaccion == id_movimiento,
-                    Movimiento.id_usuario == usuario.id_usuario
+                    CuentaBancaria.id_usuario == usuario.id_usuario
                 )
             )
             .options(
@@ -150,8 +152,7 @@ async def crear_movimiento(
         )
     
     movimiento = Movimiento(
-        **data.model_dump(exclude_none=True),
-        id_usuario=usuario.id_usuario
+        **data.model_dump(exclude_none=True)
     )
 
     db.add(movimiento)
@@ -179,9 +180,11 @@ async def editar_movimiento(
     usuario = await obtener_usuario_actual(user, db)
     
     movimiento = await db.scalar(
-        select(Movimiento).where(
+        select(Movimiento)
+        .join(CuentaBancaria, Movimiento.id_cuenta == CuentaBancaria.id_cuenta)
+        .where(
             Movimiento.id_transaccion == id_movimiento,
-            Movimiento.id_usuario == usuario.id_usuario
+            CuentaBancaria.id_usuario == usuario.id_usuario
         )
     )
 
@@ -192,6 +195,32 @@ async def editar_movimiento(
         )
 
     update_data = data.model_dump(exclude_unset=True)
+
+    if "id_categoria" in update_data:
+        categoria = await db.scalar(
+            select(CategoriaFinanza).where(
+                CategoriaFinanza.id_categoria == update_data["id_categoria"]
+            )
+        )
+        if not categoria:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Categoría no encontrada."
+            )
+
+    if "id_cuenta" in update_data:
+        cuenta = await db.scalar(
+            select(CuentaBancaria).where(
+                CuentaBancaria.id_cuenta == update_data["id_cuenta"],
+                CuentaBancaria.activo.is_(True),
+                CuentaBancaria.id_usuario == usuario.id_usuario
+            )
+        )
+        if not cuenta:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Cuenta no encontrada."
+            )
 
     for field, value in update_data.items():
         setattr(movimiento, field, value)

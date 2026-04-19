@@ -1,4 +1,4 @@
-from .usuario import Usuario, Mensaje
+from .usuario import Usuario
 from .habitos import CategoriaHabito, Habito, RegistroHabito
 from .lecturas import Lectura, RegistroLectura
 from .finanzas import (
@@ -65,6 +65,5 @@ __all__ = [
     "Habito", 
     "RegistroHabito",
     "Usuario", 
-    "Mensaje",
     "User"
 ]

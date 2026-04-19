@@ -113,7 +113,6 @@ class Movimiento(Base):
     __table_args__ = {"schema": FINANZAS_SCHEMA}
 
     id_transaccion: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    id_usuario: Mapped[int] = mapped_column(ForeignKey(table_ref(USUARIOS_SCHEMA, "usuario.id_usuario")))
     id_categoria: Mapped[int] = mapped_column(ForeignKey(table_ref(FINANZAS_SCHEMA, "categoria_finanza.id_categoria")))
     id_cuenta: Mapped[int] = mapped_column(ForeignKey(table_ref(FINANZAS_SCHEMA, "cuenta_bancaria.id_cuenta")))
     tipo_movimiento: Mapped[EnumTipoMovimiento] = mapped_column(
@@ -143,6 +142,5 @@ class Movimiento(Base):
         server_default=text("now()")
     )
 
-    usuario: Mapped["Usuario"] = relationship(back_populates="transacciones")
     categoria: Mapped["CategoriaFinanza"] = relationship(back_populates="transacciones")
     cuenta: Mapped["CuentaBancaria"] = relationship(back_populates="transacciones")
