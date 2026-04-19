@@ -268,7 +268,7 @@ Campos importantes:
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
 | `GET` | `/api/finanzas/movimientos/` | usuario | Lista movimientos del usuario a partir de sus cuentas |
-| `GET` | `/api/finanzas/movimientos/{id_movimiento}` | usuario + ownership por cuenta | Obtiene movimiento por ID |
+| `GET` | `/api/finanzas/movimientos/{id_movimiento}` | usuario + ownership por cuenta | Obtiene movimiento por ID, incluyendo compras vinculadas si existen |
 | `POST` | `/api/finanzas/movimientos/` | usuario | Crea movimiento |
 | `PATCH` | `/api/finanzas/movimientos/{id_movimiento}` | usuario + ownership por cuenta | Edita movimiento |
 
@@ -491,13 +491,19 @@ Payload create:
 }
 ```
 
+Notas:
+
+- `id_cadena` ahora puede ser `null`
+- esto permite registrar locales de barrio o comercios independientes sin cadena
+
 #### Compras
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
 | `GET` | `/api/compras/compra/` | usuario | Lista compras del usuario |
-| `GET` | `/api/compras/compra/{id_compra}` | usuario + ownership | Obtiene compra |
+| `GET` | `/api/compras/compra/{id_compra}` | usuario + ownership | Obtiene compra con local, total y movimientos vinculados si existen |
 | `POST` | `/api/compras/compra/` | usuario | Crea compra asociada al usuario autenticado |
+| `POST` | `/api/compras/compra-completa/` | usuario | Crea compra, detalle y vínculo opcional a movimiento en una sola operación |
 | `PATCH` | `/api/compras/compra/{id_compra}` | usuario + ownership | Edita compra |
 | `DELETE` | `/api/compras/compra/{id_compra}` | usuario + ownership | Elimina compra |
 
@@ -509,6 +515,42 @@ Payload create:
   "fecha_compra": "2026-04-18T16:30:00"
 }
 ```
+
+Payload compra completa:
+
+```json
+{
+  "id_local": 1,
+  "fecha_compra": "2026-04-18T16:30:00",
+  "id_movimiento": 10,
+  "monto_asociado": 2980,
+  "detalles": [
+    {
+      "id_producto": 5,
+      "cantidad_comprada": 1,
+      "unidad_compra": "unidad",
+      "precio_unitario": 2980,
+      "precio_total": 2980,
+      "cantidad_unidades": 1
+    }
+  ]
+}
+```
+
+#### Vínculo movimiento-compra
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/api/compras/movimiento-compra/?id_movimiento={id}` | usuario + ownership | Lista vínculos de un movimiento |
+| `GET` | `/api/compras/movimiento-compra/?id_compra={id}` | usuario + ownership | Lista vínculos de una compra |
+| `POST` | `/api/compras/movimiento-compra/` | usuario + ownership | Vincula una compra existente con un movimiento gasto |
+| `DELETE` | `/api/compras/movimiento-compra/{id_movimiento_compra}` | usuario + ownership | Elimina el vínculo |
+
+Reglas:
+
+- solo se pueden vincular movimientos de tipo `gasto`
+- compra y movimiento deben pertenecer al mismo usuario
+- no se permite duplicar el mismo par `movimiento + compra`
 
 #### Detalle de compra
 

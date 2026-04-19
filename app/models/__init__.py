@@ -24,7 +24,7 @@ from .entrenamiento import (
     EnumEstadoEntrenamiento
 )
 from .catalogo import Marca, Producto
-from .compras import Cadena, Local, Compra, CompraDetalle
+from .compras import Cadena, Local, Compra, CompraDetalle, MovimientoCompra
 from .nutricion import Consumo, ConsumoDetalle, TablaNutricional, MetaNutricional, PesoUsuario
 
 from .usuario_auth import User
@@ -36,6 +36,7 @@ __all__ = [
     "Local",
     "Compra",
     "CompraDetalle",
+    "MovimientoCompra",
     "Consumo",
     "ConsumoDetalle",
     "TablaNutricional",

@@ -144,3 +144,7 @@ class Movimiento(Base):
 
     categoria: Mapped["CategoriaFinanza"] = relationship(back_populates="transacciones")
     cuenta: Mapped["CuentaUsuario"] = relationship(back_populates="transacciones")
+    vinculos_compra: Mapped[list["MovimientoCompra"]] = relationship(
+        back_populates="movimiento",
+        cascade="all, delete-orphan",
+    )

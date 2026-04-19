@@ -10,6 +10,7 @@ from app.models.finanzas import (
     EnumTipoGasto
 )
 from datetime import datetime
+from app.schemas.compras import CompraVinculadaResumen
 
 
 class MovimientoResponse(BaseModel):
@@ -19,6 +20,9 @@ class MovimientoResponse(BaseModel):
     tipo_gasto: EnumTipoGasto = Field(..., examples=[EnumTipoGasto.FIJO.value])
     categoria: Optional[str] = Field(None, examples=["comida"])
     nombre_cuenta: Optional[str] = Field(None, examples=["Nombre cuenta"])
+    compras_vinculadas: list[CompraVinculadaResumen] = Field(default_factory=list)
+    total_compras_vinculadas: Optional[float] = Field(None, examples=[9900])
+    diferencia_total_compras: Optional[float] = Field(None, examples=[100])
 
     monto:int = Field(..., examples=[5000])
     descripcion:str = Field(..., examples=["Descripcion del movimiento"])
@@ -37,6 +41,20 @@ class MovimientoResponse(BaseModel):
             data["categoria"] = categoria.nombre
         if cuenta:
             data["nombre_cuenta"] = cuenta.nombre_cuenta
+
+        vinculos = data.get("vinculos_compra", []) or []
+        compras = [vinculo.compra for vinculo in vinculos if getattr(vinculo, "compra", None)]
+        data["compras_vinculadas"] = compras
+
+        total_compras = 0
+        for compra in compras:
+            detalles = getattr(compra, "detalles", []) or []
+            total_compras += sum((detalle.precio_total for detalle in detalles), 0)
+        if compras:
+            data["total_compras_vinculadas"] = float(total_compras)
+            monto = data.get("monto")
+            if monto is not None:
+                data["diferencia_total_compras"] = float(monto - total_compras)
 
         return data
     

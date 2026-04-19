@@ -10,9 +10,12 @@ from fastapi import (
     status
 )
 from app.models import (
+    Compra,
     Movimiento,
     CategoriaFinanza,
     CuentaUsuario,
+    Local,
+    MovimientoCompra,
     Usuario
 )
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -52,11 +55,19 @@ async def obtener_movimiento(
     movimiento_usuario = (
         await db.execute(
             select(Movimiento)
+            .execution_options(populate_existing=True)
             .join(CuentaUsuario, Movimiento.id_cuenta == CuentaUsuario.id_cuenta)
             .where(CuentaUsuario.id_usuario == usuario.id_usuario)
             .options(
                 selectinload(Movimiento.cuenta),
-                selectinload(Movimiento.categoria)
+                selectinload(Movimiento.categoria),
+                selectinload(Movimiento.vinculos_compra)
+                .selectinload(MovimientoCompra.compra)
+                .selectinload(Compra.local)
+                .selectinload(Local.cadena),
+                selectinload(Movimiento.vinculos_compra)
+                .selectinload(MovimientoCompra.compra)
+                .selectinload(Compra.detalles),
             )
         )
     ).scalars().all()
@@ -87,6 +98,7 @@ async def obtener_movimientos(
     transaccion = (
         await db.scalar(
             select(Movimiento)
+            .execution_options(populate_existing=True)
             .join(CuentaUsuario, Movimiento.id_cuenta == CuentaUsuario.id_cuenta)
             .where(
                 and_(
@@ -96,7 +108,14 @@ async def obtener_movimientos(
             )
             .options(
                 selectinload(Movimiento.categoria),
-                selectinload(Movimiento.cuenta)
+                selectinload(Movimiento.cuenta),
+                selectinload(Movimiento.vinculos_compra)
+                .selectinload(MovimientoCompra.compra)
+                .selectinload(Compra.local)
+                .selectinload(Local.cadena),
+                selectinload(Movimiento.vinculos_compra)
+                .selectinload(MovimientoCompra.compra)
+                .selectinload(Compra.detalles),
             )
         )
     )
@@ -159,7 +178,24 @@ async def crear_movimiento(
     await db.flush()
     await db.refresh(
         movimiento,
-        attribute_names=["categoria", "cuenta"]
+        attribute_names=["categoria", "cuenta", "vinculos_compra"]
+    )
+
+    movimiento = await db.scalar(
+        select(Movimiento)
+        .execution_options(populate_existing=True)
+        .where(Movimiento.id_transaccion == movimiento.id_transaccion)
+        .options(
+            selectinload(Movimiento.categoria),
+            selectinload(Movimiento.cuenta),
+            selectinload(Movimiento.vinculos_compra)
+            .selectinload(MovimientoCompra.compra)
+            .selectinload(Compra.local)
+            .selectinload(Local.cadena),
+            selectinload(Movimiento.vinculos_compra)
+            .selectinload(MovimientoCompra.compra)
+            .selectinload(Compra.detalles),
+        )
     )
 
     return movimiento
@@ -229,7 +265,24 @@ async def editar_movimiento(
 
     await db.refresh(
         movimiento,
-        attribute_names=["categoria", "cuenta"]
+        attribute_names=["categoria", "cuenta", "vinculos_compra"]
+    )
+
+    movimiento = await db.scalar(
+        select(Movimiento)
+        .execution_options(populate_existing=True)
+        .where(Movimiento.id_transaccion == id_movimiento)
+        .options(
+            selectinload(Movimiento.categoria),
+            selectinload(Movimiento.cuenta),
+            selectinload(Movimiento.vinculos_compra)
+            .selectinload(MovimientoCompra.compra)
+            .selectinload(Compra.local)
+            .selectinload(Local.cadena),
+            selectinload(Movimiento.vinculos_compra)
+            .selectinload(MovimientoCompra.compra)
+            .selectinload(Compra.detalles),
+        )
     )
 
     return movimiento

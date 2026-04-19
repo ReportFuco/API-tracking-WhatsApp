@@ -140,6 +140,12 @@ erDiagram
         int id_producto FK
     }
 
+    COMPRAS_MOVIMIENTO_COMPRA {
+        int id_movimiento_compra PK
+        int id_movimiento FK
+        int id_compra FK
+    }
+
     NUTRICION_CONSUMO {
         int id_consumo PK
         int id_usuario FK
@@ -195,6 +201,8 @@ erDiagram
     COMPRAS_LOCAL ||--o{ COMPRAS_COMPRA : compras
     USUARIOS_USUARIO ||--o{ COMPRAS_COMPRA : compras
     COMPRAS_COMPRA ||--o{ COMPRAS_COMPRA_DETALLE : detalles
+    COMPRAS_COMPRA ||--o{ COMPRAS_MOVIMIENTO_COMPRA : vinculos
+    FINANZAS_MOVIMIENTO ||--o{ COMPRAS_MOVIMIENTO_COMPRA : vinculos
     CATALOGO_PRODUCTO ||--o{ COMPRAS_COMPRA_DETALLE : detalle
 
     USUARIOS_USUARIO ||--o{ NUTRICION_CONSUMO : consumos

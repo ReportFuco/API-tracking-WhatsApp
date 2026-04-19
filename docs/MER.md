@@ -169,6 +169,12 @@ erDiagram
         int id_producto FK
     }
 
+    COMPRAS_MOVIMIENTO_COMPRA {
+        int id_movimiento_compra PK
+        int id_movimiento FK
+        int id_compra FK
+    }
+
     NUTRICION_CONSUMO {
         int id_consumo PK
         int id_usuario FK
@@ -224,6 +230,8 @@ erDiagram
     COMPRAS_LOCAL ||--o{ COMPRAS_COMPRA : "compras"
     USUARIOS_USUARIO ||--o{ COMPRAS_COMPRA : "compras"
     COMPRAS_COMPRA ||--o{ COMPRAS_COMPRA_DETALLE : "detalles"
+    COMPRAS_COMPRA ||--o{ COMPRAS_MOVIMIENTO_COMPRA : "vinculos"
+    FINANZAS_MOVIMIENTO ||--o{ COMPRAS_MOVIMIENTO_COMPRA : "vinculos"
     CATALOGO_PRODUCTO ||--o{ COMPRAS_COMPRA_DETALLE : "detalle"
 
     USUARIOS_USUARIO ||--o{ NUTRICION_CONSUMO : "consumos"
@@ -288,6 +296,8 @@ erDiagram
 - `compras.local` 1 a N `compras.compra`
 - `usuarios.usuario` 1 a N `compras.compra`
 - `compras.compra` 1 a N `compras.compra_detalle`
+- `compras.compra` 1 a N `compras.movimiento_compra`
+- `finanzas.movimiento` 1 a N `compras.movimiento_compra`
 - `catalogo.producto` 1 a N `compras.compra_detalle`
 - `usuarios.usuario` 1 a N `nutricion.consumo`
 - `nutricion.consumo` 1 a N `nutricion.consumo_detalle`
@@ -305,6 +315,7 @@ Si queremos ajustar el modelo, estas son las piezas más sensibles:
 - `entrenamientos.entrenamiento`: actúa como cabecera del entrenamiento y luego se especializa
 - `finanzas.producto_financiero`: separa banco de cuenta usuario, lo que evita duplicar tipos de cuenta
 - `finanzas.movimiento`: ahora depende de la cuenta como fuente de ownership, no del usuario directo
+- `compras.movimiento_compra`: conecta el hecho financiero con la compra comercial sin duplicar productos
 
 ## Observaciones útiles para próximos ajustes
 
