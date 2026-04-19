@@ -1898,7 +1898,7 @@
                     "tipo_cuenta": {
                         "$ref": "#/components/schemas/EnumCuentas",
                         "examples": [
-                            "Cuenta ahorro"
+                            "cuenta ahorro"
                         ]
                     }
                 },
@@ -1936,7 +1936,7 @@
                             }
                         ],
                         "examples": [
-                            "Cuenta ahorro"
+                            "cuenta ahorro"
                         ]
                     }
                 },
@@ -1963,7 +1963,7 @@
                     "tipo_cuenta": {
                         "$ref": "#/components/schemas/EnumCuentas",
                         "examples": [
-                            "Cuenta ahorro"
+                            "cuenta ahorro"
                         ]
                     },
                     "nombre_banco": {
@@ -2014,7 +2014,7 @@
                     "tipo_cuenta": {
                         "$ref": "#/components/schemas/EnumCuentas",
                         "examples": [
-                            "Cuenta ahorro"
+                            "cuenta ahorro"
                         ]
                     },
                     "nombre_banco": {
@@ -2317,9 +2317,10 @@
             "EnumCuentas": {
                 "type": "string",
                 "enum": [
-                    "Cuenta Corriente",
-                    "Cuenta vista",
-                    "Cuenta ahorro"
+                    "cuenta corriente",
+                    "cuenta vista",
+                    "cuenta ahorro",
+                    "cuenta credito"
                 ],
                 "title": "EnumCuentas"
             },

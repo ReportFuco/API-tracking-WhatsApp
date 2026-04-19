@@ -2,12 +2,12 @@ from .usuario import Usuario, Mensaje
 from .habitos import CategoriaHabito, Habito, RegistroHabito
 from .lecturas import Lectura, RegistroLectura
 from .finanzas import (
-    EnumCuentas,
     EnumTarjeta,
     EnumTipoMovimiento,
     EnumTipoGasto,
     Banco, 
     CategoriaFinanza, 
+    ProductoFinanciero,
     CuentaBancaria, 
     Movimiento
 )
@@ -51,12 +51,12 @@ __all__ = [
     "EnumTipoAerobico",
     "EnumTipoEntrenamiento",
     "EnumEstadoEntrenamiento",
-    "EnumCuentas",
     "EnumTarjeta",
     "EnumTipoMovimiento",
     "EnumTipoGasto",
     "Banco", 
     "CategoriaFinanza", 
+    "ProductoFinanciero",
     "CuentaBancaria", 
     "Movimiento",
     "Lectura",

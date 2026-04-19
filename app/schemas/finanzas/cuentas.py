@@ -1,6 +1,5 @@
 from pydantic import BaseModel, model_validator, Field, ConfigDict
 from datetime import datetime
-from app.models import EnumCuentas
 from typing import Any, Optional
 from .movimientos import MovimientoResponse
 
@@ -9,7 +8,8 @@ from .movimientos import MovimientoResponse
 class CuentaResponse(BaseModel):
     id_cuenta:int = Field(..., examples=[1])
     nombre_cuenta: str = Field(..., examples=["Cuenta Falabella corriente"])
-    tipo_cuenta:EnumCuentas = Field(..., examples=[EnumCuentas.CUENTA_AHORRO.value])
+    id_producto_financiero: int = Field(..., examples=[1])
+    nombre_producto: str = Field(..., examples=["Cuenta Corriente"])
     nombre_banco: Optional[str] = Field(None, examples=["Falabella"])
     created_at : datetime
 
@@ -17,17 +17,21 @@ class CuentaResponse(BaseModel):
     @classmethod
     def flatten_banco(cls, data: Any)->Any:
         if not isinstance(data, dict):
-            data = data.__dict__
+            data = data.__dict__.copy()
 
-        banco = data.get("banco", None)
+        producto_financiero = data.get("producto_financiero", None)
 
-        if banco:
-            data["nombre_banco"] = banco.nombre_banco
+        if producto_financiero:
+            data["id_producto_financiero"] = producto_financiero.id_producto_financiero
+            data["nombre_producto"] = producto_financiero.nombre_producto
+            if producto_financiero.banco:
+                data["nombre_banco"] = producto_financiero.banco.nombre_banco
 
         return data
     
     model_config = ConfigDict(
-        title="Respuesta simple cuenta"
+        title="Respuesta simple cuenta",
+        from_attributes=True
     )
 
 
@@ -40,7 +44,7 @@ class CuentasMovimientosResponse(CuentaResponse):
     @classmethod
     def flatten_transacciones(cls, data:Any)->Any:
         if not isinstance(data, dict):
-            data = data.__dict__
+            data = data.__dict__.copy()
 
         transacciones = data.get("transacciones", [])
         
@@ -56,9 +60,8 @@ class CuentasMovimientosResponse(CuentaResponse):
 
 class CuentaCreate(BaseModel):
     
-    id_banco: int = Field(..., examples=[1])
+    id_producto_financiero: int = Field(..., examples=[1])
     nombre_cuenta: str = Field(..., examples=["Tu nombre de cuenta"])
-    tipo_cuenta: EnumCuentas = Field(..., examples=[EnumCuentas.CUENTA_AHORRO.value])
 
     model_config = ConfigDict(
         title="Crear cuenta"
@@ -69,7 +72,4 @@ class CuentaPatch(BaseModel):
     """Actualizar cuenta"""
 
     nombre_cuenta: Optional[str] = Field(None, examples=["Nuevo nombre de cuenta"])
-    tipo_cuenta: Optional[EnumCuentas] = Field(
-        None, 
-        examples=[EnumCuentas.CUENTA_AHORRO.value]
-    )
+    id_producto_financiero: Optional[int] = Field(None, examples=[1])

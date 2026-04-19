@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from sqlalchemy import select
-from app.models import Banco
+from app.models import Banco, ProductoFinanciero
 from app.auth.fastapi_users import current_superuser, current_user
 from app.schemas.finanzas import BancoCreate, BancoResponse
 
@@ -134,6 +134,16 @@ async def eliminar_banco(
     banco = query.scalar_one_or_none()
     
     if banco:
+        producto_asociado = await db.scalar(
+            select(ProductoFinanciero.id_producto_financiero).where(
+                ProductoFinanciero.id_banco == id_banco
+            )
+        )
+        if producto_asociado is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="No se puede eliminar un banco con productos financieros asociados."
+            )
         await db.delete(banco)
     else:
         raise HTTPException(

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from sqlalchemy import select
-from app.models import Banco, CuentaBancaria, Movimiento, Usuario
+from app.models import CuentaBancaria, Movimiento, ProductoFinanciero, Usuario
 from app.schemas.finanzas import (
     CuentaCreate,
     CuentaResponse,
@@ -44,7 +44,10 @@ async def obtener_cuentas_usuario(
         await db.execute(
             select(CuentaBancaria)
             .where(CuentaBancaria.id_usuario == usuario.id_usuario)
-            .options(selectinload(CuentaBancaria.banco))
+            .options(
+                selectinload(CuentaBancaria.producto_financiero)
+                .selectinload(ProductoFinanciero.banco)
+            )
         )
     ).scalars().all()
 
@@ -80,7 +83,8 @@ async def obtener_movimientos_cuenta(
                 CuentaBancaria.id_usuario == usuario.id_usuario
             )
             .options(
-            selectinload(CuentaBancaria.banco),
+            selectinload(CuentaBancaria.producto_financiero)
+                .selectinload(ProductoFinanciero.banco),
             selectinload(CuentaBancaria.transacciones)
                 .selectinload(Movimiento.categoria),
 
@@ -102,7 +106,7 @@ async def obtener_movimientos_cuenta(
 @router.post(
     path="/",
     summary="Crear cuenta bancaria",
-    description="Crea la cuenta bancaria para realizar movimientos, ej: cuenta rut, credito etc",
+    description="Crea una cuenta del usuario asociada a un producto financiero definido para un banco",
     status_code=status.HTTP_201_CREATED,
     response_model=CuentaResponse
 )
@@ -113,17 +117,21 @@ async def crear_cuenta_bancaria(
 ):
     usuario = await obtener_usuario_actual(user, db)
 
-    # Validar que el banco exista
-    banco = (
+    producto_financiero = (
         await db.execute(
-            select(Banco).where(Banco.id_banco == data.id_banco)
+            select(ProductoFinanciero)
+            .where(
+                ProductoFinanciero.id_producto_financiero == data.id_producto_financiero,
+                ProductoFinanciero.activo.is_(True),
+            )
+            .options(selectinload(ProductoFinanciero.banco))
         )
     ).scalar_one_or_none()
 
-    if not banco:
+    if not producto_financiero:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Banco no encontrado."
+            detail="Producto financiero no encontrado o inactivo."
         )
 
     # Validar que el usuario no tenga una cuenta con el mismo nombre
@@ -145,18 +153,21 @@ async def crear_cuenta_bancaria(
     # Crear cuenta
     nueva_cuenta = CuentaBancaria(
         id_usuario=usuario.id_usuario,
-        id_banco=data.id_banco,
+        id_producto_financiero=data.id_producto_financiero,
         nombre_cuenta=data.nombre_cuenta,
-        tipo_cuenta=data.tipo_cuenta
     )
 
     db.add(nueva_cuenta)
 
     # flush para obtener el id generado
     await db.flush()
-    await db.refresh(
-        nueva_cuenta,
-        attribute_names=["banco"]
+    nueva_cuenta = await db.scalar(
+        select(CuentaBancaria)
+        .where(CuentaBancaria.id_cuenta == nueva_cuenta.id_cuenta)
+        .options(
+            selectinload(CuentaBancaria.producto_financiero)
+            .selectinload(ProductoFinanciero.banco)
+        )
     )
 
     return nueva_cuenta
@@ -192,6 +203,19 @@ async def editar_cuenta(
             detail="Cuenta no encontrada."
         )
 
+    if data.id_producto_financiero is not None:
+        producto_financiero = await db.scalar(
+            select(ProductoFinanciero).where(
+                ProductoFinanciero.id_producto_financiero == data.id_producto_financiero,
+                ProductoFinanciero.activo.is_(True),
+            )
+        )
+        if not producto_financiero:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Producto financiero no encontrado o inactivo."
+            )
+
     if data.nombre_cuenta:
         existe = await db.scalar(
             select(CuentaBancaria.id_cuenta)
@@ -215,9 +239,13 @@ async def editar_cuenta(
 
     await db.flush()
 
-    await db.refresh(
-        cuenta,
-        attribute_names=["banco"]
+    cuenta = await db.scalar(
+        select(CuentaBancaria)
+        .where(CuentaBancaria.id_cuenta == id_cuenta)
+        .options(
+            selectinload(CuentaBancaria.producto_financiero)
+            .selectinload(ProductoFinanciero.banco)
+        )
     )
 
     return cuenta

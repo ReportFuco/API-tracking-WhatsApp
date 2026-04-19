@@ -176,6 +176,7 @@ Prefijo: `/api/finanzas`
 Submódulos:
 
 - `banco`
+- `producto-financiero`
 - `categoria`
 - `cuentas`
 - `movimientos`
@@ -195,6 +196,26 @@ Payload base:
 ```json
 {
   "nombre_banco": "Santander"
+}
+```
+
+#### Productos financieros
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/api/finanzas/producto-financiero/` | usuario | Lista productos financieros, acepta `id_banco`, `q` e `incluir_inactivos` |
+| `GET` | `/api/finanzas/producto-financiero/{id_producto_financiero}` | usuario | Obtiene producto financiero |
+| `POST` | `/api/finanzas/producto-financiero/` | superuser | Crea producto financiero para un banco |
+| `PATCH` | `/api/finanzas/producto-financiero/{id_producto_financiero}` | superuser | Edita producto financiero |
+| `DELETE` | `/api/finanzas/producto-financiero/{id_producto_financiero}` | superuser | Desactiva producto si no tiene cuentas activas |
+
+Payload base:
+
+```json
+{
+  "id_banco": 1,
+  "nombre_producto": "CuentaRUT",
+  "descripcion": "Producto principal de BancoEstado"
 }
 ```
 
@@ -230,21 +251,17 @@ Payload create:
 
 ```json
 {
-  "id_banco": 1,
-  "nombre_cuenta": "Cuenta principal",
-  "tipo_cuenta": "cuenta vista"
+  "id_producto_financiero": 1,
+  "nombre_cuenta": "Cuenta principal"
 }
 ```
 
 Campos importantes:
 
-- `id_banco`
+- `id_producto_financiero`
 - `nombre_cuenta`
-- `tipo_cuenta`: valores definidos por enum `EnumCuentas`
-  - `cuenta corriente`
-  - `cuenta vista`
-  - `cuenta ahorro`
-  - `cuenta credito`
+- el producto financiero define el banco y el tipo comercial real de la cuenta
+- ejemplos válidos dependen del catálogo cargado para cada banco: `CuentaRUT`, `Cuenta Corriente`, `CMR`, etc.
 
 #### Movimientos
 
@@ -685,9 +702,18 @@ Esta sección resume los cuerpos más comunes para IA y automatizaciones.
 
 ```json
 {
+  "id_producto_financiero": 1,
+  "nombre_cuenta": "Cuenta sueldo"
+}
+```
+
+### Producto financiero create
+
+```json
+{
   "id_banco": 1,
-  "nombre_cuenta": "Cuenta sueldo",
-  "tipo_cuenta": "cuenta vista"
+  "nombre_producto": "CMR",
+  "descripcion": "Tarjeta y linea comercial de Falabella"
 }
 ```
 

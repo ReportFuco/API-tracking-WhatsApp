@@ -5,8 +5,8 @@ import pytest
 from fastapi import HTTPException
 
 from app.db.session import AsyncSessionLocal
-from app.models import Banco, CategoriaFinanza, User, Usuario
-from app.models.finanzas import EnumCuentas, EnumTipoGasto, EnumTipoMovimiento
+from app.models import Banco, CategoriaFinanza, ProductoFinanciero, User, Usuario
+from app.models.finanzas import EnumTipoGasto, EnumTipoMovimiento
 from app.routes.finanzas.cuentas import crear_cuenta_bancaria, obtener_cuentas_usuario
 from app.routes.finanzas.movimientos import crear_movimiento, obtener_movimientos
 from app.routes.usuarios.usuario import editar_usuario
@@ -73,14 +73,20 @@ async def test_ownership_finanzas_usuarios_end_to_end():
             db.add_all([banco, categoria])
             await db.flush()
 
+            producto = ProductoFinanciero(
+                id_banco=banco.id_banco,
+                nombre_producto=f"Cuenta Vista {seed}",
+            )
+            db.add(producto)
+            await db.flush()
+
             user1 = SimpleNamespace(id=auth1.id)
             user2 = SimpleNamespace(id=auth2.id)
 
             cuenta = await crear_cuenta_bancaria(
                 data=CuentaCreate(
-                    id_banco=banco.id_banco,
+                    id_producto_financiero=producto.id_producto_financiero,
                     nombre_cuenta=f"Cuenta {seed}",
-                    tipo_cuenta=EnumCuentas.CUENTA_VISTA,
                 ),
                 db=db,
                 user=user1,

@@ -5,6 +5,11 @@ from .movimientos import (
 )
 
 from .banco import BancoCreate, BancoResponse
+from .producto_financiero import (
+    ProductoFinancieroCreate,
+    ProductoFinancieroPatch,
+    ProductoFinancieroResponse,
+)
 
 from .cuentas import (
     CuentaCreate, 
@@ -40,5 +45,10 @@ __all__ = [
 
     # Banco
     "BancoCreate",
-    "BancoResponse"
+    "BancoResponse",
+
+    # Productos financieros
+    "ProductoFinancieroCreate",
+    "ProductoFinancieroPatch",
+    "ProductoFinancieroResponse",
 ]
