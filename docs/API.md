@@ -388,8 +388,33 @@ Prefijo: `/api/catalogo`
 
 Submódulos:
 
+- `categoria-producto`
 - `marca`
 - `producto`
+- `subcategoria-producto`
+
+#### Categorías de producto
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/api/catalogo/categoria-producto/` | usuario | Lista categorías de producto |
+| `GET` | `/api/catalogo/categoria-producto/{id_categoria}` | usuario | Obtiene categoría de producto |
+| `POST` | `/api/catalogo/categoria-producto/` | superuser | Crea categoría de producto |
+| `PATCH` | `/api/catalogo/categoria-producto/{id_categoria}` | superuser | Edita categoría de producto |
+| `DELETE` | `/api/catalogo/categoria-producto/{id_categoria}` | superuser | Elimina categoría de producto si no tiene dependencias |
+
+Payload create:
+
+```json
+{
+  "nombre_categoria": "Lacteos"
+}
+```
+
+Notas:
+
+- no se puede eliminar una categoría si tiene subcategorías asociadas
+- no se puede eliminar una categoría si tiene productos asociados
 
 #### Marcas
 
@@ -450,6 +475,31 @@ Notas:
 - en `PATCH`, si cambias la categoría sin enviar subcategoría, se limpia `id_subcategoria` para evitar inconsistencias
 - el response de producto mantiene los campos `categoria` y `subcategoria` como nombres legibles (además de sus IDs)
 - `DELETE` marca el producto como inactivo, no lo borra físicamente
+
+#### Subcategorías de producto
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/api/catalogo/subcategoria-producto/` | usuario | Lista subcategorías de producto |
+| `GET` | `/api/catalogo/subcategoria-producto/{id_subcategoria}` | usuario | Obtiene subcategoría de producto |
+| `POST` | `/api/catalogo/subcategoria-producto/` | superuser | Crea subcategoría de producto |
+| `PATCH` | `/api/catalogo/subcategoria-producto/{id_subcategoria}` | superuser | Edita subcategoría de producto |
+| `DELETE` | `/api/catalogo/subcategoria-producto/{id_subcategoria}` | superuser | Elimina subcategoría de producto si no tiene dependencias |
+
+Payload create:
+
+```json
+{
+  "id_categoria": 2,
+  "nombre_subcategoria": "Yogurt"
+}
+```
+
+Notas:
+
+- cada subcategoría pertenece a una categoría (`id_categoria`)
+- el nombre de subcategoría es único dentro de su categoría
+- no se puede eliminar una subcategoría si tiene productos asociados
 
 ### 5. Compras
 Prefijo: `/api/compras`
@@ -839,6 +889,14 @@ Notas:
 }
 ```
 
+### Categoria producto create
+
+```json
+{
+  "nombre_categoria": "Lacteos"
+}
+```
+
 ### Producto create
 
 ```json
@@ -853,6 +911,15 @@ Notas:
   "contenido_neto": 330,
   "unidad_contenido": "ml",
   "activo": true
+}
+```
+
+### Subcategoria producto create
+
+```json
+{
+  "id_categoria": 2,
+  "nombre_subcategoria": "Leche"
 }
 ```
 
