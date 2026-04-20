@@ -424,10 +424,10 @@ Payload create:
 ```json
 {
   "id_marca": 1,
+  "id_categoria": 2,
+  "id_subcategoria": 7,
   "nombre_producto": "Yogurt protein",
   "codigo_barra": "7801234567890",
-  "categoria": "Lacteos",
-  "subcategoria": "Yogurt",
   "sabor": "Frutilla",
   "formato": "Botella",
   "contenido_neto": 350,
@@ -439,6 +439,16 @@ Payload create:
 Notas:
 
 - `codigo_barra` es único
+- `categoria` y `subcategoria` ahora son entidades separadas en base de datos:
+  - `catalogo.categoria_producto`
+  - `catalogo.subcategoria_producto`
+- `POST` y `PATCH` de producto validan:
+  - que `id_categoria` exista (si se envía)
+  - que `id_subcategoria` exista (si se envía)
+  - que la subcategoría pertenezca a la categoría indicada
+- si se envía solo `id_subcategoria`, la API completa automáticamente `id_categoria` usando la relación de la subcategoría
+- en `PATCH`, si cambias la categoría sin enviar subcategoría, se limpia `id_subcategoria` para evitar inconsistencias
+- el response de producto mantiene los campos `categoria` y `subcategoria` como nombres legibles (además de sus IDs)
 - `DELETE` marca el producto como inactivo, no lo borra físicamente
 
 ### 5. Compras
@@ -834,10 +844,10 @@ Notas:
 ```json
 {
   "id_marca": 1,
+  "id_categoria": 2,
+  "id_subcategoria": 7,
   "nombre_producto": "Leche protein",
   "codigo_barra": "7801111111111",
-  "categoria": "Lacteos",
-  "subcategoria": "Leche",
   "sabor": "Chocolate",
   "formato": "Caja",
   "contenido_neto": 330,

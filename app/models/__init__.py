@@ -23,7 +23,7 @@ from .entrenamiento import (
     EnumTipoEntrenamiento,
     EnumEstadoEntrenamiento
 )
-from .catalogo import Marca, Producto
+from .catalogo import CategoriaProducto, Marca, Producto, SubcategoriaProducto
 from .compras import Cadena, Local, Compra, CompraDetalle, MovimientoCompra
 from .nutricion import Consumo, ConsumoDetalle, TablaNutricional, MetaNutricional, PesoUsuario
 
@@ -31,6 +31,8 @@ from .usuario_auth import User
 
 __all__ = [
     "Marca",
+    "CategoriaProducto",
+    "SubcategoriaProducto",
     "Producto",
     "Cadena",
     "Local",

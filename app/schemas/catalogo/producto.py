@@ -7,10 +7,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class ProductoCreate(BaseModel):
     id_marca: int
+    id_categoria: Optional[int] = Field(default=None, examples=[1])
+    id_subcategoria: Optional[int] = Field(default=None, examples=[1])
     nombre_producto: str = Field(..., examples=["Yogurt protein"])
     codigo_barra: str = Field(..., examples=["7801234567890"])
-    categoria: Optional[str] = Field(default=None, examples=["Lacteos"])
-    subcategoria: Optional[str] = Field(default=None, examples=["Yogurt"])
     sabor: Optional[str] = Field(default=None, examples=["Frutilla"])
     formato: Optional[str] = Field(default=None, examples=["Botella"])
     contenido_neto: Optional[Decimal] = Field(default=None, examples=[350])
@@ -22,10 +22,10 @@ class ProductoCreate(BaseModel):
 
 class ProductoPatch(BaseModel):
     id_marca: Optional[int] = None
+    id_categoria: Optional[int] = None
+    id_subcategoria: Optional[int] = None
     nombre_producto: Optional[str] = None
     codigo_barra: Optional[str] = None
-    categoria: Optional[str] = None
-    subcategoria: Optional[str] = None
     sabor: Optional[str] = None
     formato: Optional[str] = None
     contenido_neto: Optional[Decimal] = None
@@ -38,6 +38,8 @@ class ProductoPatch(BaseModel):
 class ProductoResponse(BaseModel):
     id_producto: int
     id_marca: int
+    id_categoria: Optional[int]
+    id_subcategoria: Optional[int]
     nombre_producto: str
     codigo_barra: str
     categoria: Optional[str]
