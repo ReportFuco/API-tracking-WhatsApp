@@ -6,7 +6,8 @@ from app.models import Usuario, User
 from app.auth.fastapi_users import current_user, current_superuser
 from app.schemas.usuario import ( 
     UsuarioResponse,
-    UsuarioPatchSchema
+    UsuarioPatchSchema,
+    UsuarioPerfilResponse,
 )
 
 
@@ -26,13 +27,15 @@ async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
 
 @router.get(
     "/perfil",
-    response_model=UsuarioResponse
+    response_model=UsuarioPerfilResponse
 )
 async def obtener_mi_perfil(
     user = Depends(current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await obtener_usuario_actual(user, db)
+    perfil = await obtener_usuario_actual(user, db)
+    perfil_data = UsuarioResponse.model_validate(perfil).model_dump()
+    return {**perfil_data, "is_superuser": user.is_superuser}
 
 
 @router.get(

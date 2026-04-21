@@ -54,3 +54,12 @@ class UsuarioResponse(BaseModel):
         from_attributes=True,
         title="Respuesta Usuario"
     )
+
+
+class UsuarioPerfilResponse(UsuarioResponse):
+    is_superuser: bool = Field(..., examples=[False, True])
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        title="Respuesta Perfil Usuario"
+    )

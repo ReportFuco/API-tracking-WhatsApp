@@ -1,8 +1,14 @@
-from .usuario import UsuarioPatchSchema, UsuarioResponse, UsuarioCreate
+from .usuario import (
+    UsuarioPatchSchema,
+    UsuarioResponse,
+    UsuarioCreate,
+    UsuarioPerfilResponse,
+)
 
 
 __all__ = [
     "UsuarioPatchSchema",
     "UsuarioResponse",
-    "UsuarioCreate"
+    "UsuarioCreate",
+    "UsuarioPerfilResponse",
 ]
