@@ -135,7 +135,7 @@ class Movimiento(Base):
         )
     )
     monto: Mapped[int] = mapped_column(Integer, nullable=False)
-    descripcion: Mapped[str] = mapped_column(Text, nullable=True)
+    descripcion: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 
         default=datetime.now, 

@@ -15,8 +15,11 @@ Esta API centraliza registros personales y operativos en varios dominios:
 
 La aplicación expone documentación interactiva en:
 
-- `/docs`
-- `/redoc`
+- `/docs` para el menú principal de documentación
+- `/docs/global` para el Swagger completo
+- `/docs/{modulo}` para Swagger modular, por ejemplo `/docs/finanzas`
+- `/openapi.json` para el schema global
+- `/openapi/{modulo}.json` para schemas por módulo
 
 Este archivo está pensado para ser más fácil de leer por una persona y también más fácil de parsear por una IA.
 
@@ -96,13 +99,18 @@ Campos esperados:
 - `username`: máximo 20 caracteres
 - `nombre`: máximo 20 caracteres
 - `apellido`: máximo 20 caracteres
-- `telefono`: máximo 11 caracteres
+- `telefono`: exactamente 11 dígitos numéricos
 
 #### `POST /auth/jwt/login`
 Inicia sesión y devuelve el token JWT.
 
 #### Endpoints adicionales de auth
-`fastapi-users` suele exponer también rutas auxiliares del router JWT, dependiendo de la configuración activa del paquete.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/auth/jwt/login` | Inicia sesión y devuelve JWT |
+| `POST` | `/auth/jwt/logout` | Endpoint expuesto por el router JWT de `fastapi-users` |
+| `POST` | `/auth/register` | Registra usuario |
 
 ## Convenciones globales
 
@@ -166,7 +174,8 @@ Prefijo: `/api/usuarios`
   "apellido": "Arancibia",
   "telefono": "56912345678",
   "email": "correo@mail.com",
-  "created_at": "2026-01-01T12:00:00"
+  "created_at": "2026-01-01T12:00:00",
+  "is_superuser": false
 }
 ```
 
@@ -563,7 +572,8 @@ Notas:
 | `GET` | `/api/compras/compra/` | usuario | Lista compras del usuario |
 | `GET` | `/api/compras/compra/{id_compra}` | usuario + ownership | Obtiene compra con local, total y movimientos vinculados si existen |
 | `POST` | `/api/compras/compra/` | usuario | Crea compra asociada al usuario autenticado |
-| `POST` | `/api/compras/compra-completa/` | usuario | Crea compra, detalle y vínculo opcional a movimiento en una sola operación |
+| `POST` | `/api/compras/compra/completa` | usuario | Crea compra, detalle y vínculo opcional a movimiento en una sola operación |
+| `POST` | `/api/compras/compra-completa/` | usuario | Alias del endpoint anterior; reutiliza la misma lógica |
 | `PATCH` | `/api/compras/compra/{id_compra}` | usuario + ownership | Edita compra |
 | `DELETE` | `/api/compras/compra/{id_compra}` | usuario + ownership | Elimina compra |
 
@@ -1019,6 +1029,10 @@ Notas:
 - `404 Not Found`: recurso no existe o no pertenece al usuario
 - `409 Conflict`: duplicado o regla de negocio violada
 - `422 Unprocessable Entity`: validación de esquema falló
+
+Excepciones actuales a considerar:
+
+- `GET /api/finanzas/movimientos/` responde `404` si el usuario no tiene movimientos registrados
 
 ### Ejemplo de error
 

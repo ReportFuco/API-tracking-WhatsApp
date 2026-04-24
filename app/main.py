@@ -1,9 +1,9 @@
-from fastapi import FastAPI, status
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import settings
 from app.auth.routes import router as auth_router
+from app.docs import OPENAPI_TAGS, install_docs, use_custom_openapi
 from app.routes import router
 from app.core.logging import setup_logging
 from app.core.middleware import logging_middleware
@@ -15,8 +15,10 @@ app = FastAPI(
     title=settings.TITLE_API,
     version=settings.VERSION_API,
     description="API encargada de realizar registros a áreas como finanzas, deportes, hábitos entre otros.",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+    openapi_tags=OPENAPI_TAGS,
 )
 
 app.add_middleware(
@@ -39,14 +41,8 @@ app.middleware("http")(logging_middleware)
 
 app.include_router(router)
 app.include_router(auth_router)
-
-@app.get(
-    path="/",
-    include_in_schema=False,
-    status_code=status.HTTP_307_TEMPORARY_REDIRECT
-)
-def bienvenida():
-    return RedirectResponse("/docs")
+use_custom_openapi(app)
+install_docs(app)
 
 
 if __name__=="__main__":
