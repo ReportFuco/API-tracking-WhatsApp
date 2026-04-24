@@ -113,3 +113,18 @@ class MovimientoPatch(BaseModel):
     model_config = ConfigDict(
         title="Modificar Movimiento"
     )
+
+
+class MovimientoListResponse(BaseModel):
+    items: list[MovimientoResponse] = Field(default_factory=list)
+    offset: int = Field(..., examples=[0])
+    limit: int = Field(..., examples=[20])
+    total_gasto_mensual: float = Field(
+        ...,
+        examples=[245000],
+        description="Suma de gastos del mes actual en horario de Chile."
+    )
+
+    model_config = ConfigDict(
+        title="Lista paginada de movimientos"
+    )

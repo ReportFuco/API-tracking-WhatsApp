@@ -1,7 +1,8 @@
 from .movimientos import (
     MovimientoResponse, 
     MovimientoPatch, 
-    MovimientoCreate
+    MovimientoCreate,
+    MovimientoListResponse,
 )
 
 from .banco import BancoCreate, BancoResponse
@@ -36,6 +37,7 @@ __all__ = [
     "MovimientoResponse",
     "MovimientoCreate",
     "MovimientoPatch",
+    "MovimientoListResponse",
 
     # Cuentas
     "CuentaUsuarioResponse",

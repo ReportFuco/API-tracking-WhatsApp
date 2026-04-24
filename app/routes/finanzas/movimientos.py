@@ -1,8 +1,10 @@
 from app.schemas.finanzas import (
     MovimientoCreate,
+    MovimientoListResponse,
     MovimientoResponse,
     MovimientoPatch
 )
+from datetime import datetime
 from fastapi import (
     APIRouter,
     Depends,
@@ -21,12 +23,15 @@ from app.models import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
-from sqlalchemy import select, and_, desc
+from sqlalchemy import select, and_, desc, func
 from sqlalchemy.orm import selectinload
 from app.auth.fastapi_users import current_user
+from app.models.finanzas import EnumTipoMovimiento
+from zoneinfo import ZoneInfo
 
 
 router = APIRouter(prefix="/movimientos", tags=["Finanzas · Movimientos"])
+CHILE_TZ = ZoneInfo("America/Santiago")
 
 
 async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
@@ -45,7 +50,7 @@ async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
     summary="Obtener todos los movimientos del usuario.",
     description="Obtiene el movimiento en especifico",
     status_code=status.HTTP_200_OK,
-    response_model=list[MovimientoResponse]
+    response_model=MovimientoListResponse
 )
 async def obtener_movimiento(
     offset: int = Query(
@@ -63,6 +68,7 @@ async def obtener_movimiento(
     db: AsyncSession = Depends(get_db)
 ):
     usuario = await obtener_usuario_actual(user, db)
+    rango_inicio, rango_fin = _get_current_chile_month_range()
 
     movimiento_usuario = (
         await db.execute(
@@ -92,8 +98,24 @@ async def obtener_movimiento(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Usuario sin movimientos"
         )
-    
-    return movimiento_usuario
+
+    total_gasto_mensual = await db.scalar(
+        select(func.coalesce(func.sum(Movimiento.monto), 0))
+        .join(CuentaUsuario, Movimiento.id_cuenta == CuentaUsuario.id_cuenta)
+        .where(
+            CuentaUsuario.id_usuario == usuario.id_usuario,
+            Movimiento.tipo_movimiento == EnumTipoMovimiento.GASTO,
+            Movimiento.created_at >= rango_inicio,
+            Movimiento.created_at < rango_fin,
+        )
+    )
+
+    return MovimientoListResponse(
+        items=movimiento_usuario,
+        offset=offset,
+        limit=limit,
+        total_gasto_mensual=float(total_gasto_mensual or 0),
+    )
 
 
 @router.get(
@@ -301,3 +323,17 @@ async def editar_movimiento(
     )
 
     return movimiento
+
+
+def _get_current_chile_month_range() -> tuple[datetime, datetime]:
+    now_chile = datetime.now(CHILE_TZ)
+    month_start = now_chile.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    if month_start.month == 12:
+        next_month = month_start.replace(year=month_start.year + 1, month=1)
+    else:
+        next_month = month_start.replace(month=month_start.month + 1)
+
+    # La columna created_at usa DateTime sin timezone; por eso comparamos con
+    # valores naive construidos desde el calendario de Chile.
+    return month_start.replace(tzinfo=None), next_month.replace(tzinfo=None)

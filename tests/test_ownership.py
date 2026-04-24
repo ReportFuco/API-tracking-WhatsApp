@@ -19,6 +19,7 @@ from app.schemas.finanzas import CuentaUsuarioCreate, CuentaUsuarioMovimientosRe
 from app.routes.compras.compra import crear_compra
 from app.schemas.usuario import UsuarioPatchSchema
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 
 @pytest.mark.asyncio(loop_scope="session")
@@ -373,20 +374,29 @@ async def test_movimientos_list_paginates_and_orders_by_newest_date():
                 user=user,
             )
 
-            fechas = [
-                datetime(2026, 4, 20, 8, 0, 0),
-                datetime(2026, 4, 22, 9, 0, 0),
-                datetime(2026, 4, 21, 10, 0, 0),
+            chile_now = datetime.now(ZoneInfo("America/Santiago")).replace(tzinfo=None)
+            month_start = chile_now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            if month_start.month == 1:
+                previous_month = month_start.replace(year=month_start.year - 1, month=12, day=20)
+            else:
+                previous_month = month_start.replace(month=month_start.month - 1, day=20)
+
+            movimientos_seed = [
+                (datetime(month_start.year, month_start.month, 20, 8, 0, 0), EnumTipoMovimiento.GASTO, 1000),
+                (datetime(month_start.year, month_start.month, 22, 9, 0, 0), EnumTipoMovimiento.GASTO, 2000),
+                (datetime(month_start.year, month_start.month, 21, 10, 0, 0), EnumTipoMovimiento.GASTO, 3000),
+                (datetime(month_start.year, month_start.month, 18, 11, 0, 0), EnumTipoMovimiento.INGRESO, 9000),
+                (previous_month, EnumTipoMovimiento.GASTO, 7000),
             ]
 
-            for index, fecha in enumerate(fechas, start=1):
+            for index, (fecha, tipo_movimiento, monto) in enumerate(movimientos_seed, start=1):
                 await crear_movimiento(
                     data=MovimientoCreate(
                         id_categoria=categoria.id_categoria,
                         id_cuenta=cuenta.id_cuenta,
-                        tipo_movimiento=EnumTipoMovimiento.GASTO,
+                        tipo_movimiento=tipo_movimiento,
                         tipo_gasto=EnumTipoGasto.VARIABLE,
-                        monto=1000 * index,
+                        monto=monto,
                         descripcion=f"mov {index}",
                         created_at=fecha,
                     ),
@@ -401,10 +411,13 @@ async def test_movimientos_list_paginates_and_orders_by_newest_date():
                 user=user,
             )
 
-            assert len(movimientos) == 2
-            assert [mov.created_at for mov in movimientos] == [
-                datetime(2026, 4, 22, 9, 0, 0),
-                datetime(2026, 4, 21, 10, 0, 0),
+            assert movimientos.offset == 0
+            assert movimientos.limit == 2
+            assert movimientos.total_gasto_mensual == 6000
+            assert len(movimientos.items) == 2
+            assert [mov.created_at for mov in movimientos.items] == [
+                datetime(month_start.year, month_start.month, 22, 9, 0, 0),
+                datetime(month_start.year, month_start.month, 21, 10, 0, 0),
             ]
 
             movimientos_pagina_2 = await obtener_movimiento(
@@ -414,8 +427,12 @@ async def test_movimientos_list_paginates_and_orders_by_newest_date():
                 user=user,
             )
 
-            assert len(movimientos_pagina_2) == 1
-            assert movimientos_pagina_2[0].created_at == datetime(2026, 4, 20, 8, 0, 0)
+            assert movimientos_pagina_2.total_gasto_mensual == 6000
+            assert len(movimientos_pagina_2.items) == 2
+            assert [mov.created_at for mov in movimientos_pagina_2.items] == [
+                datetime(month_start.year, month_start.month, 20, 8, 0, 0),
+                datetime(month_start.year, month_start.month, 18, 11, 0, 0),
+            ]
         finally:
             await trans.rollback()
 
