@@ -7,6 +7,7 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Query,
     status
 )
 from app.models import (
@@ -20,7 +21,7 @@ from app.models import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, desc
 from sqlalchemy.orm import selectinload
 from app.auth.fastapi_users import current_user
 
@@ -47,6 +48,17 @@ async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
     response_model=list[MovimientoResponse]
 )
 async def obtener_movimiento(
+    offset: int = Query(
+        default=0,
+        ge=0,
+        description="Cantidad de registros a omitir desde el inicio del resultado."
+    ),
+    limit: int = Query(
+        default=20,
+        ge=1,
+        le=100,
+        description="Cantidad maxima de movimientos a devolver."
+    ),
     user = Depends(current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -58,6 +70,9 @@ async def obtener_movimiento(
             .execution_options(populate_existing=True)
             .join(CuentaUsuario, Movimiento.id_cuenta == CuentaUsuario.id_cuenta)
             .where(CuentaUsuario.id_usuario == usuario.id_usuario)
+            .order_by(desc(Movimiento.created_at), desc(Movimiento.id_transaccion))
+            .offset(offset)
+            .limit(limit)
             .options(
                 selectinload(Movimiento.cuenta),
                 selectinload(Movimiento.categoria),

@@ -3,10 +3,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, func
+from sqlalchemy import select, or_
 from app.auth.fastapi_users import current_superuser, current_user
 from app.db.session import get_db
 from app.models.entrenamiento import Gimnasio
+from app.routes.utils import normalize_search_text, normalize_sql_text
 from app.schemas.entrenamientos import (
     GimnasioResponse, 
     GimnasioCreate,
@@ -58,12 +59,11 @@ async def obtener_gimnasios(
     stmt = select(Gimnasio).where(Gimnasio.activo.is_(True))
 
     if q:
+        normalized_q = normalize_search_text(q)
         stmt = stmt.where(
             or_(
-                func.unaccent(Gimnasio.nombre_gimnasio)
-                .ilike(func.unaccent(f"%{q}%")),
-                func.unaccent(Gimnasio.comuna)
-                .ilike(func.unaccent(f"%{q}%"))
+                normalize_sql_text(Gimnasio.nombre_gimnasio).ilike(f"%{normalized_q}%"),
+                normalize_sql_text(Gimnasio.comuna).ilike(f"%{normalized_q}%")
             )
         )
 

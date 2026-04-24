@@ -1,12 +1,13 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import String, func, or_, select
+from sqlalchemy import String, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.fastapi_users import current_superuser, current_user
 from app.db.session import get_db
 from app.models import Ejercicios, EnumMusculo, SerieFuerza
+from app.routes.utils import normalize_search_text, normalize_sql_text
 from app.schemas.entrenamientos import (
     EjercicioCreate,
     EjercicioPatch,
@@ -32,9 +33,9 @@ async def _existe_nombre_duplicado(
     nombre: str,
     id_ejercicio_excluido: int | None = None,
 ) -> bool:
+    nombre_normalizado = normalize_search_text(nombre)
     stmt = select(Ejercicios).where(
-        func.unaccent(func.lower(Ejercicios.nombre))
-        == func.unaccent(func.lower(nombre.strip()))
+        normalize_sql_text(Ejercicios.nombre) == nombre_normalizado
     )
     if id_ejercicio_excluido is not None:
         stmt = stmt.where(Ejercicios.id_ejercicio != id_ejercicio_excluido)
@@ -65,13 +66,11 @@ async def obtener_ejercicios(
         stmt = stmt.where(Ejercicios.tipo == tipo)
 
     if q:
-        termino = q.strip()
+        termino = normalize_search_text(q)
         stmt = stmt.where(
             or_(
-                func.unaccent(Ejercicios.nombre).ilike(func.unaccent(f"%{termino}%")),
-                func.unaccent(Ejercicios.tipo.cast(String)).ilike(
-                    func.unaccent(f"%{termino.lower()}%")
-                ),
+                normalize_sql_text(Ejercicios.nombre).ilike(f"%{termino}%"),
+                normalize_sql_text(Ejercicios.tipo.cast(String)).ilike(f"%{termino}%"),
             )
         )
 

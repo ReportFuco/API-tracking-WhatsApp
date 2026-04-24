@@ -49,7 +49,14 @@ class CuentaUsuarioMovimientosResponse(CuentaUsuarioResponse):
         transacciones = data.get("transacciones", [])
         
         if transacciones:
-            data["transacciones"] = transacciones
+            data["transacciones"] = sorted(
+                transacciones,
+                key=lambda movimiento: (
+                    getattr(movimiento, "created_at", datetime.min),
+                    getattr(movimiento, "id_transaccion", 0),
+                ),
+                reverse=True,
+            )
         return data
             
     model_config = ConfigDict(

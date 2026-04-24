@@ -8,14 +8,17 @@ from app.db.session import AsyncSessionLocal
 from app.models import Banco, Cadena, CategoriaFinanza, Local, Marca, Producto, ProductoFinanciero, User, Usuario
 from app.models.finanzas import EnumTipoGasto, EnumTipoMovimiento
 from app.routes.finanzas.cuentas import crear_cuenta_usuario, obtener_cuentas_usuario
+from app.routes.finanzas.cuentas import obtener_movimientos_cuenta
 from app.routes.finanzas.movimientos import crear_movimiento, obtener_movimientos
+from app.routes.finanzas.movimientos import obtener_movimiento
 from app.routes.compras.compra import crear_compra_completa, obtener_compra
 from app.routes.compras.movimiento_compra import crear_vinculo_movimiento_compra, obtener_vinculos_movimiento_compra
 from app.routes.usuarios.usuario import editar_usuario
 from app.schemas.compras import CompraCompletaCreate, CompraCreate, MovimientoCompraCreate
-from app.schemas.finanzas import CuentaUsuarioCreate, MovimientoCreate
+from app.schemas.finanzas import CuentaUsuarioCreate, CuentaUsuarioMovimientosResponse, MovimientoCreate
 from app.routes.compras.compra import crear_compra
 from app.schemas.usuario import UsuarioPatchSchema
+from datetime import datetime
 
 
 @pytest.mark.asyncio(loop_scope="session")
@@ -315,5 +318,188 @@ async def test_movimiento_compra_flow_and_ownership():
                     user=user2,
                 )
             assert exc_vinculo_ajeno.value.status_code == 404
+        finally:
+            await trans.rollback()
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_movimientos_list_paginates_and_orders_by_newest_date():
+    async with AsyncSessionLocal() as db:
+        trans = await db.begin()
+        try:
+            seed = uuid4().hex[:8]
+
+            auth = User(
+                email=f"mov_{seed}@mail.com",
+                hashed_password="x",
+                is_active=True,
+                is_superuser=False,
+                is_verified=False,
+            )
+            db.add(auth)
+            await db.flush()
+
+            perfil = Usuario(
+                auth_user_id=auth.id,
+                username=f"mov_{seed}",
+                nombre="Mov",
+                apellido="Test",
+                telefono=f"5671{seed[:6]}",
+                email=auth.email,
+            )
+            db.add(perfil)
+            await db.flush()
+
+            banco = Banco(nombre_banco=f"Banco Pag {seed}")
+            categoria = CategoriaFinanza(nombre=f"categoria_pag_{seed}")
+            db.add_all([banco, categoria])
+            await db.flush()
+
+            producto = ProductoFinanciero(
+                id_banco=banco.id_banco,
+                nombre_producto=f"Cuenta Pag {seed}",
+            )
+            db.add(producto)
+            await db.flush()
+
+            user = SimpleNamespace(id=auth.id)
+
+            cuenta = await crear_cuenta_usuario(
+                data=CuentaUsuarioCreate(
+                    id_producto_financiero=producto.id_producto_financiero,
+                    nombre_cuenta=f"Cuenta Pag {seed}",
+                ),
+                db=db,
+                user=user,
+            )
+
+            fechas = [
+                datetime(2026, 4, 20, 8, 0, 0),
+                datetime(2026, 4, 22, 9, 0, 0),
+                datetime(2026, 4, 21, 10, 0, 0),
+            ]
+
+            for index, fecha in enumerate(fechas, start=1):
+                await crear_movimiento(
+                    data=MovimientoCreate(
+                        id_categoria=categoria.id_categoria,
+                        id_cuenta=cuenta.id_cuenta,
+                        tipo_movimiento=EnumTipoMovimiento.GASTO,
+                        tipo_gasto=EnumTipoGasto.VARIABLE,
+                        monto=1000 * index,
+                        descripcion=f"mov {index}",
+                        created_at=fecha,
+                    ),
+                    db=db,
+                    user=user,
+                )
+
+            movimientos = await obtener_movimiento(
+                offset=0,
+                limit=2,
+                db=db,
+                user=user,
+            )
+
+            assert len(movimientos) == 2
+            assert [mov.created_at for mov in movimientos] == [
+                datetime(2026, 4, 22, 9, 0, 0),
+                datetime(2026, 4, 21, 10, 0, 0),
+            ]
+
+            movimientos_pagina_2 = await obtener_movimiento(
+                offset=2,
+                limit=2,
+                db=db,
+                user=user,
+            )
+
+            assert len(movimientos_pagina_2) == 1
+            assert movimientos_pagina_2[0].created_at == datetime(2026, 4, 20, 8, 0, 0)
+        finally:
+            await trans.rollback()
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_detalle_cuenta_orders_transacciones_by_newest_date():
+    async with AsyncSessionLocal() as db:
+        trans = await db.begin()
+        try:
+            seed = uuid4().hex[:8]
+
+            auth = User(
+                email=f"cta_{seed}@mail.com",
+                hashed_password="x",
+                is_active=True,
+                is_superuser=False,
+                is_verified=False,
+            )
+            db.add(auth)
+            await db.flush()
+
+            perfil = Usuario(
+                auth_user_id=auth.id,
+                username=f"cta_{seed}",
+                nombre="Cuenta",
+                apellido="Test",
+                telefono=f"5672{seed[:6]}",
+                email=auth.email,
+            )
+            db.add(perfil)
+            await db.flush()
+
+            banco = Banco(nombre_banco=f"Banco Cta {seed}")
+            categoria = CategoriaFinanza(nombre=f"categoria_cta_{seed}")
+            db.add_all([banco, categoria])
+            await db.flush()
+
+            producto = ProductoFinanciero(
+                id_banco=banco.id_banco,
+                nombre_producto=f"Cuenta Cta {seed}",
+            )
+            db.add(producto)
+            await db.flush()
+
+            user = SimpleNamespace(id=auth.id)
+
+            cuenta = await crear_cuenta_usuario(
+                data=CuentaUsuarioCreate(
+                    id_producto_financiero=producto.id_producto_financiero,
+                    nombre_cuenta=f"Cuenta Cta {seed}",
+                ),
+                db=db,
+                user=user,
+            )
+
+            for fecha in [
+                datetime(2026, 4, 19, 12, 0, 0),
+                datetime(2026, 4, 21, 12, 0, 0),
+                datetime(2026, 4, 20, 12, 0, 0),
+            ]:
+                await crear_movimiento(
+                    data=MovimientoCreate(
+                        id_categoria=categoria.id_categoria,
+                        id_cuenta=cuenta.id_cuenta,
+                        tipo_movimiento=EnumTipoMovimiento.GASTO,
+                        tipo_gasto=EnumTipoGasto.VARIABLE,
+                        monto=5000,
+                        created_at=fecha,
+                    ),
+                    db=db,
+                    user=user,
+                )
+
+            detalle = await obtener_movimientos_cuenta(
+                id_cuenta=cuenta.id_cuenta,
+                db=db,
+                user=user,
+            )
+
+            ordered = CuentaUsuarioMovimientosResponse.model_validate(detalle)
+            assert [mov.created_at for mov in ordered.transacciones] == [
+                datetime(2026, 4, 21, 12, 0, 0),
+                datetime(2026, 4, 20, 12, 0, 0),
+                datetime(2026, 4, 19, 12, 0, 0),
+            ]
         finally:
             await trans.rollback()
