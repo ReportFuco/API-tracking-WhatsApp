@@ -189,6 +189,7 @@ Submódulos:
 - `categoria`
 - `cuentas`
 - `movimientos`
+- `analitica`
 
 #### Bancos
 
@@ -276,10 +277,47 @@ Campos importantes:
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| `GET` | `/api/finanzas/movimientos/` | usuario | Lista movimientos del usuario a partir de sus cuentas |
+| `GET` | `/api/finanzas/movimientos/` | usuario | Lista movimientos del usuario a partir de sus cuentas, acepta `offset` y `limit`, ordena de más nuevo a más antiguo y devuelve `total_gasto_mensual` |
 | `GET` | `/api/finanzas/movimientos/{id_movimiento}` | usuario + ownership por cuenta | Obtiene movimiento por ID, incluyendo compras vinculadas si existen |
 | `POST` | `/api/finanzas/movimientos/` | usuario | Crea movimiento |
 | `PATCH` | `/api/finanzas/movimientos/{id_movimiento}` | usuario + ownership por cuenta | Edita movimiento |
+
+Parámetros útiles para `GET /api/finanzas/movimientos/`:
+
+- `offset`: paginación por desplazamiento, parte en `0`
+- `limit`: cantidad máxima a devolver por página, por defecto `20`, máximo `100`
+
+Comportamiento actual:
+
+- siempre ordena por `created_at` descendente
+- usa `id_transaccion` descendente como desempate
+- `total_gasto_mensual` suma solo movimientos de tipo `gasto`
+- ese total se calcula usando el mes actual en horario de Chile (`America/Santiago`), aunque el servidor corra en otra zona horaria
+
+Respuesta base del listado:
+
+```json
+{
+  "items": [
+    {
+      "id_transaccion": 15,
+      "tipo_movimiento": "gasto",
+      "tipo_gasto": "variable",
+      "categoria": "comida",
+      "nombre_cuenta": "Cuenta principal",
+      "compras_vinculadas": [],
+      "total_compras_vinculadas": 0,
+      "diferencia_total_compras": 3500,
+      "monto": 3500,
+      "descripcion": "Compra en supermercado",
+      "created_at": "2026-04-22T09:00:00"
+    }
+  ],
+  "offset": 0,
+  "limit": 20,
+  "total_gasto_mensual": 245000
+}
+```
 
 Payload create:
 
@@ -299,6 +337,51 @@ Enums usados:
 
 - `tipo_movimiento`: `gasto`, `ingreso`
 - `tipo_gasto`: `variable`, `fijo`
+
+#### Analítica
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/api/finanzas/analitica/resumen` | usuario | Resume KPIs mensuales del usuario; acepta `year` y `month` |
+| `GET` | `/api/finanzas/analitica/tendencia-mensual` | usuario | Devuelve tendencia de gastos e ingresos por mes; acepta `months` |
+| `GET` | `/api/finanzas/analitica/distribucion-categorias` | usuario | Distribuye montos del periodo por categoría; acepta `year`, `month` y `tipo_movimiento` |
+| `GET` | `/api/finanzas/analitica/distribucion-cuentas` | usuario | Distribuye montos del periodo por cuenta; acepta `year`, `month` y `tipo_movimiento` |
+
+Parámetros útiles:
+
+- `year`: año del periodo, opcional; por defecto usa el año actual de Chile
+- `month`: mes del periodo, opcional; por defecto usa el mes actual de Chile
+- `months`: cantidad de meses para tendencia, por defecto `6`, máximo `24`
+- `tipo_movimiento`: `gasto` o `ingreso`; en distribuciones por defecto usa `gasto`
+
+Notas de comportamiento:
+
+- estos endpoints no devuelven `404` cuando el usuario no tiene movimientos; responden con ceros o listas vacías
+- `proyeccion_gasto_fin_mes` solo se calcula para el mes actual en horario de Chile
+- `variacion_gasto_vs_mes_anterior_pct` queda en `null` si el mes anterior no tuvo gasto
+
+Respuesta base de `GET /api/finanzas/analitica/resumen`:
+
+```json
+{
+  "year": 2026,
+  "month": 4,
+  "period_start": "2026-04-01T00:00:00",
+  "period_end": "2026-05-01T00:00:00",
+  "gasto_total": 245000,
+  "ingreso_total": 850000,
+  "balance_total": 605000,
+  "gasto_fijo_total": 120000,
+  "gasto_variable_total": 125000,
+  "cantidad_movimientos": 18,
+  "ticket_promedio_gasto": 17500,
+  "gasto_mayor": 49990,
+  "tasa_ahorro_pct": 71.18,
+  "variacion_gasto_vs_mes_anterior": -35000,
+  "variacion_gasto_vs_mes_anterior_pct": -12.5,
+  "proyeccion_gasto_fin_mes": 312500
+}
+```
 
 ### 3. Entrenamientos
 Prefijo: `/api/entrenamientos`
@@ -330,6 +413,15 @@ Payload create:
   "url_video": "https://youtube.com/ejemplo"
 }
 ```
+
+Enum importante de `Ejercicios.tipo`:
+
+- `EnumMusculo`: `bicep`, `tricep`, `pecho`, `hombro`, `espalda`, `cuadricep`
+
+Notas:
+
+- el filtro `tipo` de `GET /api/entrenamientos/ejercicios/` usa esos mismos valores
+- `GET /api/entrenamientos/ejercicios/musculos` expone esta lista de forma consumible para frontend
 
 #### Gimnasios
 
@@ -1033,6 +1125,10 @@ Notas:
 Excepciones actuales a considerar:
 
 - `GET /api/finanzas/movimientos/` responde `404` si el usuario no tiene movimientos registrados
+
+Notas recientes:
+
+- `GET /api/finanzas/movimientos/` ya no devuelve una lista directa; ahora responde un objeto con `items`, `offset`, `limit` y `total_gasto_mensual`
 
 ### Ejemplo de error
 

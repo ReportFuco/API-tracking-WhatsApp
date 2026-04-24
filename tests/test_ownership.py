@@ -7,6 +7,12 @@ from fastapi import HTTPException
 from app.db.session import AsyncSessionLocal
 from app.models import Banco, Cadena, CategoriaFinanza, Local, Marca, Producto, ProductoFinanciero, User, Usuario
 from app.models.finanzas import EnumTipoGasto, EnumTipoMovimiento
+from app.routes.finanzas.analitica import (
+    obtener_distribucion_categorias,
+    obtener_distribucion_cuentas,
+    obtener_resumen_financiero,
+    obtener_tendencia_mensual,
+)
 from app.routes.finanzas.cuentas import crear_cuenta_usuario, obtener_cuentas_usuario
 from app.routes.finanzas.cuentas import obtener_movimientos_cuenta
 from app.routes.finanzas.movimientos import crear_movimiento, obtener_movimientos
@@ -18,6 +24,7 @@ from app.schemas.compras import CompraCompletaCreate, CompraCreate, MovimientoCo
 from app.schemas.finanzas import CuentaUsuarioCreate, CuentaUsuarioMovimientosResponse, MovimientoCreate
 from app.routes.compras.compra import crear_compra
 from app.schemas.usuario import UsuarioPatchSchema
+from calendar import monthrange
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -518,5 +525,364 @@ async def test_detalle_cuenta_orders_transacciones_by_newest_date():
                 datetime(2026, 4, 20, 12, 0, 0),
                 datetime(2026, 4, 19, 12, 0, 0),
             ]
+        finally:
+            await trans.rollback()
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_finanzas_analitica_resumen_calcula_kpis_del_periodo():
+    async with AsyncSessionLocal() as db:
+        trans = await db.begin()
+        try:
+            seed = uuid4().hex[:8]
+
+            auth = User(
+                email=f"ana_res_{seed}@mail.com",
+                hashed_password="x",
+                is_active=True,
+                is_superuser=False,
+                is_verified=False,
+            )
+            db.add(auth)
+            await db.flush()
+
+            perfil = Usuario(
+                auth_user_id=auth.id,
+                username=f"ana_res_{seed}",
+                nombre="Analitica",
+                apellido="Resumen",
+                telefono=f"5661{seed[:6]}",
+                email=auth.email,
+            )
+            db.add(perfil)
+            await db.flush()
+
+            banco = Banco(nombre_banco=f"Banco Ana Res {seed}")
+            categoria = CategoriaFinanza(nombre=f"categoria_ana_res_{seed}")
+            db.add_all([banco, categoria])
+            await db.flush()
+
+            producto = ProductoFinanciero(
+                id_banco=banco.id_banco,
+                nombre_producto=f"Cuenta Ana Res {seed}",
+            )
+            db.add(producto)
+            await db.flush()
+
+            user = SimpleNamespace(id=auth.id)
+
+            cuenta = await crear_cuenta_usuario(
+                data=CuentaUsuarioCreate(
+                    id_producto_financiero=producto.id_producto_financiero,
+                    nombre_cuenta=f"Cuenta Ana Res {seed}",
+                ),
+                db=db,
+                user=user,
+            )
+
+            chile_now = datetime.now(ZoneInfo("America/Santiago")).replace(tzinfo=None)
+            current_year = chile_now.year
+            current_month = chile_now.month
+            current_day = min(chile_now.day, 10)
+
+            if current_month == 1:
+                previous_year = current_year - 1
+                previous_month = 12
+            else:
+                previous_year = current_year
+                previous_month = current_month - 1
+
+            movimientos_seed = [
+                (
+                    datetime(current_year, current_month, current_day, 9, 0, 0),
+                    EnumTipoMovimiento.GASTO,
+                    EnumTipoGasto.FIJO,
+                    3000,
+                ),
+                (
+                    datetime(current_year, current_month, current_day, 10, 0, 0),
+                    EnumTipoMovimiento.GASTO,
+                    EnumTipoGasto.VARIABLE,
+                    1000,
+                ),
+                (
+                    datetime(current_year, current_month, current_day, 11, 0, 0),
+                    EnumTipoMovimiento.INGRESO,
+                    EnumTipoGasto.VARIABLE,
+                    10000,
+                ),
+                (
+                    datetime(previous_year, previous_month, 15, 12, 0, 0),
+                    EnumTipoMovimiento.GASTO,
+                    EnumTipoGasto.VARIABLE,
+                    5000,
+                ),
+            ]
+
+            for fecha, tipo_movimiento, tipo_gasto, monto in movimientos_seed:
+                await crear_movimiento(
+                    data=MovimientoCreate(
+                        id_categoria=categoria.id_categoria,
+                        id_cuenta=cuenta.id_cuenta,
+                        tipo_movimiento=tipo_movimiento,
+                        tipo_gasto=tipo_gasto,
+                        monto=monto,
+                        descripcion="seed analitica resumen",
+                        created_at=fecha,
+                    ),
+                    db=db,
+                    user=user,
+                )
+
+            resumen = await obtener_resumen_financiero(
+                year=current_year,
+                month=current_month,
+                db=db,
+                user=user,
+            )
+
+            expected_projection = (4000 / chile_now.day) * monthrange(current_year, current_month)[1]
+
+            assert resumen.gasto_total == 4000
+            assert resumen.ingreso_total == 10000
+            assert resumen.balance_total == 6000
+            assert resumen.gasto_fijo_total == 3000
+            assert resumen.gasto_variable_total == 1000
+            assert resumen.cantidad_movimientos == 3
+            assert resumen.ticket_promedio_gasto == 2000
+            assert resumen.gasto_mayor == 3000
+            assert resumen.tasa_ahorro_pct == 60
+            assert resumen.variacion_gasto_vs_mes_anterior == -1000
+            assert resumen.variacion_gasto_vs_mes_anterior_pct == -20
+            assert resumen.proyeccion_gasto_fin_mes == pytest.approx(expected_projection)
+        finally:
+            await trans.rollback()
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_finanzas_analitica_tendencia_completa_meses_sin_movimientos():
+    async with AsyncSessionLocal() as db:
+        trans = await db.begin()
+        try:
+            seed = uuid4().hex[:8]
+
+            auth = User(
+                email=f"ana_ten_{seed}@mail.com",
+                hashed_password="x",
+                is_active=True,
+                is_superuser=False,
+                is_verified=False,
+            )
+            db.add(auth)
+            await db.flush()
+
+            perfil = Usuario(
+                auth_user_id=auth.id,
+                username=f"ana_ten_{seed}",
+                nombre="Analitica",
+                apellido="Tendencia",
+                telefono=f"5662{seed[:6]}",
+                email=auth.email,
+            )
+            db.add(perfil)
+            await db.flush()
+
+            banco = Banco(nombre_banco=f"Banco Ana Ten {seed}")
+            categoria = CategoriaFinanza(nombre=f"categoria_ana_ten_{seed}")
+            db.add_all([banco, categoria])
+            await db.flush()
+
+            producto = ProductoFinanciero(
+                id_banco=banco.id_banco,
+                nombre_producto=f"Cuenta Ana Ten {seed}",
+            )
+            db.add(producto)
+            await db.flush()
+
+            user = SimpleNamespace(id=auth.id)
+
+            cuenta = await crear_cuenta_usuario(
+                data=CuentaUsuarioCreate(
+                    id_producto_financiero=producto.id_producto_financiero,
+                    nombre_cuenta=f"Cuenta Ana Ten {seed}",
+                ),
+                db=db,
+                user=user,
+            )
+
+            chile_now = datetime.now(ZoneInfo("America/Santiago")).replace(tzinfo=None)
+            current_year = chile_now.year
+            current_month = chile_now.month
+
+            if current_month == 1:
+                two_months_ago_year = current_year - 1
+                two_months_ago_month = 11
+            elif current_month == 2:
+                two_months_ago_year = current_year - 1
+                two_months_ago_month = 12
+            else:
+                two_months_ago_year = current_year
+                two_months_ago_month = current_month - 2
+
+            seed_dates = [
+                (
+                    datetime(two_months_ago_year, two_months_ago_month, 8, 9, 0, 0),
+                    EnumTipoMovimiento.GASTO,
+                    7000,
+                ),
+                (
+                    datetime(current_year, current_month, 9, 10, 0, 0),
+                    EnumTipoMovimiento.INGRESO,
+                    15000,
+                ),
+            ]
+
+            for fecha, tipo_movimiento, monto in seed_dates:
+                await crear_movimiento(
+                    data=MovimientoCreate(
+                        id_categoria=categoria.id_categoria,
+                        id_cuenta=cuenta.id_cuenta,
+                        tipo_movimiento=tipo_movimiento,
+                        tipo_gasto=EnumTipoGasto.VARIABLE,
+                        monto=monto,
+                        descripcion="seed analitica tendencia",
+                        created_at=fecha,
+                    ),
+                    db=db,
+                    user=user,
+                )
+
+            tendencia = await obtener_tendencia_mensual(
+                months=3,
+                db=db,
+                user=user,
+            )
+
+            assert tendencia.months == 3
+            assert len(tendencia.items) == 3
+            assert tendencia.items[0].label == f"{two_months_ago_year}-{two_months_ago_month:02d}"
+            assert tendencia.items[0].gasto_total == 7000
+            assert tendencia.items[0].ingreso_total == 0
+            assert tendencia.items[1].gasto_total == 0
+            assert tendencia.items[1].ingreso_total == 0
+            assert tendencia.items[1].cantidad_movimientos == 0
+            assert tendencia.items[2].label == f"{current_year}-{current_month:02d}"
+            assert tendencia.items[2].gasto_total == 0
+            assert tendencia.items[2].ingreso_total == 15000
+            assert tendencia.items[2].balance_total == 15000
+        finally:
+            await trans.rollback()
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_finanzas_analitica_distribuciones_agrupa_por_categoria_y_cuenta():
+    async with AsyncSessionLocal() as db:
+        trans = await db.begin()
+        try:
+            seed = uuid4().hex[:8]
+
+            auth = User(
+                email=f"ana_dist_{seed}@mail.com",
+                hashed_password="x",
+                is_active=True,
+                is_superuser=False,
+                is_verified=False,
+            )
+            db.add(auth)
+            await db.flush()
+
+            perfil = Usuario(
+                auth_user_id=auth.id,
+                username=f"ana_dist_{seed}",
+                nombre="Analitica",
+                apellido="Distribucion",
+                telefono=f"5663{seed[:6]}",
+                email=auth.email,
+            )
+            db.add(perfil)
+            await db.flush()
+
+            banco = Banco(nombre_banco=f"Banco Ana Dist {seed}")
+            categoria_1 = CategoriaFinanza(nombre=f"categoria_1_ana_dist_{seed}")
+            categoria_2 = CategoriaFinanza(nombre=f"categoria_2_ana_dist_{seed}")
+            db.add_all([banco, categoria_1, categoria_2])
+            await db.flush()
+
+            producto = ProductoFinanciero(
+                id_banco=banco.id_banco,
+                nombre_producto=f"Cuenta Ana Dist {seed}",
+            )
+            db.add(producto)
+            await db.flush()
+
+            user = SimpleNamespace(id=auth.id)
+
+            cuenta_1 = await crear_cuenta_usuario(
+                data=CuentaUsuarioCreate(
+                    id_producto_financiero=producto.id_producto_financiero,
+                    nombre_cuenta=f"Cuenta 1 Ana Dist {seed}",
+                ),
+                db=db,
+                user=user,
+            )
+            cuenta_2 = await crear_cuenta_usuario(
+                data=CuentaUsuarioCreate(
+                    id_producto_financiero=producto.id_producto_financiero,
+                    nombre_cuenta=f"Cuenta 2 Ana Dist {seed}",
+                ),
+                db=db,
+                user=user,
+            )
+
+            chile_now = datetime.now(ZoneInfo("America/Santiago")).replace(tzinfo=None)
+            current_year = chile_now.year
+            current_month = chile_now.month
+
+            movimientos_seed = [
+                (categoria_1.id_categoria, cuenta_1.id_cuenta, 5000),
+                (categoria_1.id_categoria, cuenta_2.id_cuenta, 3000),
+                (categoria_2.id_categoria, cuenta_2.id_cuenta, 2000),
+            ]
+
+            for index, (id_categoria, id_cuenta, monto) in enumerate(movimientos_seed, start=1):
+                await crear_movimiento(
+                    data=MovimientoCreate(
+                        id_categoria=id_categoria,
+                        id_cuenta=id_cuenta,
+                        tipo_movimiento=EnumTipoMovimiento.GASTO,
+                        tipo_gasto=EnumTipoGasto.VARIABLE,
+                        monto=monto,
+                        descripcion=f"seed analitica distribucion {index}",
+                        created_at=datetime(current_year, current_month, 12, 8 + index, 0, 0),
+                    ),
+                    db=db,
+                    user=user,
+                )
+
+            distribucion_categorias = await obtener_distribucion_categorias(
+                year=current_year,
+                month=current_month,
+                tipo_movimiento=EnumTipoMovimiento.GASTO,
+                db=db,
+                user=user,
+            )
+            distribucion_cuentas = await obtener_distribucion_cuentas(
+                year=current_year,
+                month=current_month,
+                tipo_movimiento=EnumTipoMovimiento.GASTO,
+                db=db,
+                user=user,
+            )
+
+            assert distribucion_categorias.total_periodo == 10000
+            assert [item.total for item in distribucion_categorias.items] == [8000, 2000]
+            assert distribucion_categorias.items[0].porcentaje_del_total == 80
+            assert distribucion_categorias.items[1].porcentaje_del_total == 20
+
+            assert distribucion_cuentas.total_periodo == 10000
+            assert [item.total for item in distribucion_cuentas.items] == [5000, 5000]
+            assert [item.cantidad_movimientos for item in distribucion_cuentas.items] == [1, 2]
+            assert distribucion_cuentas.items[0].porcentaje_del_total == 50
+            assert distribucion_cuentas.items[1].porcentaje_del_total == 50
         finally:
             await trans.rollback()

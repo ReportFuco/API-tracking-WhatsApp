@@ -24,6 +24,15 @@ from .categoria import (
     CategoriaPatch, 
     CategoriaCreate
 )
+from .analitica import (
+    AnaliticaResumenResponse,
+    AnaliticaTendenciaMensualItem,
+    AnaliticaTendenciaMensualResponse,
+    AnaliticaDistribucionCategoriaItem,
+    AnaliticaDistribucionCategoriasResponse,
+    AnaliticaDistribucionCuentaItem,
+    AnaliticaDistribucionCuentasResponse,
+)
 
 
 __all__ = [
@@ -53,4 +62,13 @@ __all__ = [
     "ProductoFinancieroCreate",
     "ProductoFinancieroPatch",
     "ProductoFinancieroResponse",
+
+    # Analitica
+    "AnaliticaResumenResponse",
+    "AnaliticaTendenciaMensualItem",
+    "AnaliticaTendenciaMensualResponse",
+    "AnaliticaDistribucionCategoriaItem",
+    "AnaliticaDistribucionCategoriasResponse",
+    "AnaliticaDistribucionCuentaItem",
+    "AnaliticaDistribucionCuentasResponse",
 ]
