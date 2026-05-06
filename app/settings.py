@@ -30,13 +30,6 @@ DATABASE_HOST = os.getenv("DATABASE_HOST")
 DATABASE_PORT = os.getenv("DATABASE_PORT")
 
 
-# Credenciales de Evolution API WhatsApp
-CREDENCIALES_EVOLUTION = {
-    "url": os.getenv("EVOLUTION_URL", ""),
-    "api_key": os.getenv("EVOLUTION_API_KEY", ""),
-    "instance": os.getenv("EVOLUTION_INSTANCE", ""),
-}
-
 # Alembic
 ALEMBIC_VERSIONS_PATH = Path("app/alembic/versions")
 ALEMBIC_INI = "app/alembic.ini" 
@@ -46,7 +39,6 @@ SECRET = os.getenv("SECRET_JWT", "Sin info")
 
 
 __all__ = [
-    "CREDENCIALES_EVOLUTION",
     "TITLE_API", 
     "VERSION_API", 
     "PORT", 

@@ -393,35 +393,160 @@ Submódulos:
 - `fuerza`
 - `series`
 
+Modelo conceptual:
+
+- `musculo`: catálogo principal, por ejemplo `Pecho`, `Espalda`, `Tríceps`
+- `subcategoria_musculo`: zona específica del músculo, por ejemplo `Superior`, `Dorsales`, `Cabeza larga`
+- `ejercicios`: cada ejercicio apunta a `id_subcategoria_musculo`
+- `fuerza`: sesión de entrenamiento de fuerza del usuario
+- `series`: registros de peso/repeticiones hechos dentro de la sesión activa
+
+Cambio importante:
+
+- `Ejercicios.tipo` y `EnumMusculo` fueron reemplazados por `id_subcategoria_musculo`
+- el front debe crear/editar ejercicios enviando `id_subcategoria_musculo`
+- el filtro `tipo` en listado de ejercicios sigue disponible temporalmente como compatibilidad legacy, pero la regla nueva es usar `id_musculo` o `id_subcategoria_musculo`
+
 #### Ejercicios
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| `GET` | `/api/entrenamientos/ejercicios/` | usuario | Lista ejercicios, acepta filtros `q` y `tipo` |
-| `GET` | `/api/entrenamientos/ejercicios/musculos` | usuario | Lista los tipos musculares disponibles |
+| `GET` | `/api/entrenamientos/ejercicios/` | usuario | Lista ejercicios, acepta filtros `q`, `id_musculo`, `id_subcategoria_musculo` y `tipo` legacy |
+| `GET` | `/api/entrenamientos/ejercicios/musculos` | usuario | Lista músculos disponibles con sus subcategorías |
 | `GET` | `/api/entrenamientos/ejercicios/{id_ejercicio}` | usuario | Obtiene un ejercicio |
 | `POST` | `/api/entrenamientos/ejercicios/` | superuser | Crea ejercicio |
 | `PATCH` | `/api/entrenamientos/ejercicios/{id_ejercicio}` | superuser | Edita ejercicio |
 | `DELETE` | `/api/entrenamientos/ejercicios/{id_ejercicio}` | superuser | Elimina ejercicio si no tiene series asociadas |
 
-Payload create:
+Query params de `GET /api/entrenamientos/ejercicios/`:
+
+| Param | Tipo | Descripción |
+|---|---:|---|
+| `q` | `string` | Busca por nombre de ejercicio, músculo o subcategoría |
+| `id_musculo` | `int` | Filtra por músculo principal |
+| `id_subcategoria_musculo` | `int` | Filtra por subcategoría exacta |
+| `tipo` | `string` | Compatibilidad legacy por código de músculo, por ejemplo `pecho` |
+
+Payload create/update:
 
 ```json
 {
   "nombre": "Press banca plano",
-  "tipo": "pecho",
+  "id_subcategoria_musculo": 11,
   "url_video": "https://youtube.com/ejemplo"
 }
 ```
 
-Enum importante de `Ejercicios.tipo`:
+Respuesta de ejercicio:
 
-- `EnumMusculo`: `bicep`, `tricep`, `pecho`, `hombro`, `espalda`, `cuadricep`
+```json
+{
+  "id_ejercicio": 1,
+  "nombre": "Press banca con barra",
+  "id_subcategoria_musculo": 11,
+  "url_video": null,
+  "id_musculo": 3,
+  "musculo_codigo": "pecho",
+  "musculo_nombre": "Pecho",
+  "subcategoria_codigo": "medio",
+  "subcategoria_nombre": "Medio"
+}
+```
 
-Notas:
+Catálogo de músculos:
 
-- el filtro `tipo` de `GET /api/entrenamientos/ejercicios/` usa esos mismos valores
-- `GET /api/entrenamientos/ejercicios/musculos` expone esta lista de forma consumible para frontend
+`GET /api/entrenamientos/ejercicios/musculos`
+
+```json
+[
+  {
+    "id_musculo": 3,
+    "codigo": "pecho",
+    "nombre": "Pecho",
+    "activo": true,
+    "subcategorias": [
+      {
+        "id_subcategoria_musculo": 9,
+        "id_musculo": 3,
+        "codigo": "general",
+        "nombre": "General",
+        "activo": true
+      },
+      {
+        "id_subcategoria_musculo": 10,
+        "id_musculo": 3,
+        "codigo": "superior",
+        "nombre": "Superior",
+        "activo": true
+      },
+      {
+        "id_subcategoria_musculo": 11,
+        "id_musculo": 3,
+        "codigo": "medio",
+        "nombre": "Medio",
+        "activo": true
+      }
+    ]
+  }
+]
+```
+
+Catálogo inicial completo de subcategorías:
+
+| Músculo | Subcategoría | ID |
+|---|---|---:|
+| Bíceps | General | `1` |
+| Bíceps | Cabeza larga | `2` |
+| Bíceps | Cabeza corta | `3` |
+| Bíceps | Braquial | `4` |
+| Tríceps | General | `5` |
+| Tríceps | Cabeza larga | `6` |
+| Tríceps | Cabeza lateral | `7` |
+| Tríceps | Cabeza medial | `8` |
+| Pecho | General | `9` |
+| Pecho | Superior | `10` |
+| Pecho | Medio | `11` |
+| Pecho | Inferior | `12` |
+| Hombro | General | `13` |
+| Hombro | Anterior | `14` |
+| Hombro | Lateral | `15` |
+| Hombro | Posterior | `16` |
+| Espalda | General | `17` |
+| Espalda | Dorsales | `18` |
+| Espalda | Trapecio | `19` |
+| Espalda | Romboides | `20` |
+| Espalda | Espalda alta | `21` |
+| Espalda | Espalda baja | `22` |
+| Cuádriceps | General | `23` |
+| Cuádriceps | Recto femoral | `24` |
+| Cuádriceps | Vasto lateral | `25` |
+| Cuádriceps | Vasto medial | `26` |
+| Cuádriceps | Vasto intermedio | `27` |
+| Femoral | General | `28` |
+| Femoral | Bíceps femoral | `29` |
+| Femoral | Semitendinoso | `30` |
+| Femoral | Semimembranoso | `31` |
+| Glúteo | General | `32` |
+| Glúteo | Glúteo mayor | `33` |
+| Glúteo | Glúteo medio | `34` |
+| Glúteo | Glúteo menor | `35` |
+| Pantorrilla | General | `36` |
+| Pantorrilla | Gastrocnemio | `37` |
+| Pantorrilla | Sóleo | `38` |
+| Abdomen | General | `39` |
+| Abdomen | Recto abdominal | `40` |
+| Abdomen | Oblicuos | `41` |
+| Abdomen | Transverso | `42` |
+| Antebrazo | General | `43` |
+| Antebrazo | Flexores | `44` |
+| Antebrazo | Extensores | `45` |
+
+Notas para frontend:
+
+- para crear un ejercicio, primero cargar `/ejercicios/musculos` y mostrar un select dependiente: músculo -> subcategoría
+- guardar siempre `id_subcategoria_musculo`, no `musculo_codigo` ni `subcategoria_codigo`
+- mostrar `musculo_nombre` y `subcategoria_nombre` desde la respuesta de ejercicios
+- si se recibe `General`, significa que el ejercicio no está clasificado a una zona específica todavía
 
 #### Gimnasios
 
@@ -433,7 +558,13 @@ Notas:
 | `PATCH` | `/api/entrenamientos/gimnasio/{id_gimnasio}` | superuser | Edita gimnasio |
 | `DELETE` | `/api/entrenamientos/gimnasio/{id_gimnasio}` | superuser | Desactiva gimnasio |
 
-Payload create:
+Query params de `GET /api/entrenamientos/gimnasio/`:
+
+| Param | Tipo | Descripción |
+|---|---:|---|
+| `q` | `string` | Busca por nombre del gimnasio o comuna |
+
+Payload create/update:
 
 ```json
 {
@@ -446,6 +577,28 @@ Payload create:
 }
 ```
 
+Respuesta de gimnasio:
+
+```json
+{
+  "id_gimnasio": 1,
+  "nombre_gimnasio": "Smart Fit Oeste",
+  "nombre_cadena": "Smart Fit",
+  "direccion": "Av. Siempre Viva 123",
+  "comuna": "Nunoa",
+  "latitud": -33.456,
+  "longitud": -70.648,
+  "activo": true,
+  "created_at": "2026-05-06T11:00:00"
+}
+```
+
+Notas:
+
+- el listado solo devuelve gimnasios activos
+- `DELETE` no borra físicamente; cambia `activo` a `false`
+- el listado usa cache privado corto de 15 segundos
+
 #### Entrenamiento de fuerza
 
 | Método | Ruta | Auth | Descripción |
@@ -456,12 +609,66 @@ Payload create:
 | `POST` | `/api/entrenamientos/fuerza/` | usuario | Inicia una sesión de fuerza |
 | `PATCH` | `/api/entrenamientos/fuerza/activo/cerrar` | usuario | Cierra la sesión activa |
 
+Reglas:
+
+- un usuario solo puede tener una sesión de fuerza activa
+- al iniciar fuerza se crea un `entrenamiento` base con `tipo_entrenamiento = fuerza`
+- `POST /fuerza/` valida que el gimnasio exista y esté activo
+- `PATCH /fuerza/activo/cerrar` cambia `estado` a `cerrado` y asigna `fin_at`
+
 Payload create:
 
 ```json
 {
   "observacion": "Pierna y hombro",
   "id_gimnasio": 1
+}
+```
+
+Respuesta de sesión de fuerza:
+
+```json
+{
+  "id_entrenamiento": 12,
+  "id_entrenamiento_fuerza": 8,
+  "estado": "activo",
+  "inicio_at": "2026-05-06T11:00:00",
+  "fin_at": null,
+  "nombre_gimnasio": "Smart Fit Oeste",
+  "nombre_cadena": "Smart Fit",
+  "comuna": "Nunoa",
+  "direccion": "Av. Siempre Viva 123",
+  "latitud": -33.456,
+  "longitud": -70.648
+}
+```
+
+Respuesta de sesión activa o detalle con series:
+
+```json
+{
+  "id_entrenamiento_fuerza": 8,
+  "estado": "activo",
+  "inicio_at": "2026-05-06T11:00:00",
+  "fin_at": null,
+  "nombre_gimnasio": "Smart Fit Oeste",
+  "nombre_cadena": "Smart Fit",
+  "comuna": "Nunoa",
+  "direccion": "Av. Siempre Viva 123",
+  "latitud": -33.456,
+  "longitud": -70.648,
+  "series": [
+    {
+      "id_fuerza_detalle": 101,
+      "es_calentamiento": false,
+      "cantidad_peso": 60,
+      "repeticiones": 8,
+      "nombre_ejercicio": "Press banca con barra",
+      "tipo_ejercicio": "Pecho",
+      "subcategoria_ejercicio": "Medio",
+      "url_video": null
+    }
+  ]
 }
 ```
 
@@ -473,7 +680,13 @@ Payload create:
 | `PATCH` | `/api/entrenamientos/series/{id_fuerza_detalle}` | usuario + ownership activa | Edita serie |
 | `DELETE` | `/api/entrenamientos/series/{id_fuerza_detalle}` | usuario + ownership activa | Elimina serie |
 
-Payload create:
+Reglas:
+
+- solo se pueden agregar series si el usuario tiene una sesión de fuerza activa
+- al editar/eliminar, la serie debe pertenecer al usuario y a una sesión activa
+- `id_ejercicio` debe existir
+
+Payload create/update:
 
 ```json
 {
@@ -481,6 +694,21 @@ Payload create:
   "es_calentamiento": false,
   "cantidad_peso": 60,
   "repeticiones": 8
+}
+```
+
+Respuesta de serie:
+
+```json
+{
+  "id_fuerza_detalle": 101,
+  "es_calentamiento": false,
+  "cantidad_peso": 60,
+  "repeticiones": 8,
+  "nombre_ejercicio": "Press banca con barra",
+  "tipo_ejercicio": "Pecho",
+  "subcategoria_ejercicio": "Medio",
+  "url_video": null
 }
 ```
 
@@ -1169,4 +1397,3 @@ Sugerencias para agentes o automatizaciones:
 - `app/routes/**`
 - `app/schemas/**`
 - `docs/api.json`
-

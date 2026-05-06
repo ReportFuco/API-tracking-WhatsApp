@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
 from app import settings
 from app.auth.routes import router as auth_router
@@ -27,6 +28,14 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.SECRET,
+    same_site="lax",
+    https_only=settings.URL_SITE.startswith("https://"),
+    max_age=60 * 60 * 8,
 )
 
 # -------------------------

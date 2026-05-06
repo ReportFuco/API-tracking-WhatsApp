@@ -9,6 +9,7 @@ class SerieFuerzaResponse(BaseModel):
     # campos aplanados
     nombre_ejercicio: str | None = None
     tipo_ejercicio: str | None = None
+    subcategoria_ejercicio: str | None = None
     url_video: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -21,10 +22,11 @@ class SerieFuerzaResponse(BaseModel):
             ejercicio = data.pop("ejercicio")
 
             data["nombre_ejercicio"] = ejercicio.nombre
-            data["tipo_ejercicio"] = (
-                ejercicio.tipo.value if hasattr(ejercicio.tipo, "value")
-                else str(ejercicio.tipo)
-            )
+            subcategoria = ejercicio.subcategoria_musculo
+            musculo = subcategoria.musculo if subcategoria else None
+
+            data["tipo_ejercicio"] = musculo.nombre if musculo else None
+            data["subcategoria_ejercicio"] = subcategoria.nombre if subcategoria else None
             data["url_video"] = ejercicio.url_video
 
         return data

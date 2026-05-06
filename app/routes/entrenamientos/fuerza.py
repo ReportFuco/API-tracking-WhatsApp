@@ -17,7 +17,9 @@ from app.models import (
     Gimnasio,
     EnumTipoEntrenamiento as TipoEntreno,
     EnumEstadoEntrenamiento as EstadoEntreno,
-    SerieFuerza
+    SerieFuerza,
+    Ejercicios,
+    SubcategoriaMusculo,
 )
 
 
@@ -85,6 +87,8 @@ async def obtener_entrenamiento_activo(
                 selectinload(EntrenamientoFuerza.gimnasio),
                 selectinload(EntrenamientoFuerza.series)
                     .selectinload(SerieFuerza.ejercicio)
+                    .selectinload(Ejercicios.subcategoria_musculo)
+                    .selectinload(SubcategoriaMusculo.musculo)
             )
         )
     ).scalar_one_or_none()
@@ -123,6 +127,8 @@ async def obtener_detalle_entreno_fuerza(
                 selectinload(EntrenamientoFuerza.gimnasio),
                 selectinload(EntrenamientoFuerza.series)
                     .selectinload(SerieFuerza.ejercicio)
+                    .selectinload(Ejercicios.subcategoria_musculo)
+                    .selectinload(SubcategoriaMusculo.musculo)
             )
         )
     ).scalar_one_or_none()
@@ -247,5 +253,3 @@ async def finalizar_sesion_fuerza(
     await db.refresh(entreno_activo)
 
     return EntrenoFuerzaResponse.model_validate(entreno_activo)
-
-

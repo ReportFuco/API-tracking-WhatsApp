@@ -7,7 +7,9 @@ from sqlalchemy import (
     ForeignKey,
     text,
     Boolean,
-    Enum as SQLEnum
+    Enum as SQLEnum,
+    SmallInteger,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
@@ -30,15 +32,6 @@ class EnumTipoAerobico(enum.Enum):
     BICICLETA = "bicicleta"
     CORRER = "correr"
     NATACION = "natacion"
-
-
-class EnumMusculo(enum.Enum):
-    BICEP = "bicep"
-    TRICEP = "tricep"
-    PECHO = "pecho"
-    HOMBRO = "hombro"
-    ESPALDA = "espalda"
-    CUADRICEP = "cuadricep"
 
 
 class Gimnasio(Base):
@@ -157,18 +150,57 @@ class SerieFuerza(Base):
     ejercicio = relationship("Ejercicios")
 
 
+class Musculo(Base):
+    __tablename__ = "musculo"
+    __table_args__ = {"schema": ENTRENAMIENTOS_SCHEMA}
+
+    id_musculo: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    codigo: Mapped[str] = mapped_column(String(40), nullable=False, unique=True)
+    nombre: Mapped[str] = mapped_column(String(80), nullable=False, unique=True)
+    activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("true"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=text("now()"), default=datetime.now)
+
+    subcategorias = relationship(
+        "SubcategoriaMusculo",
+        back_populates="musculo",
+        cascade="all, delete-orphan",
+    )
+
+
+class SubcategoriaMusculo(Base):
+    __tablename__ = "subcategoria_musculo"
+    __table_args__ = (
+        UniqueConstraint("id_musculo", "codigo", name="uq_subcategoria_musculo_musculo_codigo"),
+        UniqueConstraint("id_musculo", "nombre", name="uq_subcategoria_musculo_musculo_nombre"),
+        {"schema": ENTRENAMIENTOS_SCHEMA},
+    )
+
+    id_subcategoria_musculo: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id_musculo: Mapped[int] = mapped_column(
+        SmallInteger,
+        ForeignKey(table_ref(ENTRENAMIENTOS_SCHEMA, "musculo.id_musculo")),
+        nullable=False,
+    )
+    codigo: Mapped[str] = mapped_column(String(60), nullable=False)
+    nombre: Mapped[str] = mapped_column(String(100), nullable=False)
+    activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("true"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=text("now()"), default=datetime.now)
+
+    musculo = relationship("Musculo", back_populates="subcategorias")
+    ejercicios = relationship("Ejercicios", back_populates="subcategoria_musculo")
+
+
 class Ejercicios(Base):
     __tablename__ = "ejercicios"
     __table_args__ = {"schema": ENTRENAMIENTOS_SCHEMA}
 
     id_ejercicio: Mapped[int] = mapped_column(Integer, primary_key=True)
     nombre: Mapped[str] = mapped_column(String(100))
-    tipo: Mapped[EnumMusculo] = mapped_column(
-        SQLEnum(
-            EnumMusculo,
-            name="musculos",
-            schema=ENTRENAMIENTOS_SCHEMA,
-            values_callable=lambda x: [e.value for e in x]
-        )
+    id_subcategoria_musculo: Mapped[int] = mapped_column(
+        SmallInteger,
+        ForeignKey(table_ref(ENTRENAMIENTOS_SCHEMA, "subcategoria_musculo.id_subcategoria_musculo")),
+        nullable=False,
     )
     url_video:Mapped[str] = mapped_column(String, nullable=True)
+
+    subcategoria_musculo = relationship("SubcategoriaMusculo", back_populates="ejercicios")

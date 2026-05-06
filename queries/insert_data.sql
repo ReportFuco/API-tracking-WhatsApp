@@ -24,24 +24,24 @@
 
 -- insertar ejercicios
 
-insert into ejercicios (nombre, tipo, url_video)
-values ('Press banca con mancuerna', 'pecho', null),
-       ('Press banca con barra', 'pecho', null),
-       ('Press banca inclinada con mancuerna ', 'pecho', null),
-       ('Press banca inclinada con barra', 'pecho', null),
-       ('Aperturas con mancuerna en banco plano', 'pecho', null),
-       ('Aperturas con mancuerna en banco inclinado', 'pecho', null),
-       ('Aperturas en polea alta', 'pecho', null),
-       ('Aperturas en polea media', 'pecho', null),
-       ('Aperturas en polea baja', 'pecho', null),
-       ('Máquina prensa pecho', 'pecho', null),
-       ('Press militar con mancuerna', 'hombro', null),
-       ('Press militar con barra', 'hombro', null),
-       ('Elevaciones laterales', 'hombro', null),
-       ('Elevaciones frontales', 'hombro', null),
-       ('Curl de Biceps Martillo', 'bicep', null),
-       ('Curl de Biceps Araña', 'bicep', null),
-       ('Curl de Biceps Araña con barra', 'bicep', null);
+insert into ejercicios (nombre, id_subcategoria_musculo, url_video)
+values ('Press banca con mancuerna', 11, null),
+       ('Press banca con barra', 11, null),
+       ('Press banca inclinada con mancuerna ', 10, null),
+       ('Press banca inclinada con barra', 10, null),
+       ('Aperturas con mancuerna en banco plano', 11, null),
+       ('Aperturas con mancuerna en banco inclinado', 10, null),
+       ('Aperturas en polea alta', 12, null),
+       ('Aperturas en polea media', 11, null),
+       ('Aperturas en polea baja', 10, null),
+       ('Máquina prensa pecho', 11, null),
+       ('Press militar con mancuerna', 14, null),
+       ('Press militar con barra', 14, null),
+       ('Elevaciones laterales', 15, null),
+       ('Elevaciones frontales', 14, null),
+       ('Curl de Biceps Martillo', 4, null),
+       ('Curl de Biceps Araña', 3, null),
+       ('Curl de Biceps Araña con barra', 3, null);
 
 -- ingresar Gimnasios
 insert into gimnasio (nombre_gimnasio, nombre_cadena, direccion, comuna, latitud, longitud)

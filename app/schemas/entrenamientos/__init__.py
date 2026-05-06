@@ -6,4 +6,5 @@ from .ejercicios import (
     EjercicioPatch,
     EjercicioResponse,
     MusculoResponse,
+    SubcategoriaMusculoResponse,
 )

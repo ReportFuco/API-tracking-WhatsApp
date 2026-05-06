@@ -6,7 +6,8 @@ from app.models.entrenamiento import (
     EntrenamientoFuerza, 
     Entrenamiento, 
     EnumEstadoEntrenamiento as EstadoEntreno,
-    Ejercicios
+    Ejercicios,
+    SubcategoriaMusculo,
 )
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -48,7 +49,11 @@ async def obtener_serie_usuario_activa(
             Entrenamiento.id_usuario == id_usuario,
             EntrenamientoFuerza.estado == EstadoEntreno.ACTIVO
         )
-        .options(selectinload(SerieFuerza.ejercicio))
+        .options(
+            selectinload(SerieFuerza.ejercicio)
+            .selectinload(Ejercicios.subcategoria_musculo)
+            .selectinload(SubcategoriaMusculo.musculo)
+        )
     )
 
 
@@ -104,7 +109,11 @@ async def agregar_serie_fuerza(
     serie_fuerza = await db.scalar(
         select(SerieFuerza)
         .where(SerieFuerza.id_fuerza_detalle == serie_fuerza.id_fuerza_detalle)
-        .options(selectinload(SerieFuerza.ejercicio))
+        .options(
+            selectinload(SerieFuerza.ejercicio)
+            .selectinload(Ejercicios.subcategoria_musculo)
+            .selectinload(SubcategoriaMusculo.musculo)
+        )
     )
 
     return serie_fuerza
@@ -156,8 +165,11 @@ async def editar_serie_fuerza(
         setattr(serie_fuerza, field, value)
 
     await db.flush()
-    await db.refresh(serie_fuerza, attribute_names=["ejercicio"])
-    return serie_fuerza
+    return await obtener_serie_usuario_activa(
+        id_fuerza_detalle=id_fuerza_detalle,
+        id_usuario=usuario.id_usuario,
+        db=db,
+    )
 
 
 @router.delete(
