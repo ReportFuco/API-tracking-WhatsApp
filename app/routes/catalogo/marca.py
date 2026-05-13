@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.db import get_db
 from app.models import Marca
 from app.schemas.catalogo import MarcaCreate, MarcaPatch, MarcaResponse
@@ -10,12 +10,12 @@ from app.schemas.catalogo import MarcaCreate, MarcaPatch, MarcaResponse
 router = APIRouter(prefix="/marca", tags=["Catalogo · Marca"])
 
 @router.get("/", response_model=list[MarcaResponse], status_code=status.HTTP_200_OK)
-async def obtener_marcas(db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_marcas(db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     result = await db.execute(select(Marca).order_by(Marca.nombre_marca))
     return result.scalars().all()
 
 @router.get("/{id_marca}", response_model=MarcaResponse, status_code=status.HTTP_200_OK)
-async def obtener_marca(id_marca: int, db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_marca(id_marca: int, db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     marca = await db.scalar(select(Marca).where(Marca.id_marca == id_marca))
     if not marca:
         raise HTTPException(status_code=404, detail="Marca no encontrada")

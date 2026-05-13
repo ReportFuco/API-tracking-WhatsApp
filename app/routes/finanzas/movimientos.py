@@ -25,7 +25,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from sqlalchemy import select, and_, desc, func
 from sqlalchemy.orm import selectinload
-from app.auth.fastapi_users import current_user
+from app.auth.fastapi_users import current_user_or_api_key
 from app.models.finanzas import EnumTipoMovimiento
 from zoneinfo import ZoneInfo
 
@@ -64,7 +64,7 @@ async def obtener_movimiento(
         le=100,
         description="Cantidad maxima de movimientos a devolver."
     ),
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db)
 ):
     usuario = await obtener_usuario_actual(user, db)
@@ -128,7 +128,7 @@ async def obtener_movimiento(
 async def obtener_movimientos(
     id_movimiento: int,
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
     usuario = await obtener_usuario_actual(user, db)
 
@@ -176,7 +176,7 @@ async def obtener_movimientos(
 async def crear_movimiento(
     data:MovimientoCreate,
     db:AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
     usuario = await obtener_usuario_actual(user, db)
 
@@ -248,7 +248,7 @@ async def editar_movimiento(
     id_movimiento: int,
     data: MovimientoPatch,
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
     usuario = await obtener_usuario_actual(user, db)
     

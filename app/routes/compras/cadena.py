@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.db import get_db
 from app.models import Cadena
 from app.schemas.compras import CadenaCreate, CadenaPatch, CadenaResponse
@@ -10,12 +10,12 @@ from app.schemas.compras import CadenaCreate, CadenaPatch, CadenaResponse
 router = APIRouter(prefix="/cadena", tags=["Compras · Cadena"])
 
 @router.get("/", response_model=list[CadenaResponse], status_code=status.HTTP_200_OK)
-async def obtener_cadenas(db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_cadenas(db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     result = await db.execute(select(Cadena).order_by(Cadena.nombre_cadena))
     return result.scalars().all()
 
 @router.get("/{id_cadena}", response_model=CadenaResponse, status_code=status.HTTP_200_OK)
-async def obtener_cadena(id_cadena: int, db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_cadena(id_cadena: int, db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     cadena = await db.scalar(select(Cadena).where(Cadena.id_cadena == id_cadena))
     if not cadena:
         raise HTTPException(status_code=404, detail="Cadena no encontrada")

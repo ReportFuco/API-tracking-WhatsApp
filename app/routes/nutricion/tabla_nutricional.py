@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.db import get_db
 from app.models import Producto, TablaNutricional
 from app.schemas.nutricion import TablaNutricionalCreate, TablaNutricionalPatch, TablaNutricionalResponse
@@ -16,12 +16,12 @@ async def _obtener_tabla(db: AsyncSession, id_tabla: int) -> TablaNutricional:
     return tabla
 
 @router.get("/", response_model=list[TablaNutricionalResponse], status_code=status.HTTP_200_OK)
-async def obtener_tablas(db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_tablas(db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     result = await db.execute(select(TablaNutricional).order_by(TablaNutricional.id_tabla.desc()))
     return result.scalars().all()
 
 @router.get("/{id_tabla}", response_model=TablaNutricionalResponse, status_code=status.HTTP_200_OK)
-async def obtener_tabla(id_tabla: int, db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_tabla(id_tabla: int, db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     return await _obtener_tabla(db, id_tabla)
 
 @router.post("/", response_model=TablaNutricionalResponse, status_code=status.HTTP_201_CREATED)

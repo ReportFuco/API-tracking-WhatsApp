@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.db import get_db
 from app.models import CategoriaProducto, Producto, SubcategoriaProducto
 from app.schemas.catalogo import (
@@ -15,13 +15,13 @@ router = APIRouter(prefix="/categoria-producto", tags=["Catalogo · Categoria Pr
 
 
 @router.get("/", response_model=list[CategoriaProductoResponse], status_code=status.HTTP_200_OK)
-async def obtener_categorias_producto(db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_categorias_producto(db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     result = await db.execute(select(CategoriaProducto).order_by(CategoriaProducto.nombre_categoria))
     return result.scalars().all()
 
 
 @router.get("/{id_categoria}", response_model=CategoriaProductoResponse, status_code=status.HTTP_200_OK)
-async def obtener_categoria_producto(id_categoria: int, db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_categoria_producto(id_categoria: int, db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     categoria = await db.scalar(select(CategoriaProducto).where(CategoriaProducto.id_categoria == id_categoria))
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoria no encontrada")

@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.auth.fastapi_users import current_user
+from app.auth.fastapi_users import current_user_or_api_key
 from app.db import get_db
 from app.models import Compra, CompraDetalle, CuentaUsuario, Local, Movimiento, MovimientoCompra, Producto
 from app.routes.utils import obtener_usuario_actual
@@ -46,7 +46,7 @@ async def _obtener_movimiento_gasto_usuario(db: AsyncSession, id_movimiento: int
     return movimiento
 
 @router.get("/", response_model=list[CompraResponse], status_code=status.HTTP_200_OK)
-async def obtener_compras(db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_compras(db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     usuario = await obtener_usuario_actual(user, db)
     result = await db.execute(
         select(Compra)
@@ -63,12 +63,12 @@ async def obtener_compras(db: AsyncSession = Depends(get_db), user=Depends(curre
     return result.scalars().all()
 
 @router.get("/{id_compra}", response_model=CompraResponse, status_code=status.HTTP_200_OK)
-async def obtener_compra(id_compra: int, db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_compra(id_compra: int, db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     usuario = await obtener_usuario_actual(user, db)
     return await _obtener_compra_usuario(db, id_compra, usuario.id_usuario)
 
 @router.post("/", response_model=CompraResponse, status_code=status.HTTP_201_CREATED)
-async def crear_compra(data: CompraCreate, db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def crear_compra(data: CompraCreate, db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     usuario = await obtener_usuario_actual(user, db)
     local = await db.scalar(select(Local).where(Local.id_local == data.id_local))
     if not local:
@@ -79,7 +79,7 @@ async def crear_compra(data: CompraCreate, db: AsyncSession = Depends(get_db), u
     return await _obtener_compra_usuario(db, compra.id_compra, usuario.id_usuario)
 
 @router.patch("/{id_compra}", response_model=CompraResponse, status_code=status.HTTP_200_OK)
-async def editar_compra(id_compra: int, data: CompraPatch, db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def editar_compra(id_compra: int, data: CompraPatch, db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     usuario = await obtener_usuario_actual(user, db)
     compra = await _obtener_compra_usuario(db, id_compra, usuario.id_usuario)
     cambios = data.model_dump(exclude_unset=True)
@@ -99,7 +99,7 @@ async def editar_compra(id_compra: int, data: CompraPatch, db: AsyncSession = De
 async def crear_compra_completa(
     data: CompraCompletaCreate,
     db: AsyncSession = Depends(get_db),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
 ):
     usuario = await obtener_usuario_actual(user, db)
 
@@ -143,7 +143,7 @@ async def crear_compra_completa(
     return await _obtener_compra_usuario(db, compra.id_compra, usuario.id_usuario)
 
 @router.delete("/{id_compra}", status_code=status.HTTP_204_NO_CONTENT)
-async def eliminar_compra(id_compra: int, db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def eliminar_compra(id_compra: int, db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     usuario = await obtener_usuario_actual(user, db)
     compra = await _obtener_compra_usuario(db, id_compra, usuario.id_usuario)
     await db.delete(compra)

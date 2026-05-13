@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.auth.fastapi_users import current_user
+from app.auth.fastapi_users import current_user_or_api_key
 from app.db import get_db
 from app.models import Compra, CuentaUsuario, Local, Movimiento, MovimientoCompra
 from app.models.finanzas import EnumTipoMovimiento
@@ -71,7 +71,7 @@ async def obtener_vinculos_movimiento_compra(
     id_movimiento: int | None = Query(default=None),
     id_compra: int | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
 ):
     if id_movimiento is None and id_compra is None:
         raise HTTPException(status_code=400, detail="Debes enviar id_movimiento o id_compra")
@@ -103,7 +103,7 @@ async def obtener_vinculos_movimiento_compra(
 async def crear_vinculo_movimiento_compra(
     data: MovimientoCompraCreate,
     db: AsyncSession = Depends(get_db),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
 ):
     usuario = await obtener_usuario_actual(user, db)
     await _obtener_movimiento_usuario(db, data.id_movimiento, usuario.id_usuario)
@@ -128,7 +128,7 @@ async def crear_vinculo_movimiento_compra(
 async def eliminar_vinculo_movimiento_compra(
     id_movimiento_compra: int,
     db: AsyncSession = Depends(get_db),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
 ):
     usuario = await obtener_usuario_actual(user, db)
     vinculo = await _obtener_vinculo(db, id_movimiento_compra, usuario.id_usuario)

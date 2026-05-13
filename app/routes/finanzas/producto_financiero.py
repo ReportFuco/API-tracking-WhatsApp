@@ -3,7 +3,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.db import get_db
 from app.models import Banco, CuentaUsuario, ProductoFinanciero
 from app.schemas.finanzas import (
@@ -63,7 +63,7 @@ async def obtener_productos_financieros(
     q: str | None = Query(default=None, min_length=1),
     incluir_inactivos: bool = Query(default=False),
     db: AsyncSession = Depends(get_db),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
 ):
     stmt = select(ProductoFinanciero).options(selectinload(ProductoFinanciero.banco))
 
@@ -97,7 +97,7 @@ async def obtener_productos_financieros(
 async def obtener_producto_financiero(
     id_producto_financiero: int,
     db: AsyncSession = Depends(get_db),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
 ):
     return await _obtener_producto_financiero(db, id_producto_financiero)
 

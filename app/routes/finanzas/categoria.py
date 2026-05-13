@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import CategoriaFinanza
 from app.db import get_db
 from sqlalchemy import select
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.schemas.finanzas import (
     CategoriaResponse, 
     CategoriaCreate, 
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/categoria", tags=["Finanzas · Categorías"])
 )
 async def obtener_categorias(
     db:AsyncSession = Depends(get_db),
-    user = Depends(current_user)  
+    user = Depends(current_user_or_api_key)  
 ):    
     categoria = (await db.execute(select(CategoriaFinanza))).scalars().all()
     
@@ -39,7 +39,7 @@ async def obtener_categorias(
 async def obtener_categoria(
     id_categoria: int,
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
     query = await db.execute(
         select(CategoriaFinanza).where(CategoriaFinanza.id_categoria == id_categoria)

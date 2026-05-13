@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.db import get_db
 from app.models import Cadena, Local
 from app.schemas.compras import LocalCreate, LocalPatch, LocalResponse
@@ -21,7 +21,7 @@ async def _obtener_local(db: AsyncSession, id_local: int) -> Local:
     return local
 
 @router.get("/", response_model=list[LocalResponse], status_code=status.HTTP_200_OK)
-async def obtener_locales(db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_locales(db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     result = await db.execute(
         select(Local)
         .options(selectinload(Local.cadena))
@@ -30,7 +30,7 @@ async def obtener_locales(db: AsyncSession = Depends(get_db), user=Depends(curre
     return result.scalars().all()
 
 @router.get("/{id_local}", response_model=LocalResponse, status_code=status.HTTP_200_OK)
-async def obtener_local(id_local: int, db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_local(id_local: int, db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     return await _obtener_local(db, id_local)
 
 @router.post("/", response_model=LocalResponse, status_code=status.HTTP_201_CREATED)

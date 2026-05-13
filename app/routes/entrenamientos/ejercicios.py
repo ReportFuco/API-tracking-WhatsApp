@@ -5,7 +5,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.db.session import get_db
 from app.models import Ejercicios, Musculo, SerieFuerza, SubcategoriaMusculo
 from app.routes.utils import normalize_search_text, normalize_sql_text
@@ -87,7 +87,7 @@ async def obtener_ejercicios(
         description="Filtro legacy por código de músculo, por ejemplo pecho o bicep",
     ),
     db: AsyncSession = Depends(get_db),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
 ):
     stmt = (
         select(Ejercicios)
@@ -132,7 +132,7 @@ async def obtener_ejercicios(
 )
 async def obtener_musculos(
     db: AsyncSession = Depends(get_db),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
 ):
     result = await db.execute(
         select(Musculo)
@@ -151,7 +151,7 @@ async def obtener_musculos(
 async def obtener_ejercicio(
     id_ejercicio: int,
     db: AsyncSession = Depends(get_db),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
 ):
     return await _obtener_ejercicio(db, id_ejercicio)
 

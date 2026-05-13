@@ -1,7 +1,8 @@
 from typing import Any
+from datetime import datetime
 
 from fastapi_users import schemas
-from pydantic import Field, EmailStr, ConfigDict, model_validator
+from pydantic import BaseModel, Field, EmailStr, ConfigDict, model_validator
 
 
 class UsuarioAuthRead(schemas.BaseUser[int]):
@@ -40,4 +41,31 @@ class UsuarioAuthCreate(schemas.CreateUpdateDictModel):
 
     model_config = ConfigDict(
         extra="forbid"
+    )
+
+
+class ApiKeyCreate(BaseModel):
+    nombre: str = Field(..., min_length=1, max_length=80, examples=["LangChain agent"])
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ApiKeyResponse(BaseModel):
+    id_api_key: int
+    nombre: str
+    key_prefix: str
+    activo: bool
+    usage_count: int
+    last_used_at: datetime | None
+    last_used_ip: str | None
+    created_at: datetime
+    revoked_at: datetime | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ApiKeyCreatedResponse(ApiKeyResponse):
+    api_key: str = Field(
+        ...,
+        description="API key completa. Solo se muestra una vez al crearla.",
     )

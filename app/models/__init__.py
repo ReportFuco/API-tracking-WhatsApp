@@ -29,8 +29,10 @@ from .compras import Cadena, Local, Compra, CompraDetalle, MovimientoCompra
 from .nutricion import Consumo, ConsumoDetalle, TablaNutricional, MetaNutricional, PesoUsuario
 
 from .usuario_auth import User
+from .api_key import ApiKey
 
 __all__ = [
+    "ApiKey",
     "Marca",
     "CategoriaProducto",
     "SubcategoriaProducto",

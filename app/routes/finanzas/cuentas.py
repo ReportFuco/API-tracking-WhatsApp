@@ -10,7 +10,7 @@ from app.schemas.finanzas import (
     CuentaUsuarioMovimientosResponse
 )
 from sqlalchemy.orm import selectinload
-from app.auth.fastapi_users import current_user
+from app.auth.fastapi_users import current_user_or_api_key
 
 
 router = APIRouter(prefix="/cuentas", tags=["Finanzas · Cuentas"])
@@ -35,7 +35,7 @@ async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
     status_code=status.HTTP_200_OK
 )
 async def obtener_cuentas_usuario(
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
     db:AsyncSession = Depends(get_db)
 ):    
     usuario = await obtener_usuario_actual(user, db)
@@ -69,7 +69,7 @@ async def obtener_cuentas_usuario(
 )
 async def obtener_movimientos_cuenta(
     id_cuenta:int,
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db)
 ):
     usuario = await obtener_usuario_actual(user, db)
@@ -113,7 +113,7 @@ async def obtener_movimientos_cuenta(
 async def crear_cuenta_usuario(
     data: CuentaUsuarioCreate,
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
 ):
     usuario = await obtener_usuario_actual(user, db)
 
@@ -184,7 +184,7 @@ async def editar_cuenta(
     id_cuenta: int,
     data: CuentaUsuarioPatch,
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
     usuario = await obtener_usuario_actual(user, db)
 
@@ -258,7 +258,7 @@ async def editar_cuenta(
 )
 async def desactivar_cuenta(
     id_cuenta: int,
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db)
 ):
     usuario = await obtener_usuario_actual(user, db)

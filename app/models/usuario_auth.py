@@ -26,3 +26,4 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     usuario: Mapped["Usuario"] = relationship(back_populates="user")
+    api_keys: Mapped[list["ApiKey"]] = relationship(back_populates="user")

@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.db import get_db
 from app.models import CategoriaProducto, Marca, Producto, SubcategoriaProducto
 from app.schemas.catalogo import ProductoCreate, ProductoPatch, ProductoResponse
@@ -54,7 +54,7 @@ async def _validar_categoria_subcategoria(
 
 
 @router.get("/", response_model=list[ProductoResponse], status_code=status.HTTP_200_OK)
-async def obtener_productos(db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_productos(db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     result = await db.execute(
         select(Producto)
         .options(
@@ -66,7 +66,7 @@ async def obtener_productos(db: AsyncSession = Depends(get_db), user=Depends(cur
     return result.scalars().all()
 
 @router.get("/{id_producto}", response_model=ProductoResponse, status_code=status.HTTP_200_OK)
-async def obtener_producto(id_producto: int, db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_producto(id_producto: int, db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     return await _obtener_producto(db, id_producto)
 
 @router.post("/", response_model=ProductoResponse, status_code=status.HTTP_201_CREATED)

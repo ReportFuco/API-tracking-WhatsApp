@@ -16,7 +16,7 @@ from app.schemas.entrenamientos import (
     SerieFuerzaPatch,
     SerieFuerzaResponse
 )
-from app.auth.fastapi_users import current_user
+from app.auth.fastapi_users import current_user_or_api_key
 from app.models import Usuario
 
 
@@ -64,7 +64,7 @@ async def obtener_serie_usuario_activa(
 )
 async def agregar_serie_fuerza(
     data:SerieFuerzaCreate, 
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
     db:AsyncSession = Depends(get_db)
 ):
     usuario = await obtener_usuario_actual(user, db)
@@ -127,7 +127,7 @@ async def agregar_serie_fuerza(
 async def editar_serie_fuerza(
     id_fuerza_detalle: int,
     data: SerieFuerzaPatch,
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db)
 ):
     usuario = await obtener_usuario_actual(user, db)
@@ -178,7 +178,7 @@ async def editar_serie_fuerza(
 )
 async def eliminar_serie_fuerza(
     id_fuerza_detalle: int,
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db)
 ):
     usuario = await obtener_usuario_actual(user, db)

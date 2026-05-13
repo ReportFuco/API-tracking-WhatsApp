@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.db.session import get_db
 from app.models.entrenamiento import Gimnasio
 from app.routes.utils import normalize_search_text, normalize_sql_text
@@ -42,7 +42,7 @@ async def obtener_gimnasios(
         min_length=1
     ),
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
     cache_key = _cache_key(q)
     cached = _gimnasios_cache.get(cache_key)
@@ -84,7 +84,7 @@ async def obtener_gimnasios(
 async def obtener_gimnasio_id(
     id_gimnasio:int, 
     db:AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
 
     gimnasio = await db.scalar(

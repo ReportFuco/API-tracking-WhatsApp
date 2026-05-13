@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.fastapi_users import current_user
+from app.auth.fastapi_users import current_user_or_api_key
 from app.db.session import get_db
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -46,7 +46,7 @@ async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
 )
 async def obtener_entrenamientos_usuario(
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
     usuario = await obtener_usuario_actual(user, db)
     
@@ -70,7 +70,7 @@ async def obtener_entrenamientos_usuario(
     status_code=status.HTTP_200_OK
 )
 async def obtener_entrenamiento_activo(
-    user = Depends(current_user), 
+    user = Depends(current_user_or_api_key), 
     db:AsyncSession = Depends(get_db)
 ):
     usuario = await obtener_usuario_actual(user, db)
@@ -111,7 +111,7 @@ async def obtener_entrenamiento_activo(
 async def obtener_detalle_entreno_fuerza(
     id_entrenamiento_fuerza:int,
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
     usuario = await obtener_usuario_actual(user, db)
 
@@ -151,7 +151,7 @@ async def obtener_detalle_entreno_fuerza(
 )
 async def activar_entrenamiento(
     data:EntrenoFuerzaCreate,
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db)
 ):
     usuario = await obtener_usuario_actual(user, db)
@@ -220,7 +220,7 @@ async def activar_entrenamiento(
     response_model=EntrenoFuerzaResponse
 )
 async def finalizar_sesion_fuerza(
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
     db:AsyncSession=Depends(get_db)
 ):
     usuario = await obtener_usuario_actual(user, db)

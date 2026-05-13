@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.auth.fastapi_users import current_user
+from app.auth.fastapi_users import current_user_or_api_key
 from app.db import get_db
 from app.models import CuentaUsuario, Movimiento, Usuario
 from app.models.finanzas import EnumTipoGasto, EnumTipoMovimiento
@@ -118,7 +118,7 @@ async def _get_movimientos_periodo(
 async def obtener_resumen_financiero(
     year: int | None = Query(default=None, ge=2000, le=2100),
     month: int | None = Query(default=None, ge=1, le=12),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db),
 ):
     usuario = await obtener_usuario_actual(user, db)
@@ -201,7 +201,7 @@ async def obtener_resumen_financiero(
 )
 async def obtener_tendencia_mensual(
     months: int = Query(default=6, ge=1, le=24),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db),
 ):
     usuario = await obtener_usuario_actual(user, db)
@@ -267,7 +267,7 @@ async def obtener_distribucion_categorias(
     year: int | None = Query(default=None, ge=2000, le=2100),
     month: int | None = Query(default=None, ge=1, le=12),
     tipo_movimiento: EnumTipoMovimiento = Query(default=EnumTipoMovimiento.GASTO),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db),
 ):
     usuario = await obtener_usuario_actual(user, db)
@@ -329,7 +329,7 @@ async def obtener_distribucion_cuentas(
     year: int | None = Query(default=None, ge=2000, le=2100),
     month: int | None = Query(default=None, ge=1, le=12),
     tipo_movimiento: EnumTipoMovimiento = Query(default=EnumTipoMovimiento.GASTO),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db),
 ):
     usuario = await obtener_usuario_actual(user, db)

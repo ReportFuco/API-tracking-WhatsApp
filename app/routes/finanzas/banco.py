@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from sqlalchemy import select
 from app.models import Banco, ProductoFinanciero
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.schemas.finanzas import BancoCreate, BancoResponse
 
 
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/banco", tags=["Finanzas · Bancos"])
 )
 async def obtener_bancos(
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 
 ):
     query = await db.execute(select(Banco))
@@ -37,7 +37,7 @@ async def obtener_bancos(
 async def obtener_banco_id(
     id_banco:int, 
     db:AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
     query = await db.execute(select(Banco).where(Banco.id_banco == id_banco))
     banco = query.scalar_one_or_none()

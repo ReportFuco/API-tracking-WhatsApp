@@ -104,6 +104,62 @@ Campos esperados:
 #### `POST /auth/jwt/login`
 Inicia sesión y devuelve el token JWT.
 
+### API keys para agentes
+
+Las API keys son credenciales persistentes pensadas para agentes, automatizaciones o integraciones como LangChain. Se administran usando una sesión normal con JWT, pero el secreto generado se usa después en el header `X-API-Key`.
+
+Header esperado para agentes:
+
+```http
+X-API-Key: <api_key>
+```
+
+Reglas actuales:
+
+- la API key completa solo se muestra una vez, al crearla
+- la base de datos guarda `key_hash`, no la key completa
+- un usuario puede tener varias API keys activas
+- una API key revocada deja de funcionar, pero queda historial básico
+- se mide uso resumido con `usage_count`, `last_used_at` y `last_used_ip`
+
+#### `POST /auth/api-keys`
+Crea una API key para el usuario autenticado con JWT.
+
+Payload:
+
+```json
+{
+  "nombre": "LangChain agent"
+}
+```
+
+Respuesta:
+
+```json
+{
+  "id_api_key": 1,
+  "nombre": "LangChain agent",
+  "key_prefix": "thw_abcd123",
+  "activo": true,
+  "usage_count": 0,
+  "last_used_at": null,
+  "last_used_ip": null,
+  "created_at": "2026-05-13T12:00:00",
+  "revoked_at": null,
+  "api_key": "thw_secreto_completo_solo_una_vez"
+}
+```
+
+#### `GET /auth/api-keys`
+Lista las API keys del usuario autenticado sin mostrar el secreto completo.
+
+Query params:
+
+- `incluir_revocadas`: `false` por defecto
+
+#### `DELETE /auth/api-keys/{id_api_key}`
+Revoca una API key del usuario autenticado. La revocación es lógica: marca `activo=false` y asigna `revoked_at`.
+
 #### Endpoints adicionales de auth
 
 | Método | Ruta | Descripción |
@@ -111,6 +167,9 @@ Inicia sesión y devuelve el token JWT.
 | `POST` | `/auth/jwt/login` | Inicia sesión y devuelve JWT |
 | `POST` | `/auth/jwt/logout` | Endpoint expuesto por el router JWT de `fastapi-users` |
 | `POST` | `/auth/register` | Registra usuario |
+| `POST` | `/auth/api-keys` | Crea API key persistente para agentes |
+| `GET` | `/auth/api-keys` | Lista API keys del usuario autenticado |
+| `DELETE` | `/auth/api-keys/{id_api_key}` | Revoca API key |
 
 ## Convenciones globales
 
@@ -125,12 +184,14 @@ Inicia sesión y devuelve el token JWT.
 
 Hay 3 patrones principales:
 
-- `current_user`: cualquier usuario autenticado
+- `current_user_or_api_key`: usuario autenticado por JWT o API key
+- `current_user`: usuario autenticado por JWT; se mantiene para flujos que deben ser solo sesión humana, como administrar API keys
 - `current_superuser`: solo administrador
 - ownership: el usuario solo puede ver o modificar sus propios datos en compras, nutrición, finanzas y entrenamientos
 
 ### Reglas prácticas
 
+- endpoints de lectura/escritura de usuario normal pueden usarse con `Authorization: Bearer <token>` o `X-API-Key: <api_key>`
 - recursos maestros o catálogos suelen estar restringidos a `superuser` para crear, editar o eliminar
 - recursos personales suelen asignarse automáticamente al usuario autenticado y no requieren mandar `id_usuario`
 - algunos deletes son lógicos y no físicos, por ejemplo `producto` y varias entidades de usuario/finanzas

@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from app.db import get_db
 from sqlalchemy import select, or_, and_
 from app.models import Usuario, User
-from app.auth.fastapi_users import current_user, current_superuser
+from app.auth.fastapi_users import current_user_or_api_key, current_superuser
 from app.schemas.usuario import ( 
     UsuarioResponse,
     UsuarioPatchSchema,
@@ -30,7 +30,7 @@ async def obtener_usuario_actual(user, db: AsyncSession) -> Usuario:
     response_model=UsuarioPerfilResponse
 )
 async def obtener_mi_perfil(
-    user = Depends(current_user),
+    user = Depends(current_user_or_api_key),
     db: AsyncSession = Depends(get_db),
 ):
     perfil = await obtener_usuario_actual(user, db)
@@ -67,7 +67,7 @@ async def obtener_usuarios(
 async def editar_usuario(
     data: UsuarioPatchSchema, 
     db: AsyncSession = Depends(get_db),
-    user = Depends(current_user)
+    user = Depends(current_user_or_api_key)
 ):
     usuario_actual = await obtener_usuario_actual(user, db)
     cambios_dict = data.model_dump(exclude_unset=True)

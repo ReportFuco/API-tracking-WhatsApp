@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.fastapi_users import current_superuser, current_user
+from app.auth.fastapi_users import current_superuser, current_user_or_api_key
 from app.db import get_db
 from app.models import CategoriaProducto, Producto, SubcategoriaProducto
 from app.schemas.catalogo import (
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/subcategoria-producto", tags=["Catalogo · Subcatego
 
 
 @router.get("/", response_model=list[SubcategoriaProductoResponse], status_code=status.HTTP_200_OK)
-async def obtener_subcategorias_producto(db: AsyncSession = Depends(get_db), user=Depends(current_user)):
+async def obtener_subcategorias_producto(db: AsyncSession = Depends(get_db), user=Depends(current_user_or_api_key)):
     result = await db.execute(
         select(SubcategoriaProducto).order_by(SubcategoriaProducto.id_categoria, SubcategoriaProducto.nombre_subcategoria)
     )
@@ -26,7 +26,7 @@ async def obtener_subcategorias_producto(db: AsyncSession = Depends(get_db), use
 async def obtener_subcategoria_producto(
     id_subcategoria: int,
     db: AsyncSession = Depends(get_db),
-    user=Depends(current_user),
+    user=Depends(current_user_or_api_key),
 ):
     subcategoria = await db.scalar(
         select(SubcategoriaProducto).where(SubcategoriaProducto.id_subcategoria == id_subcategoria)
