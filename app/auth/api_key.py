@@ -4,7 +4,7 @@ import secrets
 from datetime import datetime
 
 from fastapi import Depends, Header, HTTPException, Request, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
@@ -23,6 +23,18 @@ def generate_api_key() -> tuple[str, str, str]:
 
 def hash_api_key(api_key: str) -> str:
     return hashlib.sha256(api_key.encode("utf-8")).hexdigest()
+
+
+def get_client_ip(request: Request) -> str | None:
+    x_real_ip = request.headers.get("x-real-ip")
+    if x_real_ip:
+        return x_real_ip.strip()
+
+    x_forwarded_for = request.headers.get("x-forwarded-for")
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0].strip()
+
+    return request.client.host if request.client else None
 
 
 async def get_user_by_api_key(
@@ -55,10 +67,15 @@ async def get_user_by_api_key(
             detail="API key invalida.",
         )
 
-    api_key.last_used_at = datetime.now()
-    api_key.last_used_ip = request.client.host if request.client else None
-    api_key.usage_count += 1
-    await db.flush()
+    await db.execute(
+        update(ApiKey)
+        .where(ApiKey.id_api_key == api_key.id_api_key)
+        .values(
+            last_used_at=datetime.now(),
+            last_used_ip=get_client_ip(request),
+            usage_count=ApiKey.usage_count + 1,
+        )
+    )
 
     user = await db.get(User, api_key.auth_user_id)
     if user is None or not user.is_active:

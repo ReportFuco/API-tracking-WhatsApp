@@ -121,6 +121,22 @@ Reglas actuales:
 - un usuario puede tener varias API keys activas
 - una API key revocada deja de funcionar, pero queda historial básico
 - se mide uso resumido con `usage_count`, `last_used_at` y `last_used_ip`
+- no se debe enviar JWT y API key en la misma request; si llegan ambos headers, la API responde `400 Bad Request`
+
+Ejemplo inválido:
+
+```http
+Authorization: Bearer <token>
+X-API-Key: <api_key>
+```
+
+Respuesta esperada:
+
+```json
+{
+  "detail": "Usa JWT o API key, no ambos."
+}
+```
 
 #### `POST /auth/api-keys`
 Crea una API key para el usuario autenticado con JWT.
@@ -192,6 +208,7 @@ Hay 3 patrones principales:
 ### Reglas prácticas
 
 - endpoints de lectura/escritura de usuario normal pueden usarse con `Authorization: Bearer <token>` o `X-API-Key: <api_key>`
+- si una ruta acepta ambos mecanismos, se debe usar solo uno por request; mandar ambos se considera configuración ambigua
 - recursos maestros o catálogos suelen estar restringidos a `superuser` para crear, editar o eliminar
 - recursos personales suelen asignarse automáticamente al usuario autenticado y no requieren mandar `id_usuario`
 - algunos deletes son lógicos y no físicos, por ejemplo `producto` y varias entidades de usuario/finanzas

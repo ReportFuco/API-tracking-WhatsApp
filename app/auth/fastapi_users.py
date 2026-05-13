@@ -25,6 +25,11 @@ async def current_user_or_api_key(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
     db: AsyncSession = Depends(get_db),
 ) -> User:
+    if user is not None and x_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usa JWT o API key, no ambos.",
+        )
     if user is not None:
         return user
     if x_api_key:
